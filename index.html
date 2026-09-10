@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MPLADS Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,800;1,400&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: #FAFAFA;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    /* Top Title */
+    .brand-header {
+      margin-top: 20px;
+    }
+
+    .main-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #0F2342;
+      letter-spacing: -0.5px;
+    }
+
+    .main-title span {
+      font-style: italic;
+      color: #C59B27;
+      font-weight: 400;
+    }
+
+    .sub-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #0F2342;
+      letter-spacing: 3px;
+      margin-top: 6px;
+    }
+
+    /* Center Graphic Container */
+    .graphic-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .logo-circle {
+      width: 180px;
+      height: 180px;
+      background: #FFFFFF;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      margin-bottom: 40px;
+    }
+
+    .logo-circle img {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+    }
+
+    /* Loading Bar Animation */
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: #E2E8F0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #059669, #D97706);
+      border-radius: 10px;
+      animation: fillProgress 2.5s ease-in-out forwards;
+    }
+
+    @keyframes fillProgress {
+      0% { width: 0%; }
+      50% { width: 60%; }
+      100% { width: 100%; }
+    }
+
+    .status-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .status-desc {
+      font-size: 0.8rem;
+      color: #64748B;
+      margin-top: 4px;
+    }
+
+    /* Bottom Text */
+    .footer-text {
+      font-size: 0.8rem;
+      color: #475569;
+      max-width: 280px;
+      line-height: 1.4;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Brand Header -->
+  <div class="brand-header">
+    <h1 class="main-title">MPLADS <span>Dashboard</span></h1>
+    <p class="sub-title">EMPOWERED INDIAN</p>
+  </div>
+
+  <!-- Center Graphic & Loader -->
+  <div class="graphic-container">
+    <div class="logo-circle">
+      <!-- Apne logo ka path yahan daal do -->
+      <img src="logo.png" alt="MPLADS Emblem" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg'">
+    </div>
+
+    <div class="progress-bar-container">
+      <div class="progress-bar"></div>
+    </div>
+
+    <h2 class="status-title">Initializing...</h2>
+    <p class="status-desc">Loading government data transparently...</p>
+  </div>
+
+  <!-- Bottom Tagline -->
+  <p class="footer-text">
+    Making government data accessible, understandable, and actionable for every citizen
+  </p>
+
+  <!-- Auto Redirect Script -->
+  <!-- Auto Redirect Script -->
+<!-- Auto Redirect Script -->
+<script>
+  // Agar user Dashboard se BACK dabakar yahan aaya hai:
+  if (sessionStorage.getItem("redirected")) {
+      sessionStorage.removeItem("redirected"); // session clean karo
+      window.history.back(); // Chrome ko sidha ek step aur pichhe bhej do
+  } else {
+      // Pehli baar aane par 2.8s baad Dashboard bhejo
+      sessionStorage.setItem("redirected", "true");
+      setTimeout(() => {
+          window.location.href = "dashboard.html";
+      }, 2800);
+  }
+</script>
+
+</body>
+</html>

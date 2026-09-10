@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed AI Risk Alerts</title>
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --accent-blue: #2563eb;
+            --critical-red: #ef4444;
+            --delay-orange: #f97316;
+            --abnormality-purple: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Top Bar */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-info h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .header-info p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #dc2626;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        /* Summary Stat Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+
+        .summary-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 12%;
+            bottom: 12%;
+            width: 4px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .card-critical::before { background-color: var(--critical-red); }
+        .card-delay::before { background-color: var(--delay-orange); }
+        .card-abnormality::before { background-color: var(--abnormality-purple); }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 1.85rem;
+            font-weight: 800;
+            margin-top: 0.4rem;
+            color: var(--text-main);
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .icon-critical { background-color: #fee2e2; color: var(--critical-red); }
+        .icon-delay { background-color: #ffedd5; color: var(--delay-orange); }
+        .icon-abnormality { background-color: #f3e8ff; color: var(--abnormality-purple); }
+
+        /* Navigation Filter Tabs with Enhanced Hover Effects */
+        .tabs-container {
+            display: flex;
+            gap: 0.6rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .tab-btn {
+            padding: 0.55rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: #4b5563;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+
+        .tab-btn:hover {
+            background-color: #ffffff;
+            color: #0f172a;
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .tab-btn.active {
+            background-color: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a;
+            box-shadow: 0 4px 8px rgba(15, 23, 42, 0.15);
+        }
+
+        .tab-btn.active:hover {
+            background-color: #1e293b;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        /* Risk Cards Feed */
+        .alerts-feed {
+            display: flex;
+            flex-direction: flex-col;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .alert-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .alert-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+            transform: translateY(-1px);
+        }
+
+        .alert-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .alert-main {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .alert-type-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .alert-details h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .alert-details p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+            line-height: 1.4;
+        }
+
+        .badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .badge-critical { background: #fee2e2; color: var(--critical-red); }
+        .badge-delay { background: #ffedd5; color: var(--delay-orange); }
+        .badge-abnormality { background: #f3e8ff; color: var(--abnormality-purple); }
+
+        .toggle-btn {
+            margin-top: 0.75rem;
+            background: none;
+            border: none;
+            color: var(--accent-blue);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0;
+            transition: color 0.15s ease;
+        }
+
+        .toggle-btn:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+        .audit-trail {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border-color);
+            font-size: 0.8rem;
+            color: #4b5563;
+            background: #f8fafc;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+        }
+
+        .audit-trail.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header-bar">
+            <div class="header-info">
+                <h1>Detailed AI Risk Alerts</h1>
+                <p>Project: Road Development – Ward 12 (ID: MPLADS-2025-01842)</p>
+            </div>
+            <div class="live-badge">
+                <span class="live-dot"></span>
+                LIVE AI AUDIT
+            </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="summary-grid">
+            <div class="summary-card card-critical">
+                <div>
+                    <div class="stat-label">Critical Issues</div>
+                    <div class="stat-value">2</div>
+                </div>
+                <div class="stat-icon icon-critical">⚠️</div>
+            </div>
+
+            <div class="summary-card card-delay">
+                <div>
+                    <div class="stat-label">Work Delays</div>
+                    <div class="stat-value">2</div>
+                </div>
+                <div class="stat-icon icon-delay">⏱️</div>
+            </div>
+
+            <div class="summary-card card-abnormality">
+                <div>
+                    <div class="stat-label">Abnormalities</div>
+                    <div class="stat-value">1</div>
+                </div>
+                <div class="stat-icon icon-abnormality">🔍</div>
+            </div>
+        </div>
+
+        <!-- Filter Tabs with Interactive Hover -->
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="filterAlerts('all', this)">All Alerts (5)</button>
+            <button class="tab-btn" onclick="filterAlerts('critical', this)">Critical</button>
+            <button class="tab-btn" onclick="filterAlerts('delay', this)">Work Delays</button>
+            <button class="tab-btn" onclick="filterAlerts('abnormality', this)">Abnormalities</button>
+        </div>
+
+        <!-- Risk List Cards -->
+        <div class="alerts-feed" id="alertsFeed">
+
+            <div class="alert-card" data-category="critical">
+                <div class="alert-header">
+                    <div class="alert-main">
+                        <div class="alert-type-icon icon-critical">📈</div>
+                        <div class="alert-details">
+                            <h3>Sudden Expenditure Spike Without Physical Milestone</h3>
+                            <p>₹18.4 Lakh disbursed in 5 calendar days without updated physical progress report.</p>
+                            <button class="toggle-btn" onclick="toggleAudit(this)">Click to view AI Evidence & Audit Trail <span>∨</span></button>
+                            <div class="audit-trail">
+                                <strong>AI Flag:</strong> Uncorrelated financial outflow detected on 12-Aug-2026. Zero site inspection uploads matching invoice batch #8821.
+                            </div>
+                        </div>
+                    </div>
+                    <span class="badge badge-critical">Critical</span>
+                </div>
+            </div>
+
+            <div class="alert-card" data-category="delay">
+                <div class="alert-header">
+                    <div class="alert-main">
+                        <div class="alert-type-icon icon-delay">⚠️</div>
+                        <div class="alert-details">
+                            <h3>Severe Execution Progress Lag (28% Variance)</h3>
+                            <p>Project physical progress is lagging behind scheduled completion date by 45 days.</p>
+                            <button class="toggle-btn" onclick="toggleAudit(this)">Click to view AI Evidence & Audit Trail <span>∨</span></button>
+                            <div class="audit-trail">
+                                <strong>AI Flag:</strong> Drone data & site check confirm phase 2 road surfacing is at 32% completion versus planned 60%.
+                            </div>
+                        </div>
+                    </div>
+                    <span class="badge badge-delay">Work Delay</span>
+                </div>
+            </div>
+
+            <div class="alert-card" data-category="abnormality">
+                <div class="alert-header">
+                    <div class="alert-main">
+                        <div class="alert-type-icon icon-abnormality">🏢</div>
+                        <div class="alert-details">
+                            <h3>Vendor Monopoly & Duplicate Invoicing Pattern</h3>
+                            <p>82% of sub-contracts awarded to a single unverified agency across 3 adjacent wards.</p>
+                            <button class="toggle-btn" onclick="toggleAudit(this)">Click to view AI Evidence & Audit Trail <span>∨</span></button>
+                            <div class="audit-trail">
+                                <strong>AI Flag:</strong> Cross-referencing GST numbers flagged identical billing timestamps across Ward 10, 11, and 12.
+                            </div>
+                        </div>
+                    </div>
+                    <span class="badge badge-abnormality">Abnormality</span>
+                </div>
+            </div>
+
+            <div class="alert-card" data-category="critical">
+                <div class="alert-header">
+                    <div class="alert-main">
+                        <div class="alert-type-icon icon-critical">📍</div>
+                        <div class="alert-details">
+                            <h3>Missing Geo-Tagged Completion Certificate</h3>
+                            <p>Fund release requested without secondary district engineer sign-off and GIS tag.</p>
+                            <button class="toggle-btn" onclick="toggleAudit(this)">Click to view AI Evidence & Audit Trail <span>∨</span></button>
+                            <div class="audit-trail">
+                                <strong>AI Flag:</strong> Milestone completion upload lacks embedded EXIF geotag coordinates. Blocked auto-clearance.
+                            </div>
+                        </div>
+                    </div>
+                    <span class="badge badge-critical">Critical</span>
+                </div>
+            </div>
+
+            <div class="alert-card" data-category="delay">
+                <div class="alert-header">
+                    <div class="alert-main">
+                        <div class="alert-type-icon icon-delay">⏳</div>
+                        <div class="alert-details">
+                            <h3>Material Procurement Bottleneck</h3>
+                            <p>Bitumen supply delayed by 3 weeks leading to extended idle labor expenditure.</p>
+                            <button class="toggle-btn" onclick="toggleAudit(this)">Click to view AI Evidence & Audit Trail <span>∨</span></button>
+                            <div class="audit-trail">
+                                <strong>AI Flag:</strong> Supply chain logs reflect delayed dispatch confirmation from local supplier.
+                            </div>
+                        </div>
+                    </div>
+                    <span class="badge badge-delay">Work Delay</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function filterAlerts(category, element) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+
+            const cards = document.querySelectorAll('.alert-card');
+            cards.forEach(card => {
+                if (category === 'all' || card.getAttribute('data-category') === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function toggleAudit(button) {
+            const trail = button.nextElementSibling;
+            const arrow = button.querySelector('span');
+            
+            if (trail.classList.contains('show')) {
+                trail.classList.remove('show');
+                arrow.textContent = '∨';
+            } else {
+                trail.classList.add('show');
+                arrow.textContent = '∧';
+            }
+        }
+    </script>
+</body>
+</html>

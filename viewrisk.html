@@ -1,0 +1,665 @@
+
+         
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Risk Center & Anomaly Control Panel</title>
+  
+  <!-- Inter Font for Professional Enterprise Look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --card-hover: #f1f5f9;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --border-hover: #cbd5e1;
+      --primary: #2563eb;
+      --primary-light: #eff6ff;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --warning: #d97706;
+      --warning-light: #fffbeb;
+      --success: #16a34a;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 24px;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Navigation Bar */
+    .top-bar {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .btn-back {
+      background-color: var(--card-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-back:hover {
+      background-color: var(--card-hover);
+      border-color: var(--border-hover);
+      transform: translateX(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Header Section */
+    .header {
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .header p {
+      color: var(--text-muted);
+      font-size: 0.925rem;
+      line-height: 1.5;
+    }
+
+    /* Movable Metrics Dashboard Grid */
+    .metrics-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .metric-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      flex: 1 1 calc(25% - 16px);
+      min-width: 230px;
+      cursor: grab;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      user-select: none;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary);
+    }
+
+    .metric-card.dragging {
+      opacity: 0.4;
+      cursor: grabbing;
+      border: 2px dashed var(--primary);
+      transform: scale(0.98);
+    }
+
+    .metric-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .drag-icon {
+      color: var(--text-muted);
+      font-size: 1rem;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+
+    .metric-card:hover .drag-icon {
+      opacity: 1;
+      color: var(--primary);
+    }
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .metric-value.danger { color: var(--danger); }
+    .metric-value.warning { color: var(--warning); }
+    .metric-value.success { color: var(--success); }
+
+    .metric-sub {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Controls Panel: Tabs, Search & Filters */
+    .controls-panel {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .priority-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      background: #f1f5f9;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      background-color: #e2e8f0;
+      border-color: var(--border-hover);
+    }
+
+    .tab-btn.active {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+    }
+
+    .tab-btn.active.critical { 
+      background-color: var(--danger); 
+      border-color: var(--danger);
+      box-shadow: 0 2px 4px rgba(220, 38, 38, 0.25);
+    }
+    
+    .tab-btn.active.high { 
+      background-color: var(--warning); 
+      border-color: var(--warning);
+      box-shadow: 0 2px 4px rgba(217, 119, 6, 0.25);
+    }
+
+    .search-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .search-box {
+      flex: 2 1 260px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: var(--text-main);
+      outline: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .filter-dropdown {
+      flex: 1 1 180px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 14px;
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-dropdown:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    /* Main Grid Area */
+    .main-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .data-table-container {
+      flex: 3 1 640px;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+
+    .side-panel {
+      flex: 1 1 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .side-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .side-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+    }
+
+    /* Table Styling */
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+    }
+
+    th {
+      padding: 12px 14px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 2px solid var(--border-color);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background-color: var(--card-bg);
+    }
+
+    td {
+      padding: 16px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.875rem;
+      vertical-align: middle;
+      transition: background-color 0.15s;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: var(--card-hover);
+    }
+
+    .badge {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-block;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-critical { background: var(--danger-light); color: var(--danger); border: 1px solid rgba(220, 38, 38, 0.2); }
+    .badge-high { background: var(--warning-light); color: var(--warning); border: 1px solid rgba(217, 119, 6, 0.2); }
+    .badge-medium { background: var(--primary-light); color: var(--primary); border: 1px solid rgba(37, 99, 235, 0.2); }
+
+    .btn-action {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.825rem;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      background-color: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+    }
+
+    /* Regional Heatmap Progress Bars */
+    .heatmap-item {
+      margin-bottom: 16px;
+    }
+
+    .heatmap-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .heatmap-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.5s ease-in-out;
+    }
+
+    /* Responsive Handling */
+    @media (max-width: 900px) {
+      .metric-card {
+        flex: 1 1 calc(50% - 16px);
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 16px;
+      }
+      .metric-card {
+        flex: 1 1 100%;
+      }
+      .data-table-container, .side-panel {
+        flex: 1 1 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar with Back Button -->
+  <div class="top-bar">
+    <button class="btn-back" onclick="history.back()">
+      <span>&#8592;</span> Back
+    </button>
+  </div>
+
+  <!-- Page Title Section -->
+  <div class="header">
+    <h1>AI Risk Center & Anomaly Control Panel</h1>
+    <p>System-wide anomaly code triggers, high-risk flags, duplicate proc-entry pattern analysis, and public fund integrity analytics.</p>
+  </div>
+
+  <!-- Draggable / Movable Metric Cards -->
+  <div class="metrics-container" id="draggable-metrics">
+    <div class="metric-card" draggable="true">
+      <div class="metric-title">Total Risk Signals <span class="drag-icon">&#x2630;</span></div>
+      <div class="metric-value">1,248</div>
+      <div class="metric-sub"><span style="color:var(--danger); font-weight:700;">+18.2%</span> jump vs previous audit cycle</div>
+    </div>
+
+    <div class="metric-card" draggable="true">
+      <div class="metric-title">Critical Risk Value <span class="drag-icon">&#x2630;</span></div>
+      <div class="metric-value danger">&#8377;48.60 Cr</div>
+      <div class="metric-sub">Avg. &#8377;37.8 Lakh flagged per anomaly</div>
+    </div>
+
+    <div class="metric-card" draggable="true">
+      <div class="metric-title">Model High Confidence <span class="drag-icon">&#x2630;</span></div>
+      <div class="metric-value success">98.4%</div>
+      <div class="metric-sub">CV Overlap Score - High Financial Exposure</div>
+    </div>
+
+    <div class="metric-card" draggable="true">
+      <div class="metric-title">Anomalies Detected <span class="drag-icon">&#x2630;</span></div>
+      <div class="metric-value warning">42 Active</div>
+      <div class="metric-sub">Across 12 Priority Regions</div>
+    </div>
+  </div>
+
+  <!-- Filter & Controls Section -->
+  <div class="controls-panel">
+    <div class="priority-tabs">
+      <button class="tab-btn active" onclick="filterPriority('ALL', this)">ALL (1,248)</button>
+      <button class="tab-btn critical" onclick="filterPriority('CRITICAL', this)">Critical (18)</button>
+      <button class="tab-btn high" onclick="filterPriority('HIGH', this)">High Priority (42)</button>
+      <button class="tab-btn" onclick="filterPriority('MEDIUM', this)">Medium (212)</button>
+      <button class="tab-btn" onclick="filterPriority('LOW', this)">Low (976)</button>
+    </div>
+
+    <div class="search-filter-row">
+      <div class="search-box">
+        <input type="text" id="searchInput" onkeyup="filterData()" placeholder="Search by Project Code, Location, or Entity...">
+      </div>
+      <select class="filter-dropdown" id="anomalyFilter" onchange="filterData()">
+        <option value="ALL">All Anomaly Types</option>
+        <option value="DUPLICATE">Duplicate Work Claim</option>
+        <option value="EXCESS">Excess Material Billing</option>
+        <option value="GHOST">Ghost Vendor Entry</option>
+      </select>
+      <select class="filter-dropdown">
+        <option value="ALL">All States / Entities</option>
+        <option value="BIHAR">Bihar</option>
+        <option value="UP">Uttar Pradesh</option>
+        <option value="TN">Tamil Nadu</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Main Grid Container -->
+  <div class="main-grid">
+    
+    <!-- Flagged Items Table -->
+    <div class="data-table-container">
+      <table id="auditTable">
+        <thead>
+          <tr>
+            <th>Project Code & Title</th>
+            <th>Constituency & MP</th>
+            <th>Detection Reason</th>
+            <th>Risk Score</th>
+            <th>Value At Risk</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-priority="CRITICAL" data-type="DUPLICATE">
+            <td><strong>#8821</strong><br><small style="color:var(--text-muted); font-weight: 500;">Solar High-Mast Street Light</small></td>
+            <td>Bhagalpur, Bihar<br><small style="color:var(--text-muted); font-weight: 500;">Ajay Kumar Mandal</small></td>
+            <td>Duplicate Work Claim<br><small style="color:var(--text-muted); font-weight: 500;">98.2% visual overlap with #7211</small></td>
+            <td><span class="badge badge-critical">CRITICAL 98.2%</span></td>
+            <td><strong>&#8377;12.40 Lakh</strong></td>
+            <td><button class="btn-action" onclick="alert('Opening Inspector Modal for Project #8821...')">Inspect</button></td>
+          </tr>
+          <tr data-priority="HIGH" data-type="EXCESS">
+            <td><strong>#4512</strong><br><small style="color:var(--text-muted); font-weight: 500;">Community Center Renovation</small></td>
+            <td>Varanasi, UP<br><small style="color:var(--text-muted); font-weight: 500;">Local Exec Agency</small></td>
+            <td>Excess Material Billing<br><small style="color:var(--text-muted); font-weight: 500;">300% over standard estimation</small></td>
+            <td><span class="badge badge-high">HIGH 84.5%</span></td>
+            <td><strong>&#8377;1.82 Cr</strong></td>
+            <td><button class="btn-action" onclick="alert('Opening Inspector Modal for Project #4512...')">Inspect</button></td>
+          </tr>
+          <tr data-priority="MEDIUM" data-type="GHOST">
+            <td><strong>#3309</strong><br><small style="color:var(--text-muted); font-weight: 500;">Drainage & Canal Repair</small></td>
+            <td>Dharmapuri, Tamil Nadu<br><small style="color:var(--text-muted); font-weight: 500;">District Board</small></td>
+            <td>Ghost Vendor Pattern<br><small style="color:var(--text-muted); font-weight: 500;">GSTIN mismatch flagged</small></td>
+            <td><span class="badge badge-medium">MEDIUM 62.0%</span></td>
+            <td><strong>&#8377;45.10 Lakh</strong></td>
+            <td><button class="btn-action" onclick="alert('Opening Inspector Modal for Project #3309...')">Inspect</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Side Heatmap & Ingestion Feed -->
+    <div class="side-panel">
+      
+      <div class="side-card">
+        <h3>Regional Heatmap Risk</h3>
+        
+        <div class="heatmap-item">
+          <div class="heatmap-label"><span>Bihar (Eastern Zone)</span><span style="color:var(--danger)">High Risk</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 85%; background: var(--danger);"></div></div>
+        </div>
+
+        <div class="heatmap-item">
+          <div class="heatmap-label"><span>Uttar Pradesh (North)</span><span style="color:var(--warning)">Med-High</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 65%; background: var(--warning);"></div></div>
+        </div>
+
+        <div class="heatmap-item">
+          <div class="heatmap-label"><span>Rajasthan (Western)</span><span style="color:var(--success)">Moderate</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 40%; background: var(--success);"></div></div>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <h3>Live Ingestion Feed</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; line-height: 1.4;">• <strong>12 new invoices</strong> ingested from Bihar portal</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">• Flagged <strong>2 potential duplicate</strong> image uploads</p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // 1. Drag & Drop Cards Logic
+    const container = document.getElementById('draggable-metrics');
+    let draggedItem = null;
+
+    container.addEventListener('dragstart', (e) => {
+      if (e.target.classList.contains('metric-card')) {
+        draggedItem = e.target;
+        e.target.classList.add('dragging');
+      }
+    });
+
+    container.addEventListener('dragend', (e) => {
+      if (draggedItem) {
+        draggedItem.classList.remove('dragging');
+        draggedItem = null;
+      }
+    });
+
+    container.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const afterElement = getDragAfterElement(container, e.clientX);
+      if (draggedItem) {
+        if (afterElement == null) {
+          container.appendChild(draggedItem);
+        } else {
+          container.insertBefore(draggedItem, afterElement);
+        }
+      }
+    });
+
+    function getDragAfterElement(container, x) {
+      const draggableElements = [...container.querySelectorAll('.metric-card:not(.dragging)')];
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = x - box.left - box.width / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    // 2. Priority Filter Tabs & Search Logic
+    let currentPriority = 'ALL';
+
+    function filterPriority(priority, element) {
+      currentPriority = priority;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+      filterData();
+    }
+
+    function filterData() {
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      const anomalyFilter = document.getElementById('anomalyFilter').value;
+      const rows = document.querySelectorAll('#auditTable tbody tr');
+
+      rows.forEach(row => {
+        const rowText = row.innerText.toLowerCase();
+        const rowPriority = row.getAttribute('data-priority');
+        const rowType = row.getAttribute('data-type');
+
+        const matchesSearch = rowText.includes(searchInput);
+        const matchesPriority = (currentPriority === 'ALL' || rowPriority === currentPriority);
+        const matchesType = (anomalyFilter === 'ALL' || rowType === anomalyFilter);
+
+        if (matchesSearch && matchesPriority && matchesType) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civil Works Monitoring Dashboard - Ward 12</title>
+    <style>
+        /* --- Root Variables for colors and spacing --- */
+        :root {
+            --bg-color: #f6f8fa;
+            --main-text-color: #24292e;
+            --secondary-text-color: #6a737d;
+            --primary-accent-color: #0366d6;
+            --risk-critical-color: #cf222e;
+            --risk-critical-bg: #fff0f1;
+            --risk-high-color: #f7941d;
+            --risk-high-bg: #fffbf0;
+            --border-color: #e1e4e8;
+            --card-bg-color: #ffffff;
+            --badge-green: #2ecc71;
+            --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --border-radius: 8px;
+        }
+
+        /* --- Global Styles --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--main-text-color);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* --- Global Hover Animation --- */
+        * {
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* --- Top Bar & Browser UI --- */
+        .chrome-bar {
+            background-color: #e0e2e6;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .chrome-tabs {
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            flex: 1;
+        }
+        .chrome-tab {
+            background-color: var(--card-bg-color);
+            color: var(--main-text-color);
+            border-radius: 6px 6px 0 0;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+        }
+        .chrome-tab:hover {
+            background-color: #f1f3f5;
+        }
+        .chrome-tab .tab-icon { font-size: 14px; }
+        .chrome-tab .close-tab { opacity: 0.5; }
+        .chrome-tab .close-tab:hover { opacity: 1; color: red; }
+        
+        .address-bar {
+            background-color: var(--card-bg-color);
+            padding: 6px 10px;
+            border-radius: 16px;
+            flex: 2;
+            margin: 0 var(--spacing-md);
+            font-size: 12px;
+            color: var(--secondary-text-color);
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+        }
+        .address-bar:hover { background-color: #f6f8fa; border-color: #b3bac2; }
+
+        /* --- Main Layout: Flex for sidebar/content --- */
+        .app-layout {
+            display: flex;
+            height: calc(100vh - 41px); /* minus chrome bar */
+            overflow: hidden;
+        }
+
+        /* --- Sidebar & Navigation --- */
+        .sidebar {
+            width: 240px;
+            background-color: #1a1e26;
+            color: #d1d5da;
+            padding: var(--spacing-md);
+            border-right: 1px solid #32383e;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: var(--spacing-lg);
+        }
+        .app-logo { width: 32px; height: 32px; background: #5a5a60; border-radius: 50%; }
+        .app-nav { display: flex; flex-direction: column; gap: 6px; }
+        .nav-item {
+            padding: 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            color: #d1d5da;
+        }
+        .nav-item:hover, .nav-item.active { background-color: #2b323b; color: #fff; font-weight: 500; }
+        
+        .sidebar-bottom { color: #8e949b; font-size: 11px; }
+
+        /* --- Content Area & Common Card Styles --- */
+        .content-area {
+            flex: 1;
+            background-color: var(--bg-color);
+            padding: var(--spacing-lg);
+            overflow-y: auto;
+        }
+        .content-area header { margin-bottom: var(--spacing-lg); }
+
+        /* Generic Card Styles for flex layout */
+        .dash-card {
+            background-color: var(--card-bg-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            padding: var(--spacing-md);
+            border: 1px solid #e1e4e8;
+            margin-bottom: var(--spacing-md);
+        }
+        .dash-card:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.06); }
+
+        .flex-container { display: flex; gap: var(--spacing-md); flex-wrap: wrap; }
+        .flex-container > * { flex: 1; }
+
+        /* --- Page Title Section --- */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        .back-projects {
+            color: var(--secondary-text-color);
+            cursor: pointer;
+            margin-bottom: 8px;
+            font-size: 13px;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .back-projects:hover { color: var(--primary-accent-color); }
+        
+        .project-title-area { display: flex; align-items: center; gap: var(--spacing-md); flex-wrap: wrap; }
+        .status-badge {
+            background-color: #fff8c5; color: #735c0f; font-size: 11px; font-weight: 600;
+            padding: 4px 10px; border-radius: 12px;
+        }
+
+        .action-buttons { display: flex; gap: var(--spacing-sm); }
+        .btn {
+            padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
+            border: 1px solid #d1d5da; cursor: pointer;
+        }
+        .btn-primary { background-color: #2ecc71; color: white; border: none; }
+        .btn-primary:hover { background-color: #27ae60; }
+        .btn-secondary { background-color: var(--card-bg-color); color: var(--main-text-color); }
+        .btn-secondary:hover { background-color: #f3f4f6; }
+
+        /* --- Section Tabs Navigation --- */
+        .section-tabs {
+            display: flex; gap: var(--spacing-sm);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: var(--spacing-lg);
+        }
+        .tab-btn {
+            padding: 10px 20px; font-size: 14px; color: var(--secondary-text-color);
+            background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer;
+        }
+        .tab-btn.active, .tab-btn:hover { color: var(--main-text-color); border-bottom-color: var(--main-text-color); font-weight: 500; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* =======================================================
+           Section 1: Dashboard Overview (image_0.png)
+           ======================================================= */
+        .dash-row { display: flex; gap: var(--spacing-md); flex-wrap: wrap; }
+        .card-util, .card-progress, .card-risk-score { flex: 1 1 300px; min-height: 180px; }
+        
+        /* Utility styles within cards */
+        .label-text { font-size: 12px; color: var(--secondary-text-color); margin-bottom: 6px; }
+        .value-main { font-size: 28px; font-weight: 700; margin-bottom: 20px; }
+        
+        .progress-container { background-color: #e1e4e8; height: 10px; border-radius: 5px; margin-bottom: 8px; position: relative; }
+        .progress-bar { height: 100%; border-radius: 5px; transition: width 0.4s ease-out; }
+        .progress-label { position: absolute; font-size: 11px; font-weight: 600; top: -18px; }
+        .progress-label.start { left: 0; color: #43ca7b; }
+        .progress-label.end { right: 0; color: #7f8c8d; }
+
+        .verified-label { font-size: 12px; color: var(--secondary-text-color); }
+        .telemetry-tag { background: #f1f3f5; font-size: 11px; padding: 3px 7px; border-radius: 4px; margin-left: 8px;}
+
+        /* Risk Score gauge style */
+        .risk-score-wrapper { display: flex; align-items: center; gap: var(--spacing-md); }
+        .risk-score-gauge { color: var(--risk-high-color); }
+        .risk-factors-info { border-top: 1px solid #f1f3f5; padding-top: 12px; color: var(--risk-critical-color); font-size: 13px; margin-top: 15px;}
+        .dash-card.critical-level:hover { border-color: var(--risk-critical-color); box-shadow: 0 0 10px rgba(207, 34, 46, 0.1); }
+
+        /* Physical Significance Section below main cards */
+        .geo-telemetry { border: 1px solid var(--border-color); border-radius: var(--border-radius); }
+        .geo-header { background-color: #f6f8fa; padding: var(--spacing-md); border-bottom: 1px solid var(--border-color); border-radius: 8px 8px 0 0;}
+
+        /* =======================================================
+           Section 2: Project Identity & Location (image_1.png)
+           ======================================================= */
+        .identity-flex { display: flex; gap: var(--spacing-lg); flex-wrap: wrap; align-items: flex-start; }
+        .info-card, .ai-summary-card { flex: 1 1 450px; }
+        
+        /* Table-like list for info */
+        .info-list-container { border: 1px solid #e1e4e8; border-radius: 8px; overflow: hidden; }
+        .info-row {
+            display: grid; grid-template-columns: 1fr 2.5fr; gap: 10px;
+            padding: 14px; border-bottom: 1px solid #e1e4e8; background: var(--card-bg-color);
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row:hover { background: #fdfdfd; }
+        .info-label { color: var(--secondary-text-color); font-size: 12px; }
+        .info-value { font-weight: 500; }
+        .badge { font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; margin-left: 5px; }
+        .tier-badge { background: #438fec29; color: #1a73e8; }
+        
+        /* AI Snapshot Card */
+        .ai-card { min-height: 380px; border: 1px solid #ffcc81; background: #fffbf5; }
+        .ai-card:hover { border-color: #fb8c00; box-shadow: 0 4px 10px rgba(251, 140, 0, 0.1); }
+        .ai-snapshot-label { display: flex; align-items: center; gap: 8px; color: #fb8c00; font-size: 16px; margin-bottom: 15px; }
+        .ai-sub-label { color: #f29a21; font-size: 12px; margin-bottom: 30px; }
+        .ai-overall-risk { margin-bottom: 30px; }
+        .risk-status { color: var(--risk-high-color); font-weight: bold; font-size: 15px; text-transform: uppercase; border-bottom: 1px solid #fb8c00; display: inline; padding-bottom: 2px;}
+        
+        /* Flex rows below snapshot card */
+        .details-flex { display: flex; gap: var(--spacing-md); margin-top: var(--spacing-lg); flex-wrap: wrap; }
+        .sub-data-box { flex: 1; }
+
+        /* =======================================================
+           Section 3: Physical Progress (image_2.png)
+           ======================================================= */
+        /* Circle chart styles */
+        .physical-circle-chart {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            flex: 0 0 320px;
+        }
+        .progress-ring { width: 150px; height: 150px; position: relative; margin-bottom: var(--spacing-md); }
+        .progress-ring__circle {
+            stroke-dasharray: 471; /* (2 * PI * R) for radius=75 */
+            stroke-dashoffset: 471; transition: stroke-dashoffset 0.6s ease-out;
+            stroke-width: 14; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%;
+        }
+        .ring-bg { stroke: #ebedf0; fill: none; stroke-width: 14; }
+        .ring-verified { stroke: var(--primary-accent-color); fill: none; }
+        
+        .progress-ring__text {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .progress-ring__percent { font-size: 32px; font-weight: 700; color: var(--main-text-color); }
+        .progress-ring__label { font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .progress-legend { display: flex; gap: var(--spacing-md); font-size: 12px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        
+        /* Timeline styles */
+        .timeline-card { flex: 2; padding-left: var(--spacing-lg); }
+        .timeline-container { position: relative; border-left: 2px solid #ebedf0; padding-left: var(--spacing-lg); }
+        .timeline-event { position: relative; padding-bottom: 25px; }
+        .timeline-event:last-child { padding-bottom: 0; }
+        .timeline-node {
+            position: absolute; left: -29px; top: 0px; width: 16px; height: 16px;
+            border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 2px #ebedf0; transition: transform 0.2s ease;
+        }
+        .timeline-event:hover .timeline-node { transform: scale(1.3); }
+        .timeline-event.completed .timeline-node { box-shadow: 0 0 0 2px #2ecc71; }
+        .timeline-event.in-progress .timeline-node { box-shadow: 0 0 0 2px #ebedf0; background-color: #ebedf0; }
+        
+        .timeline-status { position: absolute; right: 0; top: 0; font-size: 11px; padding: 3px 8px; border-radius: 4px; }
+        .timeline-status.completed { background: #e0f2f1; color: #00897b; }
+        .timeline-status.in-progress { background: #fdfdfd; color: var(--secondary-text-color); }
+
+        /* =======================================================
+           Section 4: AI Report / Risk Matrices (image_3.png, image_4.png)
+           ======================================================= */
+        .ai-report-main-grid { display: grid; grid-template-columns: 2fr 3fr; gap: var(--spacing-lg); }
+        .risk-gauge-large { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .risk-score-box { text-align: center; border: 1px solid var(--border-color); padding: 40px; border-radius: 50%; width: 180px; height: 180px;}
+
+        /* Risk Factors Cards style */
+        .risk-factors-detailed { display: flex; flex-direction: column; gap: 12px; }
+        .factor-card { display: grid; grid-template-columns: auto 1fr; gap: var(--spacing-md); padding: 15px; }
+        .factor-card:hover { transform: translateX(5px); }
+        .factor-title { color: #5a5a60; font-size: 13px;}
+        .card-util, .factor-card, .sub-data-box { border: 1px solid #e1e4e8; }
+        .sub-data-box { background: white; border-radius: 8px; padding: 15px; }
+
+        /* =======================================================
+           AI Report: Bottom Movable Slider Section
+           ======================================================= */
+        .signal-matrices-area {
+            position: relative; overflow: hidden; height: 260px;
+            margin-top: calc(var(--spacing-lg) * 2); border-top: 1px solid var(--border-color); padding-top: var(--spacing-lg);
+        }
+        
+        .slider-wrapper { display: flex; gap: var(--spacing-md); cursor: grab; padding-bottom: 20px; min-width: max-content;}
+        .slider-wrapper:active { cursor: grabbing; }
+        
+        .slider-card {
+            flex: 0 0 320px; /* Base width of each card */
+            min-height: 200px;
+            background: #ffffff; border: 1px solid #e1e4e8; border-radius: 8px;
+            padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .slider-card:hover {
+            box-shadow: 0 8px 12px rgba(0,0,0,0.06);
+            transform: translateY(-5px);
+        }
+
+        .category-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #f1f3f5; padding-bottom: 10px;}
+        .risk-label-dot { display: flex; align-items: center; gap: 6px; font-size: 11px; padding: 3px 8px; border-radius: 12px; }
+        
+        /* High and Critical colors */
+        .critical { border-color: var(--risk-critical-color) !important; box-shadow: 0 0 10px rgba(207, 34, 46, 0.08) !important; }
+        .critical .dot-color { background-color: var(--risk-critical-color); }
+        .critical .risk-label-dot { background: var(--risk-critical-bg); color: var(--risk-critical-color); }
+        
+        .high { border-color: var(--risk-high-color) !important; box-shadow: 0 0 10px rgba(251, 140, 0, 0.08) !important; }
+        .high .dot-color { background-color: var(--risk-high-color); }
+        .high .risk-label-dot { background: var(--risk-high-bg); color: var(--risk-high-color); }
+
+        .contractor-tag { border-color: var(--border-color); color: var(--secondary-text-color); background: #f6f8fa;}
+        .contractor-tag .dot-color { background-color: #8e949b; }
+
+        /* General styles within slider cards */
+        .matrix-title { font-size: 15px; font-weight: 600; margin-top: 5px; }
+        .matrix-desc { color: var(--secondary-text-color); font-size: 13px; line-height: 1.6; }
+
+    </style>
+</head>
+<body>
+    <div class="chrome-bar">
+        <div class="chrome-tabs">
+            <div class="chrome-tab active"><span class="tab-icon">#</span> <span class="tab-label">Ward 12 Road Monitoring</span> <span class="close-tab">&times;</span></div>
+            <div class="chrome-tab"><span class="tab-icon">P</span> <span class="tab-label">Global Projects Map</span> <span class="close-tab">&times;</span></div>
+        </div>
+        <div class="address-bar">https://media.ai/fuse/internal-dashboard/ward12-roaddev.html</div>
+    </div>
+
+    <div class="app-layout">
+        <nav class="sidebar">
+            <div>
+                <div class="logo-section">
+                    <div class="app-logo"></div>
+                    <strong>Project Sentinel</strong>
+                </div>
+                <div class="app-nav">
+                    <div class="nav-item active"><i class="icon">🏘️</i> Dashboard</div>
+                    <div class="nav-item"><i class="icon">📄</i> Active Projects</div>
+                    <div class="nav-item"><i class="icon">⚠️</i> AI Audit Hub</div>
+                    <div class="nav-item"><i class="icon">🛠️</i> Geo Services</div>
+                </div>
+            </div>
+            <div class="sidebar-bottom">© 2024 Project Sentinel v1.2</div>
+        </nav>
+
+        <main class="content-area">
+            <header>
+                <div class="back-projects">&lt; Back to all Projects</div>
+                <div class="page-header">
+                    <div class="project-title-area">
+                        <h2>Road Development — Ward 12 (Central Zone)</h2>
+                        <span class="value-main" style="color:var(--secondary-text-color); margin-bottom:0; font-size:18px;">ID: PRJ-2024-W12-089</span>
+                        <span class="status-badge">🟢 In Progress</span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary">Download PDF</button>
+                        <button class="btn btn-primary">Request Field Audit</button>
+                    </div>
+                </div>
+
+                <div class="section-tabs">
+                    <button class="tab-btn active" data-tab="dashboard">Dashboard Overview</button>
+                    <button class="tab-btn" data-tab="identity">Project Identity</button>
+                    <button class="tab-btn" data-tab="physical">Physical Progress</button>
+                    <button class="tab-btn" data-tab="ai-report">AI Risk Report</button>
+                </div>
+            </header>
+
+            <div class="tab-content-container">
+
+                <div id="dashboard" class="tab-content active">
+                    <div class="dash-row">
+                        <div class="dash-card card-util">
+                            <div class="label-text">Total Sanctioned vs. Spent Outlay</div>
+                            <div class="risk-score-wrapper">
+                                <div class="value-main">₹32.98 L</div>
+                                <div class="verified-label" style="margin-left: 10px; margin-top: 10px;">/ ₹48.50 L</div>
+                            </div>
+                            <div class="label-text" style="color:#2ecc71;">68.0% Utilized</div>
+                            <div class="progress-container">
+                                <div class="progress-bar" style="width: 68%; background-color: #2ecc71;"></div>
+                            </div>
+                            <div class="label-text" style="float:right;">₹15.52 L Remaining</div>
+                        </div>
+
+                        <div class="dash-card card-progress">
+                            <div class="label-text">Verified Physical Progress</div>
+                            <div class="risk-score-wrapper">
+                                <div class="value-main">0.96 KM</div>
+                                <div class="verified-label" style="margin-left: 10px; margin-top: 10px;">/ 2.86 KM</div>
+                            </div>
+                            <div class="verified-label">~33.6% Verified <span class="telemetry-tag">via Drone / Site Telemetry</span></div>
+                            <div class="progress-container" style="margin-top: 10px;">
+                                <div class="progress-bar" style="width: 33.6%; background-color: var(--primary-accent-color);"></div>
+                            </div>
+                        </div>
+
+                        <div class="dash-card card-risk-score critical-level">
+                            <div class="label-text">AI Integrity Risk Score</div>
+                            <div class="risk-score-wrapper">
+                                <div class="value-main" style="color: var(--risk-critical-color); font-size: 36px;">8.5 <span class="verified-label" style="font-size: 18px;">/ 10</span></div>
+                            </div>
+                            <div class="risk-factors-info">⚠️ 3 high-probability delay factors detected</div>
+                            <div class="label-text" style="margin-top:10px; text-transform:uppercase;">Overall Critical</div>
+                        </div>
+                    </div>
+
+                    <div class="geo-telemetry" style="margin-top: 30px;">
+                        <div class="geo-header">
+                            <h3>Physical Significance & Geospatial Telemetry</h3>
+                            <div class="label-text">Verified linear chainage, cross-section grades, and drone orthomosaic measurements. Last verification: 28 Dec 2024</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="identity" class="tab-content">
+                    <div class="identity-flex">
+                        <div class="info-card">
+                            <div class="label-text">Project Identity & Location Details</div>
+                            <div class="info-list-container">
+                                <div class="info-row"><div class="info-label">Project Scope</div> <div class="info-value">Road Development & Drainage Overhaul</div></div>
+                                <div class="info-row"><div class="info-label">Ward Assignment</div> <div class="info-value">Ward 12 (Central Zone)</div></div>
+                                <div class="info-row"><div class="info-label">Contractor Name</div> <div class="info-value">M/s Apex InfraBuild Pvt. Ltd.<span class="badge tier-badge">Tier-1</span></div></div>
+                                <div class="info-row"><div class="info-label">Sub-Division</div> <div class="info-value">Urban Public Works Div-III</div></div>
+                                <div class="info-row"><div class="info-label">Sanction Reference</div> <div class="info-value">CE/PWD/2024/774B</div></div>
+                            </div>
+                        </div>
+
+                        <div class="ai-summary-card">
+                            <div class="dash-card ai-card">
+                                <div class="ai-snapshot-label">🛡️ AI Risk Snapshot</div>
+                                <div class="ai-sub-label">Current project integrity status summary.</div>
+                                <div class="ai-overall-risk">
+                                    <div class="label-text">Overall Risk</div>
+                                    <div class="risk-status">IMMEDIATE VERIFICATION RECOMMENDED</div>
+                                </div>
+                                <div class="label-text">03 Risk Signals Detected</div>
+                                <div class="info-value" style="font-size: 16px;">Material Mismatch • Geo-location • Pattern Anomaly</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dash-row details-flex" style="margin-top: 40px;">
+                        <div class="sub-data-box">
+                            <div class="label-text">LAST VERIFIED INSPECTION</div>
+                            <div class="value-main">28 Dec 2024</div>
+                            <div class="label-text">Drone Survey by QA Cell</div>
+                        </div>
+                        <div class="sub-data-box">
+                            <div class="label-text">CONFIDENCE METRIC</div>
+                            <div class="value-main" style="color:#0366d6;">94% <span style="font-size:11px; margin-left: 8px;">●</span></div>
+                            <div class="label-text">High Sensor Alignment</div>
+                        </div>
+                        <div class="sub-data-box">
+                            <div class="label-text">CONTRACTOR PRESENCE</div>
+                            <div class="value-main">Active On-Site</div>
+                            <div class="label-text">48 Crew & 4 Heavy Rollers (from Site Telemetry)</div>
+                        </div>
+                        <div class="sub-data-box">
+                            <div class="label-text">AI DIRECTIVES</div>
+                            <div class="value-main" style="color:red;">3 Pending</div>
+                            <div class="label-text">Material curing & slope verification requested</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="physical" class="tab-content">
+                    <div class="dash-card flex-container" style="padding:40px;">
+                        <div class="physical-circle-chart">
+                            <div class="progress-ring">
+                                <svg width="150" height="150">
+                                    <circle class="ring-bg" cx="75" cy="75" r="70"></circle>
+                                    <circle class="ring-verified" cx="75" cy="75" r="70"></circle>
+                                </svg>
+                                <div class="progress-ring__text">
+                                    <div class="progress-ring__percent">33.6%</div>
+                                    <div class="progress-ring__label">Verified Physical</div>
+                                </div>
+                            </div>
+                            <div class="progress-legend">
+                                <div class="legend-item"><span class="dot" style="background-color: var(--primary-accent-color);"></span> Verified Base (33.6%)</div>
+                                <div class="legend-item"><span class="dot" style="background-color: #ebedf0;"></span> Pending (66.4%)</div>
+                            </div>
+                        </div>
+                        <div class="timeline-card">
+                            <div class="label-text" style="font-size: 15px; margin-bottom: 20px;">Milestones & Chronological Timeline</div>
+                            <div class="timeline-container">
+                                <div class="timeline-event completed">
+                                    <div class="timeline-node"></div>
+                                    <span class="timeline-status completed">Completed</span>
+                                    <h3>DPR & Sanction Clearance</h3>
+                                    <div class="label-text">10 Dec 2023 — Approved by Chief Municipal Engineer</div>
+                                </div>
+                                <div class="timeline-event completed">
+                                    <div class="timeline-node"></div>
+                                    <span class="timeline-status completed">Completed</span>
+                                    <h3>Site Clearance & Excavation</h3>
+                                    <div class="label-text">28 Dec 2023 — 12.80 KM grubbing</div>
+                                </div>
+                                <div class="timeline-event in-progress">
+                                    <div class="timeline-node"></div>
+                                    <span class="timeline-status in-progress">In Progress</span>
+                                    <h3>Sub-grade & Bituminous Paving</h3>
+                                    <div class="label-text">Active: 0.96 KM laid / 2.86 KM remaining</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ai-report" class="tab-content">
+                    <div class="ai-report-main-grid">
+                        <div class="dash-card risk-gauge-large">
+                            <div class="risk-score-box">
+                                <div class="label-text" style="margin-bottom:0;">INTEGRITY RISK</div>
+                                <div class="value-main" style="color: var(--risk-high-color); font-size: 60px; margin:0;">78</div>
+                                <div class="risk-status" style="border: none;">Overall High Risk</div>
+                            </div>
+                            <div class="label-text" style="margin-top: 30px; line-height: 1.6; max-width: 350px;">
+                                Autonomous multi-sensor cross-examination across three independent sources: physical measurements, contractor records & municipal financial ledgers.
+                            </div>
+                        </div>
+
+                        <div class="risk-factors-detailed">
+                            <div class="factor-card critical dash-card">
+                                <div><div class="dot dot-color" style="width:12px; height:12px; border-radius:50%; margin-top:5px;"></div></div>
+                                <div>
+                                    <div class="value-main" style="font-size: 16px; margin-bottom: 5px;">Delayed Project Progress</div>
+                                    <div class="factor-title">Reported physical progress is 28% lower than expected for funds disbursed. (vs. last verification).</div>
+                                </div>
+                            </div>
+                            <div class="factor-card high dash-card">
+                                <div><div class="dot dot-color" style="width:12px; height:12px; border-radius:50%; margin-top:5px;"></div></div>
+                                <div>
+                                    <div class="value-main" style="font-size: 16px; margin-bottom: 5px;">Vendor Concentration Risk</div>
+                                    <div class="factor-title">A large share of expenditure is associated with a single unverified subcontractor.</div>
+                                </div>
+                            </div>
+                            <div class="factor-card high dash-card">
+                                <div><div class="dot dot-color" style="width:12px; height:12px; border-radius:50%; margin-top:5px;"></div></div>
+                                <div>
+                                    <div class="value-main" style="font-size: 16px; margin-bottom: 5px;">Repeated Transaction Pattern</div>
+                                    <div class="factor-title">Multiple debit transactions clustered near identical disbursements across consecutive weeks.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="signal-matrices-area">
+                        <div class="label-text" style="font-size:15px; margin-bottom:20px; font-weight:bold;">PROJECT RISK FACTORS & SIGNAL MATRICES</div>
+                        <div class="slider-wrapper" id="matrixSlider">
+                            <div class="slider-card high">
+                                <div class="category-header">
+                                    <span class="value-main" style="font-size:13px; color:#5a5a60;">FINANCIAL</span>
+                                    <span class="risk-label-dot"><span class="dot dot-color"></span> High Risk</span>
+                                </div>
+                                <h4 class="matrix-title">Project Cost vs. Estimate Variance</h4>
+                                <p class="matrix-desc">Budget allocation vs. real-time invoice deployment shows variance anomalies across vendors.</p>
+                            </div>
+                            <div class="slider-card critical">
+                                <div class="category-header">
+                                    <span class="value-main" style="font-size:13px; color:#5a5a60;">SCHEDULE</span>
+                                    <span class="risk-label-dot"><span class="dot dot-color"></span> Critical Risk</span>
+                                </div>
+                                <h4 class="matrix-title">Timeline & Execution Anomalies</h4>
+                                <p class="matrix-desc">Material deployment on site does not match chronological milestones. Drone sensor data shows curing delays.</p>
+                            </div>
+                            <div class="slider-card high">
+                                <div class="category-header">
+                                    <span class="value-main" style="font-size:13px; color:#5a5a60;">CONTRACTOR</span>
+                                    <span class="risk-label-dot"><span class="dot dot-color"></span> High Risk</span>
+                                </div>
+                                <h4 class="matrix-title">Vendor & Contract Mismatch</h4>
+                                <p class="matrix-desc">Single-vendor concentration index exceeds threshold; vendor history mismatch with scope.</p>
+                            </div>
+                            <div class="slider-card contractor-tag">
+                                <div class="category-header">
+                                    <span class="value-main" style="font-size:13px; color:#5a5a60;">GOVERNANCE</span>
+                                    <span class="risk-label-dot"><span class="dot dot-color"></span> Low Risk</span>
+                                </div>
+                                <h4 class="matrix-title">Permit & Clearance Adherence</h4>
+                                <p class="matrix-desc">All regulatory filings and environmental clearances are verified and up-to-date.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- 1. Tab Switching Logic ---
+        const tabs = document.querySelectorAll('.tab-btn');
+        const contents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetId = tab.getAttribute('data-tab');
+                
+                // Active button state
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Active content panel state
+                contents.forEach(content => content.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // --- 2. Circular Progress Animation (image_2.png) ---
+        function setProgressRing(percent) {
+            const circle = document.querySelector('.ring-verified');
+            const radius = circle.r.baseVal.value;
+            const circumference = 2 * Math.PI * radius;
+            
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            const offset = circumference - (percent / 100 * circumference);
+            
+            // Timeout to trigger animation on tab load
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+            }, 100);
+        }
+        // Initialize the circle chart to 33.6%
+        setProgressRing(33.6);
+
+        // --- 3. Draggable Slider Logic (image_4.png bottom section) ---
+        const slider = document.getElementById('matrixSlider');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        slider.addEventListener('mousedown', (e) => {
+            isDown = true;
+            slider.style.cursor = 'grabbing';
+            startX = e.pageX - slider.offsetLeft;
+            scrollLeft = slider.scrollLeft;
+        });
+
+        slider.addEventListener('mouseleave', () => {
+            isDown = false;
+            slider.style.cursor = 'grab';
+        });
+
+        slider.addEventListener('mouseup', () => {
+            isDown = false;
+            slider.style.cursor = 'grab';
+        });
+
+        slider.addEventListener('mousemove', (e) => {
+            if (!isDown) return; // Only act when mouse button is held
+            e.preventDefault();
+            const x = e.pageX - slider.offsetLeft;
+            const walk = (x - startX) * 2; // scroll-fast multiplier
+            slider.scrollLeft = scrollLeft - walk;
+        });
+    </script>
+</body>
+</html>

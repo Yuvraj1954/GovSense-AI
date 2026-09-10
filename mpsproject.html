@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MPLADS Dashboard - MP Profile Projects | Andrew J. Syngkon</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Merriweather:wght@400;700;900&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Merriweather', 'serif']
+          },
+          colors: {
+            brand: {
+              gold: '#c29a43',
+              darkblue: '#0f172a',
+              accentblue: '#2563eb',
+              lightbg: '#f8fafc'
+            }
+          },
+          boxShadow: {
+            'glow-blue': '0 10px 25px -3px rgba(59, 130, 246, 0.12), 0 4px 6px -4px rgba(59, 130, 246, 0.08)'
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .card-interactive {
+      transition: all 0.3s ease-in-out;
+    }
+    .card-interactive:hover {
+      transform: translateY(-4px);
+    }
+    .subcard-interactive {
+      transition: all 0.25s ease-in-out;
+    }
+    .subcard-interactive:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+</style>
+</head>
+<body class="bg-[#f5f8fb] text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-blue-100 selection:text-blue-800">
+<!-- Main Container -->
+<main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow space-y-6">
+<!-- BEGIN: Back Navigation Bar -->
+<div class="flex flex-wrap items-center justify-between gap-4" data-purpose="top-navigation-action">
+<a class="group inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-slate-200 text-sm font-semibold text-slate-700 hover:border-blue-500 hover:text-blue-600 hover:shadow-sm transition-all duration-300" href="mps.html">
+<svg class="w-4 h-4 text-slate-500 group-hover:text-blue-600 group-hover:-translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+<span>← Back to MPs</span>
+</a>
+</div>
+<!-- END: Back Navigation Bar -->
+<!-- BEGIN: MP Profile Header Card -->
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6 card-interactive hover:border-blue-500 hover:shadow-lg" data-purpose="mp-profile-card">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-5">
+<!-- Left: Avatar + Details -->
+<div class="flex items-center space-x-4 sm:space-x-5">
+<!-- Profile Avatar Circle -->
+<div class="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-md flex-shrink-0 ring-4 ring-blue-50">
+<svg class="w-9 h-9" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path>
+</svg>
+</div>
+<div>
+<h1 class="text-xl sm:text-2xl font-serif tracking-wide text-slate-900 font-bold uppercase">
+            ANDREW J. SYNGKON
+          </h1>
+<div class="flex flex-wrap items-center gap-2 mt-2 text-xs text-slate-500 font-medium">
+<span class="flex items-center gap-1 text-slate-600">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" fill-rule="evenodd"></path>
+</svg>
+              SHILLONG, Meghalaya
+            </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium text-[11px] border border-slate-200">
+              Lok Sabha
+            </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-medium text-[11px] border border-blue-200">
+              18th Lok Sabha
+            </span>
+</div>
+</div>
+</div>
+<!-- Right: Action Buttons -->
+<div class="flex items-center flex-wrap gap-2.5">
+<button class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-blue-700 bg-blue-50/70 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 transition-all duration-200 shadow-sm active:scale-95 cursor-pointer">
+<svg class="w-3.5 h-3.5 mr-1.5 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Copy Link
+        </button>
+<a class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-purple-700 bg-purple-50/70 border border-purple-200 rounded-lg hover:border-purple-500 hover:text-purple-700 hover:shadow-md active:scale-95 transition-all duration-300 cursor-pointer" href="mpaireport.html">
+<svg class="w-3.5 h-3.5 mr-1.5 text-purple-600" fill="currentColor" viewbox="0 0 24 24"><path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"></path></svg>
+          AI Report
+        </a>
+<a class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-blue-700 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition-all duration-200 shadow-sm active:scale-95 cursor-pointer" href="#">
+<svg class="w-3.5 h-3.5 mr-1.5 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Download Report
+        </a>
+</div>
+</div>
+</div>
+<!-- END: MP Profile Header Card -->
+<!-- BEGIN: Key Constituency Metrics & AI Risk Snapshot -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-5" data-purpose="metrics-and-risk-container">
+<!-- LEFT CONTAINER: Grouped Key MP Fund Metrics (7 Cols) -->
+<div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between card-interactive hover:border-blue-500 hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1">
+<div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+<h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Key Constituency Metrics
+        </h2>
+<span class="text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Fiscal Period: 2024-2029</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+<!-- Metric 1: Total Allocated -->
+<div class="bg-slate-50/70 rounded-lg p-3.5 border-l-4 border-l-sky-500 border border-slate-200/80 subcard-interactive hover:border-blue-300 flex items-start space-x-3">
+<div class="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center text-sky-700 font-bold text-base flex-shrink-0">
+            ₹
+          </div>
+<div>
+<div class="text-xl font-bold text-slate-900 leading-tight">₹9.8 <span class="text-sm font-semibold text-slate-600">CR</span></div>
+<div class="text-[11px] font-semibold text-slate-700 uppercase tracking-tight mt-0.5">Total Allocated</div>
+<div class="text-[10.5px] text-slate-500">Budget assigned to MP</div>
+</div>
+</div>
+<!-- Metric 2: Fund Utilization -->
+<div class="bg-slate-50/70 rounded-lg p-3.5 border-l-4 border-l-emerald-500 border border-slate-200/80 subcard-interactive hover:border-emerald-300 flex items-start space-x-3">
+<div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700 flex-shrink-0">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</div>
+<div>
+<div class="text-xl font-bold text-emerald-600 leading-tight">100.0%</div>
+<div class="text-[11px] font-semibold text-slate-700 uppercase tracking-tight flex items-center gap-1 mt-0.5">
+              Fund Utilization
+              <svg class="w-3 h-3 text-blue-500" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" fill-rule="evenodd"></path></svg>
+</div>
+<div class="text-[10.5px] text-slate-500 leading-tight">₹9,80,00,000 rec. • 72.9% exp.</div>
+</div>
+</div>
+<!-- Metric 3: Works Completed -->
+<div class="bg-slate-50/70 rounded-lg p-3.5 border-l-4 border-l-amber-500 border border-slate-200/80 subcard-interactive hover:border-amber-300 flex items-start space-x-3">
+<div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 flex-shrink-0">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</div>
+<div>
+<div class="text-xl font-bold text-slate-900 leading-tight">98</div>
+<div class="text-[11px] font-semibold text-slate-700 uppercase tracking-tight mt-0.5">Works Completed</div>
+<div class="text-[10.5px] text-slate-500">out of 241 recommended</div>
+</div>
+</div>
+<!-- Metric 4: Completion Rate -->
+<div class="bg-slate-50/70 rounded-lg p-3.5 border-l-4 border-l-purple-500 border border-slate-200/80 subcard-interactive hover:border-purple-300 flex items-start space-x-3">
+<div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700 flex-shrink-0">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<div class="text-xl font-bold text-red-600 leading-tight">40.7%</div>
+<div class="text-[11px] font-semibold text-slate-700 uppercase tracking-tight mt-0.5">Completion Rate</div>
+<div class="text-[10.5px] text-slate-500">Project completion ratio</div>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT CONTAINER: AI Safety & MP Fraud Risk Snapshot (5 Cols) -->
+<div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between card-interactive hover:border-emerald-500 hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1" data-purpose="ai-risk-snapshot">
+<div>
+<!-- Header with Pill -->
+<div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
+<div class="flex items-center space-x-2">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+</span>
+<h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">AI Safety &amp; Fraud Risk Snapshot</h3>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-xs">
+            AI AUDIT VERIFIED • LOW RISK
+          </span>
+</div>
+<!-- Highlight Row: Clean Score -->
+<div class="flex items-center justify-between bg-emerald-50/60 rounded-lg px-3.5 py-2.5 border border-emerald-200 mb-3 subcard-interactive hover:border-emerald-400">
+<div class="flex items-center space-x-2.5">
+<div class="text-2xl font-extrabold text-emerald-700 leading-none">96<span class="text-sm font-semibold text-emerald-600">%</span></div>
+<div class="text-xs font-medium text-slate-700 leading-snug">
+<span class="font-bold text-emerald-800">Clean Audit Score</span><br/>0 Ghost Projects detected
+            </div>
+</div>
+<div class="text-xs font-medium text-slate-600 text-right">
+            Fund Velocity:<br/><span class="font-bold text-slate-900">Normal</span>
+</div>
+</div>
+<!-- Detailed Breakdown Metrics -->
+<div class="space-y-2 text-xs">
+<div class="flex items-center justify-between">
+<span class="text-slate-500">Contractor Concentration:</span>
+<span class="font-semibold text-slate-700">Low (14 Execution Agencies)</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-500">Fund Allocation Velocity:</span>
+<span class="font-semibold text-emerald-600">Consistent Milestone Release</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-500">NIC Geotagged Site Verification:</span>
+<span class="font-semibold text-blue-600">94.2% verified on portal</span>
+</div>
+</div>
+</div>
+<!-- Footnote alert -->
+<div class="mt-3 pt-3 border-t border-slate-100 flex items-center text-[11px] text-slate-500">
+<svg class="w-4 h-4 text-emerald-600 mr-1.5 flex-shrink-0" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill-rule="evenodd"></path></svg>
+<span>AI Confidence: <strong class="text-slate-700">High</strong> • No expenditure anomalies detected in Shillong.</span>
+</div>
+</div>
+</div>
+<!-- END: Key Constituency Metrics & AI Risk Snapshot -->
+<!-- Primary Tabs Navigation -->
+<div class="border-b border-slate-200/90" data-purpose="primary-tabs">
+<nav aria-label="Tabs" class="flex space-x-6 sm:space-x-8 -mb-px overflow-x-auto scrollbar-none">
+<a class="border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 py-3 px-1 text-sm sm:text-base font-medium transition-all duration-200 flex items-center gap-2 whitespace-nowrap" href="mpdetail.html">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Overview
+        </a>
+<a aria-current="page" class="border-b-2 border-blue-600 text-blue-600 py-3 px-1 text-sm sm:text-base font-semibold flex items-center gap-2 whitespace-nowrap" href="#projects">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Projects
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+            241
+          </span>
+</a>
+<a class="border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 py-3 px-1 text-sm sm:text-base font-medium transition-all duration-200 flex items-center gap-2 whitespace-nowrap" href="financialmps.html">
+<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Financial Details
+        </a>
+</nav>
+</div>
+<!-- Main Projects Card Container -->
+<div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-7 md:p-8 space-y-7" data-purpose="projects-view" id="projects">
+<!-- Header & High-Level Summary Stats -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 border-b border-slate-100 pb-6">
+<div>
+<span class="text-xs uppercase tracking-wider font-semibold text-blue-600 block mb-1">Constituency Works Portfolio</span>
+<h1 class="text-xl sm:text-2xl font-serif text-slate-900 tracking-tight font-medium">
+            Projects by <span class="font-bold text-slate-950 uppercase tracking-normal">ANDREW J. SYNGKON</span>
+</h1>
+</div>
+<!-- Stat Badges with interactive hover lift and border shift -->
+<div class="flex flex-wrap items-center gap-3">
+<div class="flex items-center gap-3.5 bg-slate-50/90 hover:bg-white border border-slate-200/90 hover:border-blue-500 rounded-xl px-4 py-2.5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer group">
+<div class="p-2 rounded-lg bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<div class="text-2xl font-extrabold text-slate-900 leading-none group-hover:text-blue-600 transition-colors">98</div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Total Projects</div>
+</div>
+</div>
+<div class="flex items-center gap-3.5 bg-slate-50/90 hover:bg-white border border-slate-200/90 hover:border-blue-500 rounded-xl px-4 py-2.5 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer group">
+<div class="p-2 rounded-lg bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<div class="text-2xl font-extrabold text-slate-900 leading-none group-hover:text-emerald-600 transition-colors">₹3.6 <span class="text-sm font-bold text-slate-600">CR</span></div>
+<div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Total Cost</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sub-tabs Navigation (Completed vs Recommended Works) -->
+<div class="border-b border-slate-200">
+<div class="flex space-x-6 sm:space-x-8 -mb-px">
+<button class="border-b-2 border-blue-600 text-blue-600 font-semibold pb-3.5 text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer">
+<span>Completed Works</span>
+<span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-bold">98</span>
+</button>
+<button class="border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 pb-3.5 text-sm font-medium flex items-center gap-2 transition-all duration-200 cursor-pointer group">
+<span>Recommended Works</span>
+<span class="bg-slate-100 group-hover:bg-slate-200 text-slate-600 text-xs px-2 py-0.5 rounded-full font-semibold transition-colors">143</span>
+</button>
+</div>
+</div>
+<!-- Filter Controls Row -->
+<div class="space-y-4">
+<div class="flex flex-col sm:flex-row items-stretch gap-3">
+<!-- Filters Trigger Button -->
+<button class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-blue-50 hover:text-blue-600 hover:border-blue-400 transition-all duration-200 shadow-sm cursor-pointer active:scale-95 flex-shrink-0">
+<svg class="w-4 h-4 text-slate-500 group-hover:text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Filters
+          </button>
+<!-- Search Input with Glow & Transition -->
+<div class="relative flex-1 group">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors duration-200 group-focus-within:text-blue-600 text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<input class="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm border border-slate-300 rounded-xl bg-white text-slate-800 placeholder-slate-400 shadow-sm transition-all duration-200 hover:border-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="Search projects by title, sector or locality..." type="text"/>
+</div>
+</div>
+<!-- Filter Sub-bar: Year + Cost Slider + Clear All -->
+<div class="bg-slate-50/80 border border-slate-200/90 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-5">
+<div class="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8 w-full md:w-auto">
+<!-- Year Selector -->
+<div class="flex flex-col gap-1.5 min-w-[140px]">
+<label class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Year</label>
+<div class="relative">
+<select class="w-full appearance-none bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 py-2 pl-3 pr-8 shadow-sm hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer">
+<option>All Years</option>
+<option>2025-2026</option>
+<option>2024-2025</option>
+<option>2023-2024</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Cost Range Slider -->
+<div class="flex flex-col gap-1.5 min-w-[240px] sm:min-w-[280px]">
+<div class="flex items-center justify-between text-[11px]">
+<span class="text-slate-600 font-semibold">Project Cost Range</span>
+<span class="font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">₹0 - ₹500L</span>
+</div>
+<div class="relative flex items-center pt-2">
+<div class="w-full h-1.5 bg-slate-200 rounded-full relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-3/4 bg-blue-600 rounded-full"></div>
+</div>
+<div class="absolute left-[75%] -translate-x-1/2 top-1/2 -translate-y-1/2 w-4 h-4 bg-blue-600 border-2 border-white rounded-full shadow-md cursor-grab active:scale-110 transition-transform"></div>
+</div>
+</div>
+</div>
+<!-- Clear All Button -->
+<button class="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline self-start md:self-center transition-colors duration-200 cursor-pointer pt-1 md:pt-0">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Clear All
+          </button>
+</div>
+</div>
+<!-- 6 Project Cards in Dynamic Responsive Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+<!-- Card 1 -->
+<div class="transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl border border-slate-200 hover:border-blue-500 bg-white rounded-2xl p-6 relative overflow-hidden group cursor-pointer flex flex-col justify-between">
+<!-- Top Border Accent Glow on hover -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:bg-blue-500 transition-all duration-300"></div>
+<div class="space-y-3">
+<div class="flex items-center justify-between gap-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/70 transition-colors group-hover:bg-blue-100">
+                Normal/Others
+              </span>
+<span class="text-[11px] font-semibold text-slate-400 group-hover:text-slate-600 transition-colors">ID: ML-1029</span>
+</div>
+<h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors duration-200 leading-snug line-clamp-3">
+              Construction of additional Classrooms for Unitarian Higher Secondary School Puriang
+            </h3>
+</div>
+<div class="space-y-3 pt-4 border-t border-slate-100 mt-5">
+<div class="flex items-baseline justify-between">
+<span class="text-xs text-slate-500 font-medium">Sanctioned Amount</span>
+<div class="text-base font-extrabold text-slate-950 group-hover:text-blue-700 transition-colors">
+                ₹ 5,00,000
+              </div>
+</div>
+<div class="flex items-start gap-2 text-xs text-slate-600">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-blue-500 flex-shrink-0 mt-0.5 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="leading-tight line-clamp-2">EAST KHASI HILLS (Deputy Commissioner, East Khasi Hills District)</span>
+</div>
+<div class="pt-1 flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/80 group-hover:border-emerald-300 transition-colors">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+                Completed • Geotagged Verified
+              </span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl border border-slate-200 hover:border-blue-500 bg-white rounded-2xl p-6 relative overflow-hidden group cursor-pointer flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:bg-blue-500 transition-all duration-300"></div>
+<div class="space-y-3">
+<div class="flex items-center justify-between gap-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/70 transition-colors group-hover:bg-blue-100">
+                Normal/Others
+              </span>
+<span class="text-[11px] font-semibold text-slate-400 group-hover:text-slate-600 transition-colors">ID: ML-1030</span>
+</div>
+<h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors duration-200 leading-snug line-clamp-3">
+              Construction of Community water Storage Tank by Dorbar Shnong Kreit
+            </h3>
+</div>
+<div class="space-y-3 pt-4 border-t border-slate-100 mt-5">
+<div class="flex items-baseline justify-between">
+<span class="text-xs text-slate-500 font-medium">Sanctioned Amount</span>
+<div class="text-base font-extrabold text-slate-950 group-hover:text-blue-700 transition-colors">
+                ₹ 3,00,000
+              </div>
+</div>
+<div class="flex items-start gap-2 text-xs text-slate-600">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-blue-500 flex-shrink-0 mt-0.5 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="leading-tight line-clamp-2">EAST KHASI HILLS (Deputy Commissioner, East Khasi Hills District)</span>
+</div>
+<div class="pt-1 flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/80 group-hover:border-emerald-300 transition-colors">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+                Completed • Geotagged Verified
+              </span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl border border-slate-200 hover:border-blue-500 bg-white rounded-2xl p-6 relative overflow-hidden group cursor-pointer flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:bg-blue-500 transition-all duration-300"></div>
+<div class="space-y-3">
+<div class="flex items-center justify-between gap-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/70 transition-colors group-hover:bg-blue-100">
+                Normal/Others
+              </span>
+<span class="text-[11px] font-semibold text-slate-400 group-hover:text-slate-600 transition-colors">ID: ML-1031</span>
+</div>
+<h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors duration-200 leading-snug line-clamp-3">
+              Financial aid to St. Marys Higher Secondary School for the construction of an additional classroom for 11 and 12.
+            </h3>
+</div>
+<div class="space-y-3 pt-4 border-t border-slate-100 mt-5">
+<div class="flex items-baseline justify-between">
+<span class="text-xs text-slate-500 font-medium">Sanctioned Amount</span>
+<div class="text-base font-extrabold text-slate-950 group-hover:text-blue-700 transition-colors">
+                ₹ 1,00,000
+              </div>
+</div>
+<div class="flex items-start gap-2 text-xs text-slate-600">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-blue-500 flex-shrink-0 mt-0.5 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="leading-tight line-clamp-2">RI BHOI (DEPUTY COMMISSIONER RIBHOI)</span>
+</div>
+<div class="pt-1 flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/80 group-hover:border-emerald-300 transition-colors">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+                Completed • Geotagged Verified
+              </span>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl border border-slate-200 hover:border-blue-500 bg-white rounded-2xl p-6 relative overflow-hidden group cursor-pointer flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:bg-blue-500 transition-all duration-300"></div>
+<div class="space-y-3">
+<div class="flex items-center justify-between gap-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70 transition-colors group-hover:bg-emerald-100">
+                Renewable/Infrastructure
+              </span>
+<span class="text-[11px] font-semibold text-slate-400 group-hover:text-slate-600 transition-colors">ID: ML-1032</span>
+</div>
+<h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors duration-200 leading-snug line-clamp-3">
+              Installation of Solar Street Lights across Mawkriah Village community paths
+            </h3>
+</div>
+<div class="space-y-3 pt-4 border-t border-slate-100 mt-5">
+<div class="flex items-baseline justify-between">
+<span class="text-xs text-slate-500 font-medium">Sanctioned Amount</span>
+<div class="text-base font-extrabold text-slate-950 group-hover:text-blue-700 transition-colors">
+                ₹ 7,50,000
+              </div>
+</div>
+<div class="flex items-start gap-2 text-xs text-slate-600">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-blue-500 flex-shrink-0 mt-0.5 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="leading-tight line-clamp-2">EAST KHASI HILLS (Deputy Commissioner, East Khasi Hills District)</span>
+</div>
+<div class="pt-1 flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/80 group-hover:border-emerald-300 transition-colors">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+                Completed • Geotagged Verified
+              </span>
+</div>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl border border-slate-200 hover:border-blue-500 bg-white rounded-2xl p-6 relative overflow-hidden group cursor-pointer flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:bg-blue-500 transition-all duration-300"></div>
+<div class="space-y-3">
+<div class="flex items-center justify-between gap-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/70 transition-colors group-hover:bg-blue-100">
+                Normal/Others
+              </span>
+<span class="text-[11px] font-semibold text-slate-400 group-hover:text-slate-600 transition-colors">ID: ML-1033</span>
+</div>
+<h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors duration-200 leading-snug line-clamp-3">
+              Construction of Footpath and Retaining Wall at Mawlynrei
+            </h3>
+</div>
+<div class="space-y-3 pt-4 border-t border-slate-100 mt-5">
+<div class="flex items-baseline justify-between">
+<span class="text-xs text-slate-500 font-medium">Sanctioned Amount</span>
+<div class="text-base font-extrabold text-slate-950 group-hover:text-blue-700 transition-colors">
+                ₹ 4,20,000
+              </div>
+</div>
+<div class="flex items-start gap-2 text-xs text-slate-600">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-blue-500 flex-shrink-0 mt-0.5 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="leading-tight line-clamp-2">EAST KHASI HILLS (Deputy Commissioner, East Khasi Hills District)</span>
+</div>
+<div class="pt-1 flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/80 group-hover:border-emerald-300 transition-colors">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+                Completed • Geotagged Verified
+              </span>
+</div>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl border border-slate-200 hover:border-blue-500 bg-white rounded-2xl p-6 relative overflow-hidden group cursor-pointer flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-1 bg-transparent group-hover:bg-blue-500 transition-all duration-300"></div>
+<div class="space-y-3">
+<div class="flex items-center justify-between gap-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-sky-50 text-sky-700 border border-sky-200 transition-colors group-hover:bg-sky-100">
+                Health/Public Good
+              </span>
+<span class="text-[11px] font-semibold text-slate-400 group-hover:text-slate-600 transition-colors">ID: ML-1034</span>
+</div>
+<h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors duration-200 leading-snug line-clamp-3">
+              Supply of Medical Diagnostic Equipment to Community Health Centre Nongpoh
+            </h3>
+</div>
+<div class="space-y-3 pt-4 border-t border-slate-100 mt-5">
+<div class="flex items-baseline justify-between">
+<span class="text-xs text-slate-500 font-medium">Sanctioned Amount</span>
+<div class="text-base font-extrabold text-slate-950 group-hover:text-blue-700 transition-colors">
+                ₹ 12,00,000
+              </div>
+</div>
+<div class="flex items-start gap-2 text-xs text-slate-600">
+<svg class="w-4 h-4 text-slate-400 group-hover:text-blue-500 flex-shrink-0 mt-0.5 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="leading-tight line-clamp-2">RI BHOI (DEPUTY COMMISSIONER RIBHOI)</span>
+</div>
+<div class="pt-1 flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/80 group-hover:border-emerald-300 transition-colors">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+                Completed • Geotagged Verified
+              </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination Section -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200 text-xs text-slate-500 font-medium">
+<div>
+          Showing <span class="font-bold text-slate-900">1 - 6</span> of <span class="font-bold text-slate-900">98</span> completed projects
+        </div>
+<div class="flex items-center space-x-1.5">
+<button aria-label="Previous Page" class="p-2 rounded-lg border border-slate-200 text-slate-400 cursor-not-allowed bg-slate-50 transition-colors" disabled="">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<button class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold shadow-sm shadow-blue-500/20 hover:bg-blue-700 transition-all duration-200">1</button>
+<button class="w-8 h-8 rounded-lg border border-slate-200 text-slate-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200 font-medium">2</button>
+<button class="w-8 h-8 rounded-lg border border-slate-200 text-slate-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200 font-medium">3</button>
+<span class="px-1 text-slate-400 font-semibold">...</span>
+<button class="w-8 h-8 rounded-lg border border-slate-200 text-slate-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200 font-medium">17</button>
+<button aria-label="Next Page" class="p-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200 cursor-pointer">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Global Footer -->
+<footer class="mt-8 border-t border-slate-200/90 bg-white py-5 text-xs text-slate-500" data-purpose="page-footer">
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+<div>Data source: MPLADS Portal (Ministry of Statistics and Programme Implementation)</div>
+<div class="flex items-center space-x-3 text-slate-400">
+<span>Updated: Sept 2026</span>
+<span>•</span>
+<span class="inline-flex items-center gap-1.5 text-emerald-700 font-medium">
+<svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill-rule="evenodd"></path>
+</svg>
+          NIC Verified
+        </span>
+</div>
+</div>
+</footer>
+</body></html>

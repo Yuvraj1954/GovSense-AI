@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Road Development — Ward 12 | CivicLens Dashboard</title>
+<!-- Tailwind CSS CDN with Forms & Container Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration for a Refined, Elegant Theme -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f5fa',
+              100: '#e1ecf5',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              800: '#1e3a8a',
+              900: '#0f172a',
+            },
+            surface: {
+              base: '#f6f8fb',
+              card: '#ffffff',
+              subtle: '#f8fafc',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-enhancements">
+    /* Subtle custom scrollbar and refined rendering */
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+</head>
+<body class="bg-[#f4f7fb] text-slate-800 min-h-screen font-sans pb-12 antialiased selection:bg-blue-100 selection:text-blue-900">
+<!-- BEGIN: MainContainer -->
+<div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-5">
+<!-- BEGIN: TopNotificationBar -->
+<!-- AI Status Notification Banner -->
+<div class="flex justify-end mb-3">
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200/80 text-rose-800 text-xs sm:text-sm font-medium shadow-xs transition-all duration-200 hover:bg-rose-100/70">
+<svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Displaying AI Risk &amp; Integrity diagnostics</span>
+</div>
+</div>
+<!-- END: TopNotificationBar -->
+<!-- BEGIN: HeaderSection -->
+<!-- Breadcrumb & Main Actions Header -->
+<header class="mb-6">
+<nav aria-label="Breadcrumb" class="mb-2.5">
+<a class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-500 hover:text-blue-600 transition-all duration-200 hover:-translate-x-0.5" href="projects.html">
+<svg class="w-4 h-4 text-slate-500 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          ← Back to Projects
+        </a>
+</nav>
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<!-- Title and Metadata badges -->
+<div class="flex flex-wrap items-center gap-3">
+<h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            Road Development — Ward 12
+          </h1>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 transition-colors">
+              ID: PRJ-2024-W12-089
+            </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+              In Progress
+            </span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-wrap items-center gap-2.5">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 hover:shadow-xs active:scale-[0.98] text-slate-700 text-sm font-medium shadow-xs transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-300" type="button">
+<svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+            Download Dossier PDF
+          </button>
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 hover:shadow-md active:scale-[0.98] text-white text-sm font-medium shadow-xs transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-1" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+            Record Site Inspection
+          </button>
+</div>
+</div>
+</header>
+<!-- END: HeaderSection -->
+<!-- BEGIN: TopKpiCards -->
+<!-- Top KPI Overview Metrics (3 Cards Grid) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
+<!-- Metric 1: Financial Utilization -->
+<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 flex flex-col justify-between cursor-default">
+<div>
+<div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+<span>Total Sanctioned vs. Spent</span>
+<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center text-slate-600">
+<svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6H2.25m0 0v10.5m0 0h19.5m-19.5 0h.008v.008H2.25V16.5Zm19.5 0h.008v.008h-.008V16.5Zm0 0V6a.75.75 0 0 0-.75-.75h-.75M3.75 4.5h16.5m-16.5 0a.75.75 0 0 0-.75.75v.75m17.25-.75a.75.75 0 0 1 .75.75v.75" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<div class="flex items-baseline gap-1.5 my-2">
+<span class="text-2xl sm:text-3xl font-bold text-slate-900">₹32.98 L</span>
+<span class="text-sm font-medium text-slate-400">/ ₹48.50 L</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between items-center text-xs mb-1.5 font-medium">
+<span class="text-blue-700 font-semibold">68.0% Utilized</span>
+<span class="text-slate-500">₹15.52 L Remaining</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+<div class="bg-blue-600 h-2 rounded-full" style="width: 68%;"></div>
+</div>
+</div>
+</div>
+<!-- Metric 2: Physical Progress -->
+<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 flex flex-col justify-between cursor-default">
+<div>
+<div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+<span>Physical Progress</span>
+<div class="w-6 h-6 rounded-md bg-amber-50 flex items-center justify-center text-amber-700">
+<svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<div class="flex items-baseline gap-1.5 my-2">
+<span class="text-2xl sm:text-3xl font-bold text-slate-900">0.96 KM</span>
+<span class="text-sm font-medium text-slate-400">/ 2.86 KM</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between items-center text-xs mb-1.5 font-medium">
+<span class="text-amber-800 font-semibold flex items-center gap-1">
+<svg class="w-3 h-3 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              ~33.6% Verified
+            </span>
+<span class="text-slate-500">Drone / Site Telemetry</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+<div class="bg-amber-600 h-2 rounded-full" style="width: 33.6%;"></div>
+</div>
+</div>
+</div>
+<!-- Metric 3: AI Risk Score -->
+<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 flex flex-col justify-between cursor-default">
+<div>
+<div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+<span>AI Risk Score</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+              Critical Attention
+            </span>
+</div>
+<div class="flex items-baseline gap-1.5 my-2">
+<span class="text-2xl sm:text-3xl font-bold text-rose-700">8.5</span>
+<span class="text-sm font-medium text-slate-400">/ 10</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex items-center gap-1.5 text-xs text-rose-700 font-medium mb-1.5">
+<svg class="w-3.5 h-3.5 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.008v.008H12v-.008Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="truncate">3 high-probability delay factors detected in paving...</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+<div class="bg-rose-600 h-2 rounded-full" style="width: 85%;"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: TopKpiCards -->
+<!-- BEGIN: NavigationTabs -->
+<!-- Tab Controls Navigation -->
+<div class="flex items-center gap-2 border-b border-slate-200/80 mb-6 pb-2">
+<button class="px-3.5 py-1.5 text-sm font-bold text-blue-700 bg-white shadow-xs border border-slate-200 rounded-md inline-flex items-center gap-1.5 transition-all duration-200" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+<span>Overview</span>
+</button>
+<a class="px-3.5 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-700 hover:bg-slate-100/70 rounded-md transition-all duration-200 inline-flex items-center" href="significance.html">
+        Physical Significance
+      </a>
+<a class="px-3.5 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-700 hover:bg-slate-100/70 rounded-md inline-flex items-center gap-1.5 transition-all duration-200" href="projectaireport.html">
+<span>AI Report</span>
+<span class="inline-block w-2 h-2 rounded-full bg-rose-500 ml-1"></span>
+</a>
+</div>
+<!-- END: NavigationTabs -->
+<!-- BEGIN: PhysicalSignificanceContainer -->
+<section class="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-6">
+<!-- Section Title & Telemetry Verification Tag -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
+<div>
+<h2 class="text-lg sm:text-xl font-bold text-slate-900">
+            Project Overview &amp; Executive Summary
+          </h2>
+<p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Consolidated project status, resource deployment, and AI risk monitoring
+          </p>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 self-start sm:self-auto transition-colors hover:border-slate-300">
+<svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Telemetry Verified: <strong class="font-semibold text-slate-800">18 Jan 2025</strong>
+</div>
+</div>
+<!-- Two-Column Cards: Identity and Risk Snapshot -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+<!-- Column 1: Project Identity & Location -->
+<div class="border border-slate-200 rounded-xl p-5 bg-white shadow-2xs transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-2 mb-4">
+<svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<h3 class="text-base font-semibold text-slate-900">Project Identity &amp; Location</h3>
+</div>
+<!-- Identity Attribute Rows -->
+<div class="divide-y divide-slate-100 text-sm">
+<div class="py-2.5 flex justify-between items-center">
+<span class="text-slate-500 font-medium">Project Scope</span>
+<span class="font-semibold text-slate-900 text-right">Road Development &amp; Drainage Overhaul</span>
+</div>
+<div class="py-2.5 flex justify-between items-center">
+<span class="text-slate-500 font-medium">Ward Assignment</span>
+<span class="font-semibold text-slate-900 text-right">Ward 12 (Central Zone, Sector 4)</span>
+</div>
+<div class="py-2.5 flex justify-between items-center">
+<span class="text-slate-500 font-medium">Contractor Name</span>
+<div class="flex items-center gap-1.5 text-right">
+<span class="font-semibold text-slate-900">M/s Apex InfraBuild Pvt. Ltd.</span>
+<span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">Tier-1</span>
+</div>
+</div>
+<div class="py-2.5 flex justify-between items-center">
+<span class="text-slate-500 font-medium">Sub-Division</span>
+<span class="font-semibold text-slate-900 text-right">Urban Public Works Div-III</span>
+</div>
+<div class="py-2.5 flex justify-between items-center">
+<span class="text-slate-500 font-medium">Sanction Reference</span>
+<span class="font-bold text-blue-700 tracking-wide text-right">CE/PWD/2024/774B</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Column 2: AI Risk Snapshot -->
+<div class="border border-slate-200 rounded-xl p-5 bg-white shadow-2xs transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-md bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div>
+<h3 class="text-base font-semibold text-slate-900">AI Risk Snapshot</h3>
+<p class="text-xs text-slate-500">Current project integrity status</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                HIGH
+              </span>
+</div>
+<!-- Risk Details List -->
+<div class="divide-y divide-slate-100 text-sm">
+<div class="py-2.5 flex justify-between items-center">
+<div>
+<div class="font-medium text-slate-800">Overall Risk</div>
+<div class="text-xs text-slate-500">Immediate verification recommended</div>
+</div>
+<span class="text-xs font-bold text-rose-700 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span> HIGH
+                </span>
+</div>
+<div class="py-2.5 flex justify-between items-center">
+<div>
+<div class="font-medium text-slate-800">03 Risk Signals Detected</div>
+<div class="text-xs text-slate-500">Material • Geo-location • Workforce</div>
+</div>
+<span class="px-2 py-0.5 text-xs font-semibold rounded bg-rose-50 text-rose-700 border border-rose-200">
+                  3 Active
+                </span>
+</div>
+<div class="py-2.5 flex justify-between items-center">
+<div>
+<div class="font-medium text-slate-800">Audit Priority</div>
+<div class="text-xs text-slate-500">Multiple activity patterns require review</div>
+</div>
+<span class="text-xs font-bold text-rose-700">
+                  HIGH
+                </span>
+</div>
+<div class="py-2.5 flex justify-between items-center">
+<div>
+<div class="font-medium text-slate-800">Recommended Action</div>
+<div class="text-xs text-slate-500">Vigilance &amp; Quality Wing</div>
+</div>
+<button class="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-800 hover:underline transition-colors" type="button">
+<svg class="w-3.5 h-3.5 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+                  Field Inspection Required
+                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- BEGIN: BottomQuickStats -->
+<!-- Bottom 4 Quick Telemetry Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+<!-- Stat 1: Last Inspection -->
+<div class="bg-slate-50/70 border border-slate-200 rounded-lg p-4 flex flex-col justify-between transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 hover:bg-white cursor-default">
+<div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wide">
+<span>Last Inspection</span>
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M6.75 3v2.25M17.25 3v2.253M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="mt-2.5">
+<div class="text-base font-bold text-slate-900">18 Jan 2025</div>
+<div class="text-xs text-slate-500 mt-0.5">Drone Survey by QA Cell</div>
+</div>
+</div>
+<!-- Stat 2: Confidence Metric -->
+<div class="bg-slate-50/70 border border-slate-200 rounded-lg p-4 flex flex-col justify-between transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 hover:bg-white cursor-default">
+<div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wide">
+<span>Confidence Metric</span>
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="mt-2.5">
+<div class="text-base font-bold text-slate-900 flex items-center gap-1.5">
+              94%
+              <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+</div>
+<div class="text-xs text-slate-500 mt-0.5">High Sensor Alignment</div>
+</div>
+</div>
+<!-- Stat 3: Contractor Presence -->
+<div class="bg-slate-50/70 border border-slate-200 rounded-lg p-4 flex flex-col justify-between transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 hover:bg-white cursor-default">
+<div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wide">
+<span>Contractor Presence</span>
+<span class="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block"></span>
+</div>
+<div class="mt-2.5">
+<div class="text-base font-bold text-slate-900">Active On-Site</div>
+<div class="text-xs text-slate-500 mt-0.5">38 Crew &amp; 4 Heavy Rollers</div>
+</div>
+</div>
+<!-- Stat 4: AI Directives -->
+<div class="bg-slate-50/70 border border-slate-200 rounded-lg p-4 flex flex-col justify-between transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 hover:bg-white cursor-default">
+<div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wide">
+<span class="text-rose-700">AI Directives</span>
+<svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="mt-2.5">
+<div class="text-base font-bold text-rose-700">3 Pending</div>
+<div class="text-xs text-slate-500 mt-0.5">Material curing &amp; slope deviation</div>
+</div>
+</div>
+</div>
+<!-- END: BottomQuickStats -->
+</section>
+<!-- END: PhysicalSignificanceContainer -->
+</div>
+<!-- END: MainContainer -->
+</body></html>

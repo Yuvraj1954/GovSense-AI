@@ -1,0 +1,1049 @@
+<!DOCTYPE html><html class="min-h-screen h-auto" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MPLADS Performance Portal - Governance Analytics</title>
+<!-- Tailwind CSS CDN with forms and container queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            govNavy: '#0F172A',
+            govSlate: '#1E293B',
+            govBlue: '#2563EB',
+            accentOrange: '#F59E0B',
+            alertCrimson: '#EF4444',
+            emeraldGreen: '#10B981',
+            lightBg: '#F8FAFC'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+          },
+          animation: {
+            'shimmer': 'shimmer 3s ease-in-out infinite',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            shimmer: {
+              '0%, 100%': { opacity: '0.9', transform: 'scale(1)' },
+              '50%': { opacity: '1', transform: 'scale(1.02)' }
+            }
+          }
+        }
+      }
+    };
+  </script>
+<!-- BEGIN: Custom Stylesheets -->
+<style data-purpose="custom-scrollbars">
+    /* Custom refined scrollbars for clean dashboard look */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Hide scrollbar for carousel while preserving scroll functionality */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style data-purpose="chart-animations">
+    /* Progress bar smooth transition on hover and load */
+    .progress-bar-fill {
+      transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card-hover-lift {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card-hover-lift:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 30px -8px rgba(37, 99, 235, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Interactive KPI Cards styling */
+    .kpi-interactive-card {
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .kpi-interactive-card:hover {
+      transform: translateY(-4px);
+    }
+  </style>
+<!-- END: Custom Stylesheets -->
+</head>
+<body class="bg-slate-50 min-h-screen h-auto text-slate-800 antialiased">
+<!-- BEGIN: Monitor Frame Container -->
+<div class="w-full min-h-screen h-auto flex flex-col">
+<!-- BEGIN: Browser Top Window Bar -->
+
+<!-- END: Browser Top Window Bar -->
+<!-- BEGIN: Dashboard Inner Web Application -->
+<div class="bg-slate-50 text-slate-900 flex flex-col font-sans">
+<!-- BEGIN: Main Application Navigation Bar -->
+<div class="bg-white border-b border-slate-200 sticky top-0 z-30 px-5 sm:px-6 py-3 shadow-xs"><div class="max-w-7xl mx-auto flex items-center"><a class="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-blue-50/50 border border-slate-200 hover:border-blue-200 px-3 py-1.5 rounded-lg transition-all shadow-xs group cursor-pointer active:scale-95" href="dashboard.html" id="back-to-browse-btn" onclick="window.location.href='dashboard.html'" role="button" aria-label="Back to Browse States"><svg class="w-3.5 h-3.5 text-slate-500 group-hover:text-blue-600 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg><span class="">Back to Browse States</span></a></div></div>
+<!-- END: Main Application Navigation Bar -->
+<main class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 space-y-7">
+<!-- BEGIN: Page Header Title Section -->
+<section class="flex flex-col sm:flex-row sm:items-end justify-between gap-4" data-purpose="page-title">
+<div>
+<h1 class="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight">State-wise MPLADS Performance</h1>
+<p class="text-sm sm:text-base text-slate-500 mt-1">Comprehensive overview of fund utilization across all states and union territories.</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 shadow-xs hover:bg-slate-50 transition">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              Export CSV / PDF
+            </button>
+<button class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-blue-600 text-white shadow-xs hover:bg-blue-700 transition">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              Generate Audit Brief
+            </button>
+</div>
+</section>
+<!-- END: Page Header Title Section -->
+<!-- BEGIN: Interactive KPI Summary Metrics (User-Driven Horizontal Scroll with Rich Hover Effects) -->
+<section class="relative group" data-purpose="kpi-interactive-carousel">
+<!-- Header sub-bar with interactive controls and scroll indicators -->
+<div class="flex items-center justify-between mb-2.5 px-1">
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold uppercase tracking-wider text-slate-500">Key Performance Indicators</span>
+<span class="text-[11px] text-slate-400 font-medium hidden sm:inline">· Scroll or drag to explore all 6 metrics</span>
+</div>
+<!-- Navigation Scroll Arrows -->
+<div class="flex items-center space-x-1.5">
+<button aria-label="Scroll KPI metrics left" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50/50 shadow-xs flex items-center justify-center transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed" id="kpi-scroll-left" disabled="">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</button>
+<button aria-label="Scroll KPI metrics right" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50/50 shadow-xs flex items-center justify-center transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed" id="kpi-scroll-right">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</button>
+</div>
+</div>
+<!-- Scroll Container Wrapper with Edge Gradient Shadows -->
+<div class="relative w-full rounded-2xl bg-slate-100/60 p-2 border border-slate-200/80 shadow-xs">
+<!-- Subtle gradient fade masks on edges -->
+<div class="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-slate-100 via-slate-100/80 to-transparent z-10 opacity-0 transition-opacity duration-300" id="left-fade-indicator" style="opacity: 0;"></div>
+<div class="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-slate-100 via-slate-100/80 to-transparent z-10 opacity-100 transition-opacity duration-300" id="right-fade-indicator" style="opacity: 1;"></div>
+<!-- Interactive Scroll Track (No auto continuous scroll; Moves ONLY upon user touch/drag/wheel/button click) -->
+<div class="flex items-center gap-3.5 overflow-x-auto no-scrollbar scroll-smooth cursor-grab active:cursor-grabbing select-none py-1 px-1" id="kpi-interactive-track">
+<!-- Card 1: Total States / UTs -->
+<div class="kpi-interactive-card group/card w-60 shrink-0 bg-white rounded-xl p-4 sm:p-5 border border-slate-200 shadow-xs hover:border-blue-400 hover:shadow-lg hover:shadow-blue-500/10 hover:bg-gradient-to-b hover:from-white hover:to-blue-50/20 relative overflow-hidden transition-all duration-300 cursor-pointer">
+<div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full blur-xl pointer-events-none group-hover/card:bg-blue-500/10 transition"></div>
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 group-hover/card:text-blue-700 transition-colors">Total States / UTs</span>
+<span class="w-2 h-2 rounded-full bg-blue-500/40 group-hover/card:bg-blue-600 group-hover/card:scale-125 transition-all"></span>
+</div>
+<div class="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight group-hover/card:text-blue-900 transition-colors">36</div>
+<div class="text-[11px] text-slate-400 mt-1 font-medium group-hover/card:text-slate-500 transition-colors">Both Houses · LS 2024-29</div>
+<div class="h-0.5 w-0 bg-blue-500 group-hover/card:w-full transition-all duration-300 mt-3 rounded-full"></div>
+</div>
+<!-- Card 2: Total Allocated -->
+<div class="kpi-interactive-card group/card w-64 shrink-0 bg-white rounded-xl p-4 sm:p-5 border border-slate-200 shadow-xs hover:border-indigo-400 hover:shadow-lg hover:shadow-indigo-500/10 hover:bg-gradient-to-b hover:from-white hover:to-indigo-50/20 relative overflow-hidden transition-all duration-300 cursor-pointer">
+<div class="absolute top-0 right-0 w-20 h-20 bg-indigo-500/5 rounded-full blur-xl pointer-events-none group-hover/card:bg-indigo-500/10 transition"></div>
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 group-hover/card:text-indigo-700 transition-colors">Total Allocated</span>
+<span class="w-2 h-2 rounded-full bg-indigo-500/40 group-hover/card:bg-indigo-600 group-hover/card:scale-125 transition-all"></span>
+</div>
+<div class="text-xl sm:text-2xl font-black text-slate-900 mt-2 truncate tracking-tight group-hover/card:text-indigo-950 transition-colors">₹11,681.9 <span class="text-base font-bold text-slate-500">CR</span></div>
+<div class="text-[11px] text-slate-400 mt-1 font-medium group-hover/card:text-slate-500 transition-colors">Both Houses · LS 2024-29</div>
+<div class="h-0.5 w-0 bg-indigo-500 group-hover/card:w-full transition-all duration-300 mt-3 rounded-full"></div>
+</div>
+<!-- Card 3: Recorded Exp. -->
+<div class="kpi-interactive-card group/card w-64 shrink-0 bg-white rounded-xl p-4 sm:p-5 border border-slate-200 shadow-xs hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/10 hover:bg-gradient-to-b hover:from-white hover:to-cyan-50/20 relative overflow-hidden transition-all duration-300 cursor-pointer">
+<div class="absolute top-0 right-0 w-20 h-20 bg-cyan-500/5 rounded-full blur-xl pointer-events-none group-hover/card:bg-cyan-500/10 transition"></div>
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 group-hover/card:text-cyan-700 transition-colors">Recorded Exp.</span>
+<span class="w-2 h-2 rounded-full bg-cyan-500/40 group-hover/card:bg-cyan-600 group-hover/card:scale-125 transition-all"></span>
+</div>
+<div class="text-xl sm:text-2xl font-black text-slate-900 mt-2 truncate tracking-tight group-hover/card:text-cyan-950 transition-colors">₹3,995.3 <span class="text-base font-bold text-slate-500">CR</span></div>
+<div class="text-[11px] text-slate-400 mt-1 font-medium group-hover/card:text-slate-500 transition-colors">Both Houses · LS 2024-29</div>
+<div class="h-0.5 w-0 bg-cyan-500 group-hover/card:w-full transition-all duration-300 mt-3 rounded-full"></div>
+</div>
+<!-- Card 4: High Performers -->
+<div class="kpi-interactive-card group/card w-60 shrink-0 bg-white rounded-xl p-4 sm:p-5 border border-slate-200 shadow-xs hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/10 hover:bg-gradient-to-b hover:from-white hover:to-emerald-50/20 relative overflow-hidden transition-all duration-300 cursor-pointer">
+<div class="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full blur-xl pointer-events-none group-hover/card:bg-emerald-500/10 transition"></div>
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 group-hover/card:text-emerald-700 transition-colors">High Performers</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500 group-hover/card:scale-125 transition-all"></span>
+</div>
+<div class="text-2xl sm:text-3xl font-black text-emerald-600 mt-2 tracking-tight">1</div>
+<div class="text-[11px] text-slate-500 mt-1 font-medium flex items-center">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block mr-1 group-hover/card:scale-125 transition"></span>
+        ≥80% utilization
+      </div>
+<div class="h-0.5 w-0 bg-emerald-500 group-hover/card:w-full transition-all duration-300 mt-3 rounded-full"></div>
+</div>
+<!-- Card 5: Average Performers -->
+<div class="kpi-interactive-card group/card w-60 shrink-0 bg-white rounded-xl p-4 sm:p-5 border border-slate-200 shadow-xs hover:border-amber-400 hover:shadow-lg hover:shadow-amber-500/10 hover:bg-gradient-to-b hover:from-white hover:to-amber-50/20 relative overflow-hidden transition-all duration-300 cursor-pointer">
+<div class="absolute top-0 right-0 w-20 h-20 bg-amber-500/5 rounded-full blur-xl pointer-events-none group-hover/card:bg-amber-500/10 transition"></div>
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 group-hover/card:text-amber-700 transition-colors">Average Performers</span>
+<span class="w-2 h-2 rounded-full bg-amber-500 group-hover/card:scale-125 transition-all"></span>
+</div>
+<div class="text-2xl sm:text-3xl font-black text-amber-500 mt-2 tracking-tight">6</div>
+<div class="text-[11px] text-slate-500 mt-1 font-medium flex items-center">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block mr-1 group-hover/card:scale-125 transition"></span>
+        50-79% utilization
+      </div>
+<div class="h-0.5 w-0 bg-amber-500 group-hover/card:w-full transition-all duration-300 mt-3 rounded-full"></div>
+</div>
+<!-- Card 6: Needs Improvement -->
+<div class="kpi-interactive-card group/card w-60 shrink-0 bg-white rounded-xl p-4 sm:p-5 border border-slate-200 shadow-xs hover:border-rose-400 hover:shadow-lg hover:shadow-rose-500/10 hover:bg-gradient-to-b hover:from-white hover:to-rose-50/20 relative overflow-hidden transition-all duration-300 cursor-pointer">
+<div class="absolute top-0 right-0 w-20 h-20 bg-rose-500/5 rounded-full blur-xl pointer-events-none group-hover/card:bg-rose-500/10 transition"></div>
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 group-hover/card:text-rose-700 transition-colors">Needs Improvement</span>
+<span class="w-2 h-2 rounded-full bg-rose-500 group-hover/card:scale-125 transition-all"></span>
+</div>
+<div class="text-2xl sm:text-3xl font-black text-rose-500 mt-2 tracking-tight">29</div>
+<div class="text-[11px] text-slate-500 mt-1 font-medium flex items-center">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block mr-1 group-hover/card:scale-125 transition"></span>
+        &lt;50% utilization
+      </div>
+<div class="h-0.5 w-0 bg-rose-500 group-hover/card:w-full transition-all duration-300 mt-3 rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Interactive KPI Summary Metrics -->
+<!-- BEGIN: AI Risk Snapshot Section (Redesigned to Clean Light / White Institutional Theme) -->
+<section class="relative rounded-2xl bg-white text-slate-900 p-5 sm:p-6 shadow-sm border border-slate-200/90 overflow-hidden" data-purpose="ai-risk-snapshot">
+<!-- Soft background ambient glows for crisp modern look -->
+<div class="absolute -right-24 -top-24 w-80 h-80 bg-blue-50/70 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute -left-24 -bottom-24 w-80 h-80 bg-slate-50/90 rounded-full blur-3xl pointer-events-none"></div>
+<div class="flex flex-col lg:flex-row gap-6 relative z-10">
+<!-- Left Side: AI Risk Summary Card -->
+<div class="lg:w-5/12 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-200 lg:pr-6 pb-6 lg:pb-0">
+<div>
+<div class="flex items-center space-x-2">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-blue-600"></span>
+</span>
+<span class="text-xs font-mono font-bold tracking-widest text-blue-700 uppercase">National Insights &amp; AI Risk Snapshot</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight text-slate-900 mt-2 flex items-center gap-2">
+<span class="">AI PREDICTIVE RISK ENGINE</span>
+<span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">Live v2.4</span>
+</h2>
+<p class="text-xs text-slate-600 mt-1 leading-relaxed">Real-time algorithmic detection of fund allocation lapses, project delays, and sluggish execution nodes across parliamentary divisions.</p>
+</div>
+<!-- Metrics highlight list -->
+<div class="space-y-3 mt-4">
+<div class="bg-rose-50/60 border border-rose-200 rounded-xl p-3 flex items-center justify-between">
+<div>
+<span class="text-[11px] uppercase font-bold tracking-wider text-rose-700 block">Highest Risk State</span>
+<span class="text-base font-bold text-slate-900">Jharkhand (9.2% Risk Index)</span>
+</div>
+<span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-rose-100 text-rose-700 border border-rose-300/80">Critical Alert</span>
+</div>
+<div class="grid grid-cols-2 gap-3 text-xs">
+<div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
+<span class="text-slate-500 block text-[10px] uppercase tracking-wider font-semibold">Key Risk Driver</span>
+<span class="font-bold text-slate-800">Project Delay &amp; Fund Lapsing</span>
+</div>
+<div class="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
+<span class="text-slate-500 block text-[10px] uppercase tracking-wider font-semibold">Risk Trend</span>
+<div class="flex items-center gap-1 text-emerald-600 font-bold mt-0.5">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+<span class="">-1.8% vs Q3</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-600 pt-1">
+<span class="font-medium">Predicted Stalled Schemes:</span>
+<span class="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">42 projects flagged nationally</span>
+</div>
+</div>
+</div>
+<!-- Right Side: Top 5 State Risk Bar Chart Component -->
+<div class="lg:w-7/12 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-bold tracking-wider uppercase text-slate-600">State-wise Project Risk % (Top 5 Vulnerable)</span>
+<a class="text-[11px] text-blue-600 font-semibold hover:underline" href="#">View ML Model Parameters →</a>
+</div>
+<!-- Bar Items -->
+<div class="space-y-3 my-auto" data-purpose="risk-bars-container">
+<!-- Bar 1: Jharkhand -->
+<div class="group relative cursor-pointer">
+<div class="flex justify-between text-xs font-semibold mb-1">
+<span class="text-slate-800 group-hover:text-rose-600 transition">1. Jharkhand</span>
+<span class="text-rose-600 font-mono font-bold">9.2% Risk</span>
+</div>
+<div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/80">
+<div class="h-full bg-rose-500 rounded-full progress-bar-fill shadow-xs" style="width: 92%;"></div>
+</div>
+<!-- Tooltip Popup -->
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 text-white text-xs px-2.5 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
+                    Jharkhand | 9.2% Risk | Primary Driver: Project Delay | Trend: Declining
+                  </div>
+</div>
+<!-- Bar 2: Bihar -->
+<div class="group relative cursor-pointer">
+<div class="flex justify-between text-xs font-semibold mb-1">
+<span class="text-slate-800 group-hover:text-rose-600 transition">2. Bihar</span>
+<span class="text-rose-500 font-mono font-bold">8.4% Risk</span>
+</div>
+<div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/80">
+<div class="h-full bg-rose-400 rounded-full progress-bar-fill shadow-xs" style="width: 84%;"></div>
+</div>
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 text-white text-xs px-2.5 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
+                    Bihar | 8.4% Risk | Primary Driver: Low Utilization &amp; Approvals
+                  </div>
+</div>
+<!-- Bar 3: Odisha -->
+<div class="group relative cursor-pointer">
+<div class="flex justify-between text-xs font-semibold mb-1">
+<span class="text-slate-800 group-hover:text-amber-600 transition">3. Odisha</span>
+<span class="text-amber-600 font-mono font-bold">7.1% Risk</span>
+</div>
+<div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/80">
+<div class="h-full bg-amber-500 rounded-full progress-bar-fill shadow-xs" style="width: 71%;"></div>
+</div>
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 text-white text-xs px-2.5 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
+                    Odisha | 7.1% Risk | Primary Driver: Sanction Delays
+                  </div>
+</div>
+<!-- Bar 4: Uttar Pradesh -->
+<div class="group relative cursor-pointer">
+<div class="flex justify-between text-xs font-semibold mb-1">
+<span class="text-slate-800 group-hover:text-amber-600 transition">4. Uttar Pradesh</span>
+<span class="text-amber-500 font-mono font-bold">6.3% Risk</span>
+</div>
+<div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/80">
+<div class="h-full bg-amber-400 rounded-full progress-bar-fill" style="width: 63%;"></div>
+</div>
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 text-white text-xs px-2.5 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
+                    Uttar Pradesh | 6.3% Risk | Primary Driver: Volume Bottlenecks
+                  </div>
+</div>
+<!-- Bar 5: West Bengal -->
+<div class="group relative cursor-pointer">
+<div class="flex justify-between text-xs font-semibold mb-1">
+<span class="text-slate-800 group-hover:text-amber-600 transition">5. West Bengal</span>
+<span class="text-amber-600 font-mono font-bold">5.7% Risk</span>
+</div>
+<div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/80">
+<div class="h-full bg-amber-300 rounded-full progress-bar-fill" style="width: 57%;"></div>
+</div>
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 text-white text-xs px-2.5 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
+                    West Bengal | 5.7% Risk | Primary Driver: Auditing Discrepancy
+                  </div>
+</div>
+</div>
+<div class="text-[11px] text-slate-500 flex items-center justify-between border-t border-slate-200 pt-2.5 mt-2">
+<span class="">Model accuracy: 94.8% based on historical 2014-2024 schemes</span>
+<span class="text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Confidence Score: High</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: AI Risk Snapshot Section -->
+<!-- BEGIN: Filter and Search Toolbar -->
+<section class="bg-white rounded-xl p-3 sm:p-4 border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3" data-purpose="search-filters">
+<!-- State/UT Filter Search Input -->
+<div class="w-full md:w-5/12 relative">
+<div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<input class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" id="state-search-input" placeholder="Filter states and UTs..." type="text">
+</div>
+<!-- Dropdown Controls -->
+<div class="w-full md:w-auto flex flex-wrap items-center gap-3">
+<div class="relative flex-1 sm:flex-none">
+<select class="w-full sm:w-auto appearance-none bg-slate-50 border border-slate-200 rounded-lg py-2 pl-3 pr-8 text-sm font-medium text-slate-700 hover:bg-slate-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer" id="performance-filter-select">
+<option value="all">Performance: All States</option>
+<option value="high">High Performers (≥80%)</option>
+<option value="avg">Average Performers (50-79%)</option>
+<option value="low">Needs Improvement (&lt;50%)</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-500">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+<div class="relative flex-1 sm:flex-none">
+<select class="w-full sm:w-auto appearance-none bg-slate-50 border border-slate-200 rounded-lg py-2 pl-3 pr-8 text-sm font-medium text-slate-700 hover:bg-slate-100 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition cursor-pointer" id="sort-filter-select">
+<option value="rank-asc">Sort by: Rank</option>
+<option value="rank-desc">Sort by: Rank (Descending)</option>
+<option value="exp-desc">Sort by: Expenditure Rate (High to Low)</option>
+<option value="exp-asc">Sort by: Expenditure Rate (Low to High)</option>
+<option value="alloc-desc">Sort by: Allocation (High to Low)</option>
+<option value="comp-desc">Sort by: Completion Rate (High to Low)</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-500">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Filter and Search Toolbar -->
+<!-- BEGIN: State Performance Cards Section -->
+<section class="space-y-4" data-purpose="state-cards-section">
+<div class="flex items-center justify-between">
+<h2 class="text-xl font-bold text-slate-900">All States &amp; UTs (36)</h2>
+<span class="text-xs text-slate-500 font-medium" id="records-counter">Showing 9 of 36 records</span>
+</div>
+<!-- 3-Column Responsive Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="state-cards-grid">
+<!-- Card 1: Nagaland -->
+<article class="state-performance-card card-hover-lift bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-blue-500 flex flex-col justify-between cursor-pointer group" data-alloc="14.7" data-code="NL" data-comp="72.2" data-exp="82.4" data-name="Nagaland" data-perf="high" data-rank="1">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-sm border border-blue-100 shadow-xs group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      NL
+                    </div>
+<div>
+<h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Nagaland</h3>
+<p class="text-xs text-slate-500">1 MP</p>
+</div>
+</div>
+<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">Rank #1 of 36</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-5 pt-3 border-t border-slate-100">
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Allocated</span>
+<span class="text-base font-extrabold text-slate-900">₹14.7 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Expended</span>
+<span class="text-base font-extrabold text-slate-900">₹12.1 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Works Completed</span>
+<span class="text-base font-extrabold text-slate-900">96</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Completion Rate</span>
+<span class="text-base font-extrabold text-slate-900">72.2%</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-semibold text-slate-700 mb-1.5">
+<span class="">Expenditure Rate</span>
+<span class="text-emerald-600 font-bold">82.4%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden group-hover:ring-2 group-hover:ring-emerald-200 transition-all">
+<div class="h-full bg-emerald-500 rounded-full progress-bar-fill shadow-sm" style="width: 82.4%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-end">
+<a class="text-xs font-bold text-blue-600 group-hover:text-blue-700 transition flex items-center gap-1 group/btn" href="explorestateproject.html">
+                  View Details
+                  <svg class="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+</div>
+</article>
+<!-- Card 2: Sikkim -->
+<article class="state-performance-card card-hover-lift bg-white rounded-2xl p-5 shadow-xs hover:border-blue-500 flex flex-col justify-between cursor-pointer group border-2 border-blue-500 ring-4 ring-blue-50/50 shadow-md" data-alloc="29.4" data-code="SK" data-comp="49.6" data-exp="76.1" data-name="Sikkim" data-perf="avg" data-rank="2">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-sm border border-blue-100 shadow-xs group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      SK
+                    </div>
+<div>
+<h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Sikkim</h3>
+<p class="text-xs text-slate-500">2 MPs</p>
+</div>
+</div>
+<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">Rank #2 of 36</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-5 pt-3 border-t border-slate-100">
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Allocated</span>
+<span class="text-base font-extrabold text-slate-900">₹29.4 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Expended</span>
+<span class="text-base font-extrabold text-slate-900">₹22.3 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Works Completed</span>
+<span class="text-base font-extrabold text-slate-900">123</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Completion Rate</span>
+<span class="text-base font-extrabold text-slate-900">49.6%</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-semibold text-slate-700 mb-1.5">
+<span class="">Expenditure Rate</span>
+<span class="text-amber-500 font-bold">76.1%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden group-hover:ring-2 group-hover:ring-amber-200 transition-all">
+<div class="h-full bg-amber-500 rounded-full progress-bar-fill shadow-sm" style="width: 76.1%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-end">
+<a class="text-xs font-bold text-blue-600 group-hover:text-blue-700 transition flex items-center gap-1 group/btn" href="explorestateproject.html">
+                  View Details
+                  <svg class="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+</div>
+</article>
+<!-- Card 3: Meghalaya (Highlighted / Active Selected State as in Reference) -->
+<article class="state-performance-card card-hover-lift bg-white rounded-2xl p-5 shadow-blue-500/10 flex flex-col justify-between relative cursor-pointer group border border-slate-200" data-alloc="44.1" data-code="ML" data-comp="65.4" data-exp="71.5" data-name="Meghalaya" data-perf="avg" data-rank="3">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-sm border border-blue-200 shadow-xs group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      ML
+                    </div>
+<div>
+<h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Meghalaya</h3>
+<p class="text-xs text-slate-500">3 MPs</p>
+</div>
+</div>
+<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">Rank #3 of 36</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-5 pt-3 border-t border-slate-100">
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Allocated</span>
+<span class="text-base font-extrabold text-slate-900">₹44.1 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Expended</span>
+<span class="text-base font-extrabold text-slate-900">₹31.5 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Works Completed</span>
+<span class="text-base font-extrabold text-slate-900">230</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Completion Rate</span>
+<span class="text-base font-extrabold text-slate-900">65.4%</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-semibold text-slate-700 mb-1.5">
+<span class="">Expenditure Rate</span>
+<span class="text-amber-500 font-bold">71.5%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden group-hover:ring-2 group-hover:ring-amber-200 transition-all">
+<div class="h-full bg-amber-500 rounded-full progress-bar-fill shadow-sm" style="width: 71.5%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-end">
+<a class="text-xs font-bold text-blue-600 group-hover:text-blue-700 transition flex items-center gap-1 group/btn" href="explorestateproject.html">
+                  View Details
+                  <svg class="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+</div>
+</article>
+<!-- Card 4: Mizoram -->
+<article class="state-performance-card card-hover-lift bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-blue-500 flex flex-col justify-between cursor-pointer group" data-alloc="17.2" data-code="MZ" data-comp="58.0" data-exp="55.8" data-name="Mizoram" data-perf="avg" data-rank="4">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-sm border border-blue-100 group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      MZ
+                    </div>
+<div>
+<h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Mizoram</h3>
+<p class="text-xs text-slate-500">2 MPs</p>
+</div>
+</div>
+<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">Rank #4 of 36</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-5 pt-3 border-t border-slate-100">
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Allocated</span>
+<span class="text-base font-extrabold text-slate-900">₹17.2 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Expended</span>
+<span class="text-base font-extrabold text-slate-900">₹9.6 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Works Completed</span>
+<span class="text-base font-extrabold text-slate-900">145</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Completion Rate</span>
+<span class="text-base font-extrabold text-slate-900">58.0%</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-semibold text-slate-700 mb-1.5">
+<span class="">Expenditure Rate</span>
+<span class="text-amber-500 font-bold">55.8%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden group-hover:ring-2 group-hover:ring-amber-200 transition-all">
+<div class="h-full bg-amber-500 rounded-full progress-bar-fill shadow-sm" style="width: 55.8%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-end">
+<a class="text-xs font-bold text-blue-600 group-hover:text-blue-700 transition flex items-center gap-1 group/btn" href="explorestateproject.html">
+                  View Details
+                  <svg class="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+</div>
+</article>
+<!-- Card 5: Arunachal Pradesh -->
+<article class="state-performance-card card-hover-lift bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-blue-500 flex flex-col justify-between cursor-pointer group" data-alloc="34.3" data-code="AR" data-comp="52.1" data-exp="54.2" data-name="Arunachal Pradesh" data-perf="avg" data-rank="5">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-sm border border-blue-100 group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      AR
+                    </div>
+<div>
+<h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Arunachal Pradesh</h3>
+<p class="text-xs text-slate-500">3 MPs</p>
+</div>
+</div>
+<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">Rank #5 of 36</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-5 pt-3 border-t border-slate-100">
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Allocated</span>
+<span class="text-base font-extrabold text-slate-900">₹34.3 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Expended</span>
+<span class="text-base font-extrabold text-slate-900">₹18.6 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Works Completed</span>
+<span class="text-base font-extrabold text-slate-900">188</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Completion Rate</span>
+<span class="text-base font-extrabold text-slate-900">52.1%</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-semibold text-slate-700 mb-1.5">
+<span class="">Expenditure Rate</span>
+<span class="text-amber-500 font-bold">54.2%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden group-hover:ring-2 group-hover:ring-amber-200 transition-all">
+<div class="h-full bg-amber-500 rounded-full progress-bar-fill shadow-sm" style="width: 54.2%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-end">
+<a class="text-xs font-bold text-blue-600 group-hover:text-blue-700 transition flex items-center gap-1 group/btn" href="explorestateproject.html">
+                  View Details
+                  <svg class="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+</div>
+</article>
+<!-- Card 6: Manipur -->
+<article class="state-performance-card card-hover-lift bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-blue-500 flex flex-col justify-between cursor-pointer group" data-alloc="34.3" data-code="MN" data-comp="48.5" data-exp="52.0" data-name="Manipur" data-perf="avg" data-rank="6">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-sm border border-blue-100 group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      MN
+                    </div>
+<div>
+<h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Manipur</h3>
+<p class="text-xs text-slate-500">3 MPs</p>
+</div>
+</div>
+<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">Rank #6 of 36</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-5 pt-3 border-t border-slate-100">
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Allocated</span>
+<span class="text-base font-extrabold text-slate-900">₹34.3 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Expended</span>
+<span class="text-base font-extrabold text-slate-900">₹17.8 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Works Completed</span>
+<span class="text-base font-extrabold text-slate-900">160</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Completion Rate</span>
+<span class="text-base font-extrabold text-slate-900">48.5%</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-semibold text-slate-700 mb-1.5">
+<span class="">Expenditure Rate</span>
+<span class="text-amber-500 font-bold">52.0%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden group-hover:ring-2 group-hover:ring-amber-200 transition-all">
+<div class="h-full bg-amber-500 rounded-full progress-bar-fill shadow-sm" style="width: 52.0%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-end">
+<a class="text-xs font-bold text-blue-600 group-hover:text-blue-700 transition flex items-center gap-1 group/btn" href="explorestateproject.html">
+                  View Details
+                  <svg class="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+</div>
+</article>
+<!-- Card 7: Uttar Pradesh -->
+<article class="state-performance-card card-hover-lift bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-blue-500 flex flex-col justify-between cursor-pointer group" data-alloc="1778.3" data-code="UP" data-comp="62.0" data-exp="51.3" data-name="Uttar Pradesh" data-perf="avg" data-rank="7">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-sm border border-blue-100 group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      UP
+                    </div>
+<div>
+<h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Uttar Pradesh</h3>
+<p class="text-xs text-slate-500">110 MPs</p>
+</div>
+</div>
+<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">Rank #7 of 36</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-5 pt-3 border-t border-slate-100">
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Allocated</span>
+<span class="text-base font-extrabold text-slate-900">₹1,778.3 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Expended</span>
+<span class="text-base font-extrabold text-slate-900">₹912.4 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Works Completed</span>
+<span class="text-base font-extrabold text-slate-900">4,210</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Completion Rate</span>
+<span class="text-base font-extrabold text-slate-900">62.0%</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-semibold text-slate-700 mb-1.5">
+<span class="">Expenditure Rate</span>
+<span class="text-amber-500 font-bold">51.3%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden group-hover:ring-2 group-hover:ring-amber-200 transition-all">
+<div class="h-full bg-amber-500 rounded-full progress-bar-fill shadow-sm" style="width: 51.3%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-end">
+<a class="text-xs font-bold text-blue-600 group-hover:text-blue-700 transition flex items-center gap-1 group/btn" href="explorestateproject.html">
+                  View Details
+                  <svg class="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+</div>
+</article>
+<!-- Card 8: Jharkhand -->
+<article class="state-performance-card card-hover-lift bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-blue-500 flex flex-col justify-between cursor-pointer group" data-alloc="298.1" data-code="JH" data-comp="44.0" data-exp="45.5" data-name="Jharkhand" data-perf="low" data-rank="8">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-rose-50 text-rose-600 font-bold flex items-center justify-center text-sm border border-rose-100 group-hover:scale-105 group-hover:bg-rose-600 group-hover:text-white transition-all">
+                      JH
+                    </div>
+<div>
+<h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Jharkhand</h3>
+<p class="text-xs text-slate-500">19 MPs</p>
+</div>
+</div>
+<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">Rank #8 of 36</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-5 pt-3 border-t border-slate-100">
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Allocated</span>
+<span class="text-base font-extrabold text-slate-900">₹298.1 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Expended</span>
+<span class="text-base font-extrabold text-slate-900">₹135.5 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Works Completed</span>
+<span class="text-base font-extrabold text-slate-900">840</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Completion Rate</span>
+<span class="text-base font-extrabold text-slate-900">44.0%</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-semibold text-slate-700 mb-1.5">
+<span class="">Expenditure Rate</span>
+<span class="text-rose-500 font-bold">45.5%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden group-hover:ring-2 group-hover:ring-rose-200 transition-all">
+<div class="h-full bg-rose-500 rounded-full progress-bar-fill shadow-sm" style="width: 45.5%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-end">
+<a class="text-xs font-bold text-blue-600 group-hover:text-blue-700 transition flex items-center gap-1 group/btn" href="explorestateproject.html">
+                  View Details
+                  <svg class="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+</div>
+</article>
+<!-- Card 9: Bihar -->
+<article class="state-performance-card card-hover-lift bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-blue-500 flex flex-col justify-between cursor-pointer group" data-alloc="851.3" data-code="BR" data-comp="39.5" data-exp="41.2" data-name="Bihar" data-perf="low" data-rank="9">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-rose-50 text-rose-600 font-bold flex items-center justify-center text-sm border border-rose-100 group-hover:scale-105 group-hover:bg-rose-600 group-hover:text-white transition-all">
+                      BR
+                    </div>
+<div>
+<h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Bihar</h3>
+<p class="text-xs text-slate-500">55 MPs</p>
+</div>
+</div>
+<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60">Rank #9 of 36</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-5 pt-3 border-t border-slate-100">
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Allocated</span>
+<span class="text-base font-extrabold text-slate-900">₹851.3 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Expended</span>
+<span class="text-base font-extrabold text-slate-900">₹350.7 CR</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Works Completed</span>
+<span class="text-base font-extrabold text-slate-900">1,820</span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Completion Rate</span>
+<span class="text-base font-extrabold text-slate-900">39.5%</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between text-xs font-semibold text-slate-700 mb-1.5">
+<span class="">Expenditure Rate</span>
+<span class="text-rose-500 font-bold">41.2%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden group-hover:ring-2 group-hover:ring-rose-200 transition-all">
+<div class="h-full bg-rose-500 rounded-full progress-bar-fill shadow-sm" style="width: 41.2%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-end">
+<a class="text-xs font-bold text-blue-600 group-hover:text-blue-700 transition flex items-center gap-1 group/btn" href="explorestateproject.html">
+                  View Details
+                  <svg class="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</a>
+</div>
+</article>
+</div>
+<!-- Load More / Full Record Bar & Pagination -->
+<div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+<div class="flex items-center gap-2 text-xs font-medium text-slate-600">
+<span class="w-2 h-2 rounded-full bg-blue-600 inline-block"></span>
+<span class="">Showing 9 of 36 records (First cohort loaded)</span>
+</div>
+<button class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition shadow-xs w-full sm:w-auto" id="load-more-btn">
+<span class="">Load More States &amp; UTs</span>
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</section>
+<!-- END: State Performance Cards Section -->
+<!-- BEGIN: Pagination Footnote -->
+<footer class="pt-4 pb-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 border-t border-slate-200">
+<p class="">© 2025-2026 MoSPI · Member of Parliament Local Area Development Scheme</p>
+<div class="flex items-center space-x-1">
+<button class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50" disabled="">Previous</button>
+<button class="px-2.5 py-1 rounded border border-blue-600 bg-blue-600 text-white font-semibold">1</button>
+<button class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-600">2</button>
+<button class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-600">3</button>
+<button class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-600">4</button>
+<button class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 text-slate-600">Next</button>
+</div>
+</footer>
+<!-- END: Pagination Footnote -->
+</main>
+</div>
+<!-- END: Dashboard Inner Web Application -->
+<!-- BEGIN: macOS Style Frosted Glass Desktop Dock -->
+
+<!-- END: macOS Style Frosted Glass Desktop Dock -->
+</div>
+<!-- END: Monitor Frame Container -->
+<!-- BEGIN: Interactive Client Scripts -->
+<script data-purpose="search-filter-script">
+    document.addEventListener('DOMContentLoaded', () => {
+      // Dynamic Search, Performance Filter, and Sorting Script
+      const searchInput = document.getElementById('state-search-input');
+      const perfFilter = document.getElementById('performance-filter-select');
+      const sortFilter = document.getElementById('sort-filter-select');
+      const cardsGrid = document.getElementById('state-cards-grid');
+      const recordsCounter = document.getElementById('records-counter');
+      const allCards = Array.from(document.querySelectorAll('.state-performance-card'));
+
+      function applyFiltersAndSort() {
+        const query = (searchInput?.value || '').toLowerCase().trim();
+        const selectedPerf = perfFilter?.value || 'all';
+        const selectedSort = sortFilter?.value || 'rank-asc';
+
+        // Filter cards
+        let visibleCards = allCards.filter(card => {
+          const name = (card.dataset.name || '').toLowerCase();
+          const code = (card.dataset.code || '').toLowerCase();
+          const perf = card.dataset.perf;
+
+          const matchesQuery = !query || name.includes(query) || code.includes(query);
+          const matchesPerf = selectedPerf === 'all' || perf === selectedPerf;
+
+          return matchesQuery && matchesPerf;
+        });
+
+        // Sort cards
+        visibleCards.sort((a, b) => {
+          const rankA = parseInt(a.dataset.rank, 10);
+          const rankB = parseInt(b.dataset.rank, 10);
+          const expA = parseFloat(a.dataset.exp);
+          const expB = parseFloat(b.dataset.exp);
+          const allocA = parseFloat(a.dataset.alloc);
+          const allocB = parseFloat(b.dataset.alloc);
+          const compA = parseFloat(a.dataset.comp);
+          const compB = parseFloat(b.dataset.comp);
+
+          switch (selectedSort) {
+            case 'rank-asc':
+              return rankA - rankB;
+            case 'rank-desc':
+              return rankB - rankA;
+            case 'exp-desc':
+              return expB - expA;
+            case 'exp-asc':
+              return expA - expB;
+            case 'alloc-desc':
+              return allocB - allocA;
+            case 'comp-desc':
+              return compB - compA;
+            default:
+              return rankA - rankB;
+          }
+        });
+
+        // Render matching cards in order
+        allCards.forEach(card => card.style.display = 'none');
+        visibleCards.forEach(card => {
+          card.style.display = 'flex';
+          cardsGrid.appendChild(card);
+        });
+
+        // Update live records counter
+        if (recordsCounter) {
+          recordsCounter.textContent = `Showing ${visibleCards.length} of 36 records`;
+        }
+      }
+
+      if (searchInput) searchInput.addEventListener('input', applyFiltersAndSort);
+      if (perfFilter) perfFilter.addEventListener('change', applyFiltersAndSort);
+      if (sortFilter) sortFilter.addEventListener('change', applyFiltersAndSort);
+
+      // Card active selection interaction
+      allCards.forEach(card => {
+        card.addEventListener('click', (e) => {
+          allCards.forEach(c => {
+            c.classList.remove('border-2', 'border-blue-500', 'ring-4', 'ring-blue-50/50', 'shadow-md');
+            c.classList.add('border', 'border-slate-200');
+          });
+          card.classList.remove('border', 'border-slate-200');
+          card.classList.add('border-2', 'border-blue-500', 'ring-4', 'ring-blue-50/50', 'shadow-md');
+        });
+      });
+
+      // User-driven KPI Carousel (Interactive scrolling: drag, mouse wheel, button navigation)
+      const track = document.getElementById('kpi-interactive-track');
+      const btnLeft = document.getElementById('kpi-scroll-left');
+      const btnRight = document.getElementById('kpi-scroll-right');
+      const leftFade = document.getElementById('left-fade-indicator');
+      const rightFade = document.getElementById('right-fade-indicator');
+
+      if (track) {
+        // Update arrow button status & fade indicators
+        const updateScrollState = () => {
+          const scrollLeft = track.scrollLeft;
+          const maxScroll = track.scrollWidth - track.clientWidth - 5;
+
+          if (btnLeft) btnLeft.disabled = scrollLeft <= 5;
+          if (btnRight) btnRight.disabled = scrollLeft >= maxScroll;
+
+          if (leftFade) leftFade.style.opacity = scrollLeft > 10 ? '1' : '0';
+          if (rightFade) rightFade.style.opacity = scrollLeft < maxScroll ? '1' : '0';
+        };
+
+        // Scroll by card width upon clicking arrows
+        if (btnLeft) {
+          btnLeft.addEventListener('click', () => {
+            track.scrollBy({ left: -260, behavior: 'smooth' });
+          });
+        }
+        if (btnRight) {
+          btnRight.addEventListener('click', () => {
+            track.scrollBy({ left: 260, behavior: 'smooth' });
+          });
+        }
+
+        track.addEventListener('scroll', updateScrollState, { passive: true });
+        window.addEventListener('resize', updateScrollState);
+        updateScrollState();
+
+        // Horizontal mouse wheel support
+        track.addEventListener('wheel', (e) => {
+          if (e.deltaY !== 0 && Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
+            e.preventDefault();
+            track.scrollLeft += e.deltaY;
+          }
+        }, { passive: false });
+
+        // Smooth Drag-to-Scroll interaction
+        let isDown = false;
+        let startX;
+        let scrollLeftPos;
+
+        track.addEventListener('mousedown', (e) => {
+          isDown = true;
+          track.classList.remove('scroll-smooth');
+          track.classList.add('cursor-grabbing');
+          startX = e.pageX - track.offsetLeft;
+          scrollLeftPos = track.scrollLeft;
+        });
+
+        window.addEventListener('mouseup', () => {
+          if (isDown) {
+            isDown = false;
+            track.classList.remove('cursor-grabbing');
+            track.classList.add('scroll-smooth');
+          }
+        });
+
+        track.addEventListener('mousemove', (e) => {
+          if (!isDown) return;
+          e.preventDefault();
+          const x = e.pageX - track.offsetLeft;
+          const walk = (x - startX) * 1.6;
+          track.scrollLeft = scrollLeftPos - walk;
+        });
+      }
+    });
+  </script>
+<!-- END: Interactive Client Scripts -->
+
+
+</body></html>

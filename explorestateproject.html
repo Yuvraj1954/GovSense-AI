@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html class="bg-slate-50 stitch-anim-fade-in" lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>MPLADS Dashboard - Nagaland State Overview</title>
+  <!-- Tailwind CSS v3 with Forms & Container Queries -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Tailwind Configuration -->
+  <script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            },
+            civic: {
+              navy: '#0f172a',
+              gold: '#c29d59',
+              emerald: '#10b981',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style data-purpose="custom-layout">
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeInUp { animation: fadeInUp 0.4s ease-out forwards; }
+    .animate-pulse-subtle { animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    .gauge-fill { stroke-dasharray: 251.2; stroke-dashoffset: 25.12; transition: stroke-dashoffset 1s ease-in-out; }
+  </style>
+</head>
+<body class="font-sans text-slate-800 antialiased selection:bg-brand-500 selection:text-white flex flex-col min-h-screen">
+
+  <!-- Header Banner -->
+  <section class="bg-white border-b border-slate-200 animate-fadeInUp" data-purpose="state-context-banner">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-0">
+      <div>
+        <a class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-all duration-300 group hover:-translate-x-1 mb-3" href="#">
+          <svg class="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>Back to States
+        </a>
+      </div>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5">
+        <div class="flex items-center space-x-3.5">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-800 to-brand-600 text-white flex items-center justify-center font-bold text-lg shadow-sm border border-brand-700/50 hover:scale-105 transition-transform duration-300 cursor-default">
+            NL
+          </div>
+          <div>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h1 class="text-2xl font-bold tracking-tight text-slate-900">Nagaland State</h1>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                Active Term (2024-2029)
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">MP Local Area Development Scheme expenditure and project execution tracking</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="inline-flex items-center gap-1.5 text-xs text-slate-600 bg-slate-50 border border-slate-200 hover:border-emerald-300 px-3 py-1.5 rounded-lg transition-all duration-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            NIC Portal Synced
+          </span>
+          <button class="inline-flex items-center gap-1 text-xs font-semibold text-brand-700 hover:text-white bg-brand-50 hover:bg-brand-600 border border-brand-200/80 hover:border-brand-600 px-3.5 py-1.5 rounded-lg shadow-xs hover:shadow-md transition-all duration-300 active:scale-95" type="button">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Export Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fadeInUp flex-grow">
+
+    <!-- Key Metrics & AI Snapshot Grid (Always Visible Header Section) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6" data-purpose="overview-summary-grid">
+      <!-- Key State Metrics Card -->
+      <section class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-xs p-6 flex flex-col justify-between transition-all duration-300 ease-out hover:border-blue-400 hover:shadow-xl hover:-translate-y-1">
+        <div>
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 tracking-tight">Key State Metrics</h2>
+              <p class="text-xs text-slate-500 mt-0.5">MP representation and aggregate fund limits</p>
+            </div>
+            <div class="p-2 rounded-lg bg-slate-50 text-slate-400 border border-slate-100 hover:text-brand-600 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3.5">
+            <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-200 transition-all duration-300 hover:border-emerald-500 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+              <div class="flex items-center justify-between text-slate-500 mb-1.5">
+                <span class="text-xs font-medium uppercase tracking-wider">Total MPs</span>
+                <span class="w-6 h-6 rounded-md bg-blue-100/70 text-brand-700 flex items-center justify-center text-xs">👤</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900">01</div>
+              <div class="mt-2 flex items-center text-[11px] text-slate-600 font-medium">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-500 mr-1.5"></span> Nagaland Constituency
+              </div>
+            </div>
+            <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-200 transition-all duration-300 hover:border-emerald-500 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+              <div class="flex items-center justify-between text-slate-500 mb-1.5">
+                <span class="text-xs font-medium uppercase tracking-wider">Total Allocated</span>
+                <span class="w-6 h-6 rounded-md bg-emerald-100/70 text-emerald-700 flex items-center justify-center text-xs">₹</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900">₹14.70 <span class="text-sm font-semibold text-slate-500">CR</span></div>
+              <div class="mt-2 text-[11px] text-slate-500 truncate">₹14,70,00,000 total pool</div>
+            </div>
+            <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-200 transition-all duration-300 hover:border-emerald-500 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+              <div class="flex items-center justify-between text-slate-500 mb-1.5">
+                <span class="text-xs font-medium uppercase tracking-wider">Works Done</span>
+                <span class="w-6 h-6 rounded-md bg-amber-100/80 text-amber-700 flex items-center justify-center text-xs font-bold">✓</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900">00</div>
+              <div class="mt-2 inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">38 in progress / review</div>
+            </div>
+            <div class="bg-slate-50/80 rounded-xl p-4 border border-slate-200 transition-all duration-300 hover:border-emerald-500 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+              <div class="flex items-center justify-between text-slate-500 mb-1.5">
+                <span class="text-xs font-medium uppercase tracking-wider">Avg Per MP</span>
+                <span class="w-6 h-6 rounded-md bg-indigo-100/70 text-indigo-700 flex items-center justify-center text-xs">₹</span>
+              </div>
+              <div class="text-2xl font-bold text-slate-900">₹14.70 <span class="text-sm font-semibold text-slate-500">CR</span></div>
+              <div class="mt-2 text-[11px] text-emerald-600 font-medium">100% full entitlement</div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between rounded-xl px-3 py-2 border border-transparent transition-all duration-300 hover:border-blue-600 hover:bg-blue-50/40 hover:shadow-md">
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-700 text-xs border border-slate-300">SJ</div>
+            <div>
+              <p class="text-xs font-bold text-slate-900">S. Supongmeren Jamir</p>
+              <p class="text-[11px] text-slate-500">INC • Nagaland Lok Sabha Constituency</p>
+            </div>
+          </div>
+          <a class="text-xs font-semibold text-brand-600 hover:text-brand-800 flex items-center gap-1" href="#">MP Dossier &rarr;</a>
+        </div>
+      </section>
+
+      <!-- AI Safety & Financial Snapshot Card -->
+      <section class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-xs p-6 flex flex-col justify-between transition-all duration-300 ease-out hover:border-indigo-500 hover:shadow-xl hover:-translate-y-1">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-bold text-slate-900 tracking-tight">AI Safety & Financial Snapshot</h2>
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">AI Insights Active</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Autonomous audit of project sanction limits, anomaly detection & fund flow compliance</p>
+          </div>
+          <span class="text-[11px] font-medium text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">Model v4.2 CivicSense</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-4 py-2 items-center">
+          <div class="flex flex-col items-center justify-center p-3 bg-slate-50/50 rounded-xl border border-slate-100 transition-all duration-300 hover:border-emerald-300 hover:bg-white hover:shadow-sm">
+            <div class="relative w-44 h-24 flex items-end justify-center overflow-hidden">
+              <svg class="w-44 h-44 absolute -top-0" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" fill="none" r="40" stroke="#e2e8f0" stroke-dasharray="125.6" stroke-dashoffset="0" stroke-width="11" transform="rotate(-180 50 50)"></circle>
+                <circle class="gauge-fill" cx="50" cy="50" fill="none" r="40" stroke="#10b981" stroke-dasharray="125.6" stroke-dashoffset="12.56" stroke-linecap="round" stroke-width="11" transform="rotate(-180 50 50)"></circle>
+              </svg>
+              <div class="text-center z-10 -mb-1">
+                <span class="text-3xl font-extrabold tracking-tight text-slate-900">90%</span>
+                <span class="block text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Safe & Compliant</span>
+              </div>
+            </div>
+            <div class="mt-3 text-center">
+              <p class="text-xs font-semibold text-slate-800">Projects Safety Analysis</p>
+              <p class="text-[11px] text-slate-500 max-w-[210px] leading-tight mt-0.5">34 works verified standard. 4 flagged for routine geo-tag audit.</p>
+            </div>
+          </div>
+          <div class="flex flex-col items-center justify-center p-3 bg-slate-50/50 rounded-xl border border-slate-100 transition-all duration-300 hover:border-blue-300 hover:bg-white hover:shadow-sm">
+            <div class="relative w-28 h-28 flex items-center justify-center">
+              <svg class="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" fill="none" r="50" stroke="#e2e8f0" stroke-width="14"></circle>
+                <circle cx="60" cy="60" fill="none" r="50" stroke="#2563eb" stroke-dasharray="314.15" stroke-dashoffset="18.84" stroke-linecap="round" stroke-width="14"></circle>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span class="text-xl font-extrabold text-slate-900 leading-none">94.0%</span>
+                <span class="text-[10px] text-slate-500 font-medium mt-0.5">Utilized</span>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center justify-center gap-4 text-xs">
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-brand-600"></span><span class="text-slate-600 text-[11px]">Spent: <strong>₹13.82 Cr</strong></span></div>
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span><span class="text-slate-600 text-[11px]">Unspent: <strong>₹0.88 Cr</strong></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-indigo-50/70 border border-indigo-100 hover:border-indigo-300 transition-colors rounded-xl px-3.5 py-2.5 flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            <p class="text-xs text-indigo-900 font-medium"><strong>High Fund Velocity:</strong> Nagaland is in the top 15% nationally for rapid 18th LS recommendation rollouts.</p>
+          </div>
+          <span class="text-[11px] text-indigo-700 font-semibold cursor-pointer hover:underline">Details &rarr;</span>
+        </div>
+      </section>
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <div class="border-b border-slate-200" data-purpose="section-tabs-bar">
+      <div class="flex space-x-8 text-sm font-medium">
+        <button id="tab-overview-btn" onclick="switchMainTab('overview')" class="tab-btn flex items-center gap-2 pb-3.5 border-b-2 border-brand-600 text-brand-700 font-semibold transition-all" type="button">
+          <span>Overview</span>
+          <span id="badge-overview" class="bg-brand-100 text-brand-700 text-[11px] font-bold px-1.5 py-0.2 rounded-md">Active</span>
+        </button>
+        <button id="tab-mp-btn" onclick="switchMainTab('mp')" class="tab-btn flex items-center gap-2 pb-3.5 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-all" type="button">
+          <span>MPs Performance</span>
+          <span class="bg-slate-100 text-slate-600 text-[11px] font-medium px-1.5 py-0.2 rounded-md">1</span>
+        </button>
+        <button id="tab-projects-btn" onclick="switchMainTab('projects')" class="tab-btn flex items-center gap-2 pb-3.5 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-all" type="button">
+          <span>Projects</span>
+          <span class="bg-slate-100 text-slate-600 text-[11px] font-medium px-1.5 py-0.2 rounded-md">38</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= SECTION 1: OVERVIEW CONTENT ================= -->
+    <div id="section-overview" class="space-y-6 animate-fadeInUp">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Speedometer Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 flex flex-col justify-between transition-all duration-300 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <span class="font-serif text-slate-800 text-sm font-medium block mb-1">Fund Utilization</span>
+            <h3 class="font-serif text-xl font-normal text-slate-900 text-center mt-2 mb-4">Nagaland Utilization</h3>
+          </div>
+          <div class="relative flex flex-col items-center justify-center my-2">
+            <div class="relative w-full max-w-[420px] aspect-[2/1] flex items-end justify-center">
+              <svg class="w-full h-full" viewBox="0 0 360 190">
+                <defs>
+                  <linearGradient id="speedometerGrad" x1="0%" x2="100%" y1="0%" y2="0%">
+                    <stop offset="0%" stop-color="#ef4444"></stop>
+                    <stop offset="35%" stop-color="#f97316"></stop>
+                    <stop offset="70%" stop-color="#eab308"></stop>
+                    <stop offset="85%" stop-color="#10b981"></stop>
+                    <stop offset="100%" stop-color="#059669"></stop>
+                  </linearGradient>
+                </defs>
+                <path d="M 35 170 A 145 145 0 0 1 325 170" fill="none" stroke="#f1f5f9" stroke-linecap="round" stroke-width="28"></path>
+                <path d="M 35 170 A 145 145 0 0 1 325 170" fill="none" stroke="url(#speedometerGrad)" stroke-linecap="round" stroke-width="24"></path>
+                <text fill="#334155" font-size="11" font-weight="600" text-anchor="middle" x="48" y="174">0%</text>
+                <text fill="#334155" font-size="11" font-weight="600" text-anchor="middle" x="180" y="46">50%</text>
+                <text fill="#334155" font-size="11" font-weight="600" text-anchor="middle" x="310" y="174">100%</text>
+                <polygon fill="#0f172a" points="180,165 312,170 180,175"></polygon>
+                <circle cx="180" cy="170" fill="#0f172a" r="7"></circle>
+              </svg>
+            </div>
+            <div class="text-center mt-3"><span class="text-4xl font-extrabold tracking-tight text-slate-900">100.0%</span></div>
+          </div>
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <span>Speedometer Metric</span>
+            <span class="text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded">Full Allocation Utilized</span>
+          </div>
+        </div>
+
+        <!-- Donut Chart Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 flex flex-col justify-between transition-all duration-300 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <span class="font-serif text-slate-800 text-sm font-medium block mb-1">MP Personality Types</span>
+            <h3 class="font-sans text-lg font-bold text-slate-800 text-center mt-2 mb-4">MP Performance Profiles in Nagaland</h3>
+          </div>
+          <div class="relative flex flex-col md:flex-row items-center justify-center my-3 gap-6">
+            <div class="relative w-64 h-64 flex items-center justify-center">
+              <svg class="w-64 h-64 -rotate-90" viewBox="0 0 200 200">
+                <circle cx="100" cy="100" fill="none" r="70" stroke="#e2e8f0" stroke-width="46"></circle>
+                <circle cx="100" cy="100" fill="none" r="70" stroke="#22c55e" stroke-dasharray="439.8" stroke-dashoffset="0" stroke-width="46"></circle>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+                <span class="text-xs font-bold text-slate-900 leading-tight">High Achiever</span>
+                <span class="text-xs font-bold text-slate-900">1 MPs</span>
+                <span class="text-xs font-bold text-slate-900">100.0%</span>
+              </div>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <span>Category Profile</span>
+            <span class="text-brand-700 font-semibold bg-brand-50 px-2 py-0.5 rounded">100% High Achiever Rating</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial Breakdown Grid -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-serif text-lg font-bold text-slate-900 tracking-tight">Financial Breakdown</h3>
+          <span class="text-xs text-slate-500 font-medium">Consolidated MPLADS Accounts (Nagaland)</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 hover:border-emerald-500 hover:shadow-lg hover:-translate-y-1">
+            <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Allocation</span>
+            <div class="mt-3"><span class="text-2xl font-bold tracking-tight text-slate-900">₹14,70,00,000</span></div>
+          </div>
+          <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 hover:border-emerald-500 hover:shadow-lg hover:-translate-y-1">
+            <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Recommendation Metrics</span>
+            <div class="mt-3"><span class="text-2xl font-bold tracking-tight text-slate-900">Refreshing...</span></div>
+          </div>
+          <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 hover:border-emerald-500 hover:shadow-lg hover:-translate-y-1">
+            <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Recorded Expenditure</span>
+            <div class="mt-3"><span class="text-2xl font-bold tracking-tight text-slate-900">₹13,81,50,000</span></div>
+          </div>
+          <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 hover:border-emerald-500 hover:shadow-lg hover:-translate-y-1">
+            <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Average per MP</span>
+            <div class="mt-3"><span class="text-2xl font-bold tracking-tight text-slate-900">₹14,70,00,000</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ================= SECTION 2: MP PERFORMANCE CONTENT ================= -->
+    <div id="section-mp" class="space-y-6 hidden animate-fadeInUp">
+      <!-- 4 High Level Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 hover:border-blue-500 hover:shadow-lg hover:-translate-y-1">
+          <div class="flex items-center justify-between text-slate-500 mb-1">
+            <span class="text-xs font-medium uppercase tracking-wider">Total Allocation</span>
+            <span class="text-blue-600 font-bold text-xs">₹</span>
+          </div>
+          <div class="text-2xl font-bold text-slate-900">₹14.70 <span class="text-sm text-slate-500">CR</span></div>
+          <p class="text-[11px] text-slate-500 mt-1">100% entitlement allocated</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 hover:border-blue-500 hover:shadow-lg hover:-translate-y-1">
+          <div class="flex items-center justify-between text-slate-500 mb-1">
+            <span class="text-xs font-medium uppercase tracking-wider">Recommendation Rate</span>
+            <span class="text-blue-600 font-bold text-xs">📊</span>
+          </div>
+          <div class="text-2xl font-bold text-slate-900">100.00%</div>
+          <p class="text-[11px] text-slate-500 mt-1">₹14.70 Cr fully recommended</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 hover:border-blue-500 hover:shadow-lg hover:-translate-y-1">
+          <div class="flex items-center justify-between text-slate-500 mb-1">
+            <span class="text-xs font-medium uppercase tracking-wider">Performance Rank</span>
+            <span class="text-amber-500 text-xs">★</span>
+          </div>
+          <div class="text-2xl font-bold text-slate-900">High Achiever</div>
+          <p class="text-[11px] text-emerald-600 font-medium mt-1">Top tier state performance</p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 hover:border-blue-500 hover:shadow-lg hover:-translate-y-1">
+          <div class="flex items-center justify-between text-slate-500 mb-1">
+            <span class="text-xs font-medium uppercase tracking-wider">Projects Initiated</span>
+            <span class="text-blue-600 font-bold text-xs">📁</span>
+          </div>
+          <div class="text-2xl font-bold text-slate-900">38 Works</div>
+          <p class="text-[11px] text-slate-500 mt-1">Under active local execution</p>
+        </div>
+      </div>
+
+      <!-- MP Performance Table Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 transition-all duration-300 hover:border-slate-300 hover:shadow-lg">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6 pb-4 border-b border-slate-100">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900 tracking-tight">MPs Performance in Nagaland</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Tracked representative data for current parliamentary session</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-slate-50 border border-slate-200 text-slate-600">1 MP Tracked</span>
+            <span class="text-xs text-slate-400">Term: 18th LS (2024-2029)</span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-400 uppercase tracking-wider font-semibold">
+                <th class="py-3 px-2">MP Name</th>
+                <th class="py-3 px-2">Constituency</th>
+                <th class="py-3 px-2">House</th>
+                <th class="py-3 px-2">Allocated</th>
+                <th class="py-3 px-2">Recommended</th>
+                <th class="py-3 px-2">Utilization %</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-800 font-medium">
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-4 px-2 flex items-center space-x-3">
+                  <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-700 text-xs shrink-0">SJ</div>
+                  <div>
+                    <p class="font-bold text-slate-900">S SUPONGMEREN JAMIR</p>
+                    <p class="text-[10px] text-slate-400">INC</p>
+                  </div>
+                </td>
+                <td class="py-4 px-2 font-semibold">NAGALAND</td>
+                <td class="py-4 px-2">Lok Sabha</td>
+                <td class="py-4 px-2 font-bold text-slate-900">₹14,70,00,000</td>
+                <td class="py-4 px-2 font-bold text-slate-900">₹14,70,00,000</td>
+                <td class="py-4 px-2">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">100.00%</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ================= SECTION 3: PROJECTS CONTENT ================= -->
+    <div id="section-projects" class="space-y-6 hidden animate-fadeInUp">
+      <!-- Projects Navigation Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <!-- Sub Tabs -->
+        <div class="flex space-x-6 border-b border-slate-200 md:border-b-0 pb-3 md:pb-0">
+          <button id="subtab-completed-btn" onclick="switchProjectSubTab('completed')" class="project-subtab text-sm font-bold border-b-2 border-brand-600 text-brand-700 pb-1 transition-all" type="button">
+            Completed Works
+          </button>
+          <button id="subtab-recommended-btn" onclick="switchProjectSubTab('recommended')" class="project-subtab text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 pb-1 transition-all" type="button">
+            Recommended Works
+          </button>
+        </div>
+
+        <!-- Metric Badges Right -->
+        <div class="flex items-center gap-4">
+          <div class="text-right">
+            <span class="text-xs text-slate-400 block font-medium uppercase tracking-wider">Total Projects</span>
+            <span id="proj-count-badge" class="text-xl font-bold text-slate-900">38</span>
+          </div>
+          <div class="h-8 w-px bg-slate-200"></div>
+          <div class="text-right">
+            <span class="text-xs text-slate-400 block font-medium uppercase tracking-wider">Estimated Cost</span>
+            <span id="proj-cost-badge" class="text-xl font-bold text-slate-900">₹8.9 <span class="text-xs font-semibold text-slate-500">CR</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters & Search Toolbar -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="font-bold text-slate-700 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg> Filters
+          </span>
+          <div class="flex items-center gap-1.5">
+            <label class="text-slate-500 font-medium">Year:</label>
+            <select class="rounded-lg border-slate-200 text-xs py-1 px-2 focus:ring-brand-500 focus:border-brand-500 bg-slate-50">
+              <option>All Years</option>
+              <option>2026</option>
+              <option>2025</option>
+              <option>2024</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-slate-500 font-medium">Project Cost Range:</label>
+            <input class="w-28 accent-brand-600" type="range" min="0" max="5000000">
+            <span class="text-slate-600 font-semibold">₹0 - ₹500L</span>
+          </div>
+          <div id="payment-status-filter" class="flex items-center gap-1.5 hidden">
+            <label class="text-slate-500 font-medium">Payment Status:</label>
+            <select class="rounded-lg border-slate-200 text-xs py-1 px-2 focus:ring-brand-500 focus:border-brand-500 bg-slate-50">
+              <option>All Projects</option>
+              <option>Pending</option>
+              <option>Sanctioned</option>
+            </select>
+          </div>
+          <button class="text-brand-600 hover:underline font-semibold ml-auto md:ml-0" type="button">Clear All</button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative w-full md:w-64">
+          <input class="w-full bg-slate-50 rounded-lg border border-slate-200 pl-8 pr-3 py-1.5 text-xs focus:ring-brand-500 focus:border-brand-500" placeholder="Search projects..." type="text">
+          <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </div>
+      </div>
+
+      <!-- Projects Sub-Content: COMPLETED WORKS -->
+      <div id="subcontent-completed" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Completed Card 1 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-brand-50 text-brand-700 border border-brand-200">Normal/Others</span>
+              <span class="text-xs font-bold text-slate-900">₹ 17,00,000</span>
+            </div>
+            <h4 class="text-sm font-bold text-slate-900 mb-1 leading-snug">Construction of fishery pond</h4>
+            <p class="text-xs text-slate-500 flex items-start gap-1 mt-2">
+              <span>📍</span> Chumoukedima (Deputy Commissioner Chumoukedima_IDA)
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium border border-emerald-200">Completed</span>
+            <span class="text-slate-400">12 Jan 2026</span>
+          </div>
+        </div>
+
+        <!-- Completed Card 2 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-brand-50 text-brand-700 border border-brand-200">Normal/Others</span>
+              <span class="text-xs font-bold text-slate-900">₹ 1,00,000</span>
+            </div>
+            <h4 class="text-sm font-bold text-slate-900 mb-1 leading-snug">Construction of drainage</h4>
+            <p class="text-xs text-slate-500 flex items-start gap-1 mt-2">
+              <span>📍</span> PEREN (Deputy Commissioner Peren_IDA)
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium border border-emerald-200">Completed</span>
+            <span class="text-slate-400">12 Jan 2026</span>
+          </div>
+        </div>
+
+        <!-- Completed Card 3 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-brand-50 text-brand-700 border border-brand-200">Normal/Others</span>
+              <span class="text-xs font-bold text-slate-900">₹ 1,50,000</span>
+            </div>
+            <h4 class="text-sm font-bold text-slate-900 mb-1 leading-snug">Construction of Drainage</h4>
+            <p class="text-xs text-slate-500 flex items-start gap-1 mt-2">
+              <span>📍</span> MOKOKCHUNG (Deputy Commissioner Mokokchung_IDA)
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium border border-emerald-200">Completed</span>
+            <span class="text-slate-400">11 Dec 2024</span>
+          </div>
+        </div>
+
+        <!-- Completed Card 4 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-brand-50 text-brand-700 border border-brand-200">Roads/Infrastructure</span>
+              <span class="text-xs font-bold text-slate-900">₹ 25,00,000</span>
+            </div>
+            <h4 class="text-sm font-bold text-slate-900 mb-1 leading-snug">Improvement of road towards civil Hospital circular road at Mon Town</h4>
+            <p class="text-xs text-slate-500 flex items-start gap-1 mt-2">
+              <span>📍</span> MON (Deputy Commissioner Mon_IDA)
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium border border-emerald-200">Completed</span>
+            <span class="text-slate-400">15 Feb 2025</span>
+          </div>
+        </div>
+
+        <!-- Completed Card 5 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-brand-50 text-brand-700 border border-brand-200">Community Assets</span>
+              <span class="text-xs font-bold text-slate-900">₹ 12,50,000</span>
+            </div>
+            <h4 class="text-sm font-bold text-slate-900 mb-1 leading-snug">Renovation of Community Hall at Kohima village</h4>
+            <p class="text-xs text-slate-500 flex items-start gap-1 mt-2">
+              <span>📍</span> KOHIMA (Deputy Commissioner Kohima_IDA)
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium border border-emerald-200">Completed</span>
+            <span class="text-slate-400">10 Mar 2025</span>
+          </div>
+        </div>
+
+        <!-- Completed Card 6 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-brand-50 text-brand-700 border border-brand-200">Renewable Energy</span>
+              <span class="text-xs font-bold text-slate-900">₹ 8,20,000</span>
+            </div>
+            <h4 class="text-sm font-bold text-slate-900 mb-1 leading-snug">Solar Street Lighting Installation in Wokha</h4>
+            <p class="text-xs text-slate-500 flex items-start gap-1 mt-2">
+              <span>📍</span> WOKHA (Deputy Commissioner Wokha_IDA)
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium border border-emerald-200">Completed</span>
+            <span class="text-slate-400">22 Nov 2024</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projects Sub-Content: RECOMMENDED WORKS -->
+      <div id="subcontent-recommended" class="grid grid-cols-1 md:grid-cols-3 gap-4 hidden">
+        <!-- RecommCard 1 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="flex items-center justify-between mb-2 gap-1 flex-wrap">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-brand-50 text-brand-700 border border-brand-200">Normal/Others</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">Approval Pending</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium mt-1">Estimated Cost</p>
+            <span class="text-sm font-bold text-slate-900 block mb-1">₹ 15,00,000</span>
+            <h4 class="text-sm font-bold text-slate-900 leading-snug">Establishment of Poultry farm at Mongsenbai, Mokokchung</h4>
+            <p class="text-xs text-slate-500 flex items-start gap-1 mt-2">
+              <span>📍</span> MOKOKCHUNG (Deputy Commissioner Mokokchung_IDA)
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400">Recommended on 2025</div>
+        </div>
+
+        <!-- Recommended Card 2 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="flex items-center justify-between mb-2 gap-1 flex-wrap">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-brand-50 text-brand-700 border border-brand-200">Normal/Others</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">Technical Sanction</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium mt-1">Estimated Cost</p>
+            <span class="text-sm font-bold text-slate-900 block mb-1">₹ 30,00,000</span>
+            <h4 class="text-sm font-bold text-slate-900 leading-snug">Construction of Community approach road, soiling metaling</h4>
+            <p class="text-xs text-slate-500 flex items-start gap-1 mt-2">
+              <span>📍</span> KOHIMA (Deputy Commissioner Kohima_IDA)
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400">Recommended on 2025</div>
+        </div>
+
+        <!-- Recommended Card 3 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="flex items-center justify-between mb-2 gap-1 flex-wrap">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-brand-50 text-brand-700 border border-brand-200">Normal/Others</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">Admin Approval</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium mt-1">Estimated Cost</p>
+            <span class="text-sm font-bold text-slate-900 block mb-1">₹ 20,00,000</span>
+            <h4 class="text-sm font-bold text-slate-900 leading-snug">Improvement of road towards civil Hospital circular road at Mon Town</h4>
+            <p class="text-xs text-slate-500 flex items-start gap-1 mt-2">
+              <span>📍</span> MON (Deputy Commissioner Mon_IDA)
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400">Recommended on 2025</div>
+        </div>
+
+        <!-- Recommended Card 4 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="flex items-center justify-between mb-2 gap-1 flex-wrap">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-brand-50 text-brand-700 border border-brand-200">Normal/Others</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200">Feasibility Review</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium mt-1">Estimated Cost</p>
+            <span class="text-sm font-bold text-slate-900 block mb-1">₹ 17,00,000</span>
+            <h4 class="text-sm font-bold text-slate-900 leading-snug">Construction of fishery pond at Chumoukedima District</h4>
+            <p class="text-xs text-slate-500 flex items-start gap-1 mt-2">
+              <span>📍</span> Chumoukedima (Deputy Commissioner Chumoukedima_IDA)
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400">Recommended on 12 Jan 2026</div>
+        </div>
+
+        <!-- Recommended Card 5 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="flex items-center justify-between mb-2 gap-1 flex-wrap">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-brand-50 text-brand-700 border border-brand-200">Normal/Others</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">Pending Sanction</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium mt-1">Estimated Cost</p>
+            <span class="text-sm font-bold text-slate-900 block mb-1">₹ 1,00,000</span>
+            <h4 class="text-sm font-bold text-slate-900 leading-snug">Construction of drainage in public colony ward</h4>
+            <p class="text-xs text-slate-500 flex items-start gap-1 mt-2">
+              <span>📍</span> PEREN (Deputy Commissioner Peren_IDA)
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400">Recommended on 2026</div>
+        </div>
+
+        <!-- Recommended Card 6 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
+          <div>
+            <div class="flex items-center justify-between mb-2 gap-1 flex-wrap">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-brand-50 text-brand-700 border border-brand-200">Normal/Others</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">Recommended by MP</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium mt-1">Estimated Cost</p>
+            <span class="text-sm font-bold text-slate-900 block mb-1">₹ 1,50,000</span>
+            <h4 class="text-sm font-bold text-slate-900 leading-snug">Construction of Drainage at commercial point, Ward-4</h4>
+            <p class="text-xs text-slate-500 flex items-start gap-1 mt-2">
+              <span>📍</span> MOKOKCHUNG (Deputy Commissioner Mokokchung_IDA)
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400">Recommended on 2024</div>
+        </div>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="flex items-center justify-between border-t border-slate-200 pt-4 text-xs text-slate-500">
+        <span id="proj-showing-text">Showing 1 to 6 of 20 completed works</span>
+        <div class="flex items-center space-x-1">
+          <button class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50">Previous</button>
+          <button class="px-2.5 py-1 rounded bg-brand-600 text-white font-bold">1</button>
+          <button class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50">2</button>
+          <button class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50">3</button>
+          <button class="px-2.5 py-1 rounded border border-slate-200 bg-white hover:bg-slate-50">Next</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 text-xs text-slate-500 mt-auto" data-purpose="page-footer">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <span class="font-serif italic font-semibold text-slate-700">Empowered Indian</span>
+        <span>•</span>
+        <span>Independent Civic Data Platform</span>
+      </div>
+      <div class="flex items-center space-x-6">
+        <a class="hover:text-brand-600 transition-colors" href="#">Data Methodology</a>
+        <a class="hover:text-brand-600 transition-colors" href="#">MoSPI Portal Sync</a>
+        <a class="hover:text-brand-600 transition-colors" href="#">Privacy & Terms</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Tab Control JavaScript -->
+  <script>
+    function switchMainTab(tabName) {
+      // Hide all main sections
+      document.getElementById('section-overview').classList.add('hidden');
+      document.getElementById('section-mp').classList.add('hidden');
+      document.getElementById('section-projects').classList.add('hidden');
+
+      // Reset tab button styling
+      const tabs = ['overview', 'mp', 'projects'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-${t}-btn`);
+        btn.className = 'tab-btn flex items-center gap-2 pb-3.5 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-all';
+      });
+
+      // Remove active badge if exists
+      const badge = document.getElementById('badge-overview');
+      if (badge) badge.remove();
+
+      // Show selected section & active tab styling
+      document.getElementById(`section-${tabName}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-${tabName}-btn`);
+      activeBtn.className = 'tab-btn flex items-center gap-2 pb-3.5 border-b-2 border-brand-600 text-brand-700 font-semibold transition-all';
+    }
+
+    function switchProjectSubTab(subTabName) {
+      const compContent = document.getElementById('subcontent-completed');
+      const recoContent = document.getElementById('subcontent-recommended');
+      const compBtn = document.getElementById('subtab-completed-btn');
+      const recoBtn = document.getElementById('subtab-recommended-btn');
+      const paymentFilter = document.getElementById('payment-status-filter');
+      const countBadge = document.getElementById('proj-count-badge');
+      const costBadge = document.getElementById('proj-cost-badge');
+      const showingText = document.getElementById('proj-showing-text');
+
+      if (subTabName === 'completed') {
+        compContent.classList.remove('hidden');
+        recoContent.classList.add('hidden');
+
+        compBtn.className = 'project-subtab text-sm font-bold border-b-2 border-brand-600 text-brand-700 pb-1 transition-all';
+        recoBtn.className = 'project-subtab text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 pb-1 transition-all';
+
+        paymentFilter.classList.add('hidden');
+        countBadge.innerText = '38';
+        costBadge.innerHTML = '₹8.9 <span class="text-xs font-semibold text-slate-500">CR</span>';
+        showingText.innerText = 'Showing 1 to 6 of 20 completed works';
+      } else {
+        compContent.classList.add('hidden');
+        recoContent.classList.remove('hidden');
+
+        recoBtn.className = 'project-subtab text-sm font-bold border-b-2 border-brand-600 text-brand-700 pb-1 transition-all';
+        compBtn.className = 'project-subtab text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 pb-1 transition-all';
+
+        paymentFilter.classList.remove('hidden');
+        countBadge.innerText = '18';
+        costBadge.innerHTML = '₹5.8 <span class="text-xs font-semibold text-slate-500">ESTIMATED COST</span>';
+        showingText.innerText = 'Showing 1 to 6 of 18 recommended works';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MP Financial Breakdown - Andrew J. Syngkon</title>
+<!-- Tailwind CSS CDN with forms and container queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+            },
+            statusGreen: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="base-styling">
+    body {
+      background-color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #0f172a;
+    }
+  </style>
+<style data-purpose="interactive-transitions">
+    .card-hover-effect {
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover-effect:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+      border-color: #93c5fd;
+    }
+    .btn-action-hover {
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-action-hover:hover {
+      background-color: #f8fafc;
+      border-color: #2563eb;
+      color: #1d4ed8;
+      transform: translateY(-1px);
+    }
+  </style>
+<!-- END: Custom Styles -->
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-blue-100 selection:text-blue-800">
+<!-- BEGIN: MainContent -->
+<main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12 space-y-6">
+<!-- BEGIN: TopProfileHeader -->
+<header class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-6 card-hover-effect" data-purpose="mp-profile-header">
+<!-- Back Link -->
+<div class="mb-4">
+<a class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors duration-150 group" href="mps.html">
+<svg class="w-4 h-4 transition-transform duration-150 group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Back to all MPs</span>
+</a>
+</div>
+<!-- MP Identity & Action Buttons -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+<!-- Identity Section -->
+<div class="flex items-center gap-4">
+<!-- Avatar -->
+<div class="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 text-white shadow-sm ring-4 ring-blue-50">
+<svg class="w-9 h-9" fill="currentColor" viewbox="0 0 24 24">
+<path clip-rule="evenodd" d="M12 4a4 4 0 100 8 4 4 0 000-8zm-6.5 14a6.5 6.5 0 0113 0H5.5z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<!-- Info Details -->
+<div class="space-y-1">
+<h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-serif uppercase">
+              Andrew J. Syngkon
+            </h1>
+<div class="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-slate-600">
+<span class="inline-flex items-center gap-1 text-slate-500 font-medium">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                SHILLONG, Meghalaya
+              </span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                Lok Sabha
+              </span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                18th Lok Sabha
+              </span>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
+<button class="btn-action-hover inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-xs cursor-pointer" type="button">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Copy Link</span>
+</button>
+<a class="btn-action-hover inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-medium text-purple-700 bg-white border border-purple-200 rounded-lg shadow-xs hover:border-purple-400 hover:text-purple-800 cursor-pointer" href="mpaireport.html">
+<svg class="w-4 h-4 text-purple-600" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" fill-rule="evenodd"></path>
+</svg>
+<span>AI Report</span>
+</a>
+<button class="btn-action-hover inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg shadow-xs cursor-pointer" type="button">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Download Report</span>
+</button>
+</div>
+</div>
+</header>
+<!-- END: TopProfileHeader -->
+<!-- BEGIN: TopMetricCardsRow -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-5" data-purpose="metrics-overview">
+<!-- Key Constituency Metrics (Left 7 Cols) -->
+<section class="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-6 card-hover-effect">
+<div class="flex items-center justify-between pb-4 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="p-1 rounded bg-blue-50 text-blue-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+<h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Key Constituency Metrics</h2>
+</div>
+<span class="text-xs text-slate-400 font-medium">Fiscal Period: 2024-2029</span>
+</div>
+<!-- Metric 2x2 Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
+<!-- Total Allocated -->
+<div class="relative bg-slate-50/70 rounded-xl p-4 border border-slate-200/80 border-l-4 border-l-blue-500 card-hover-effect">
+<div class="flex items-start justify-between">
+<span class="text-2xl font-black text-slate-900 tracking-tight">₹9.8 <span class="text-sm font-semibold text-slate-700">CR</span></span>
+<div class="w-7 h-7 rounded-full bg-blue-100/70 text-blue-600 flex items-center justify-center font-bold text-sm">
+                ₹
+              </div>
+</div>
+<p class="mt-2 text-xs font-bold text-slate-700 uppercase tracking-wide">Total Allocated</p>
+<p class="text-xs text-slate-500 mt-0.5">Budget assigned to MP</p>
+</div>
+<!-- Fund Utilization -->
+<div class="relative bg-slate-50/70 rounded-xl p-4 border border-slate-200/80 border-l-4 border-l-emerald-500 card-hover-effect">
+<div class="flex items-start justify-between">
+<span class="text-2xl font-black text-emerald-600 tracking-tight">100.0%</span>
+<div class="w-7 h-7 rounded-full bg-emerald-100/70 text-emerald-600 flex items-center justify-center">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<div class="flex items-center gap-1 mt-2">
+<p class="text-xs font-bold text-slate-700 uppercase tracking-wide">Fund Utilization</p>
+<svg class="w-3.5 h-3.5 text-blue-500 inline" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<p class="text-xs text-slate-500 mt-0.5 font-medium">₹9,80,00,000 rec. • 72.9% exp.</p>
+</div>
+<!-- Works Completed -->
+<div class="relative bg-slate-50/70 rounded-xl p-4 border border-slate-200/80 border-l-4 border-l-amber-500 card-hover-effect">
+<div class="flex items-start justify-between">
+<span class="text-2xl font-black text-slate-900 tracking-tight">98</span>
+<div class="w-7 h-7 rounded-full bg-amber-100/80 text-amber-600 flex items-center justify-center">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill-rule="evenodd"></path>
+</svg>
+</div>
+</div>
+<p class="mt-2 text-xs font-bold text-slate-700 uppercase tracking-wide">Works Completed</p>
+<p class="text-xs text-slate-500 mt-0.5">out of 241 recommended</p>
+</div>
+<!-- Completion Rate -->
+<div class="relative bg-slate-50/70 rounded-xl p-4 border border-slate-200/80 border-l-4 border-l-purple-500 card-hover-effect">
+<div class="flex items-start justify-between">
+<span class="text-2xl font-black text-rose-500 tracking-tight">40.7%</span>
+<div class="w-7 h-7 rounded-full bg-purple-100/70 text-purple-600 flex items-center justify-center">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<p class="mt-2 text-xs font-bold text-slate-700 uppercase tracking-wide">Completion Rate</p>
+<p class="text-xs text-slate-500 mt-0.5">Project completion ratio</p>
+</div>
+</div>
+</section>
+<!-- AI Safety & Fraud Risk Snapshot (Right 5 Cols) -->
+<section class="lg:col-span-5 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-6 card-hover-effect flex flex-col justify-between">
+<div>
+<!-- Header and Badge -->
+<div class="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+<h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider">AI Safety &amp; Fraud Risk Snapshot</h2>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              AI AUDIT VERIFIED • LOW RISK
+            </span>
+</div>
+<!-- Highlight Banner -->
+<div class="mt-4 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="text-2xl font-black text-emerald-600">96%</span>
+<div class="leading-tight">
+<p class="text-xs font-bold text-slate-800">Clean Audit Score</p>
+<p class="text-[11px] text-slate-500">0 Ghost Projects detected</p>
+</div>
+</div>
+<div class="text-right">
+<span class="text-[11px] text-slate-400 font-medium block">Fund Velocity:</span>
+<span class="text-xs font-bold text-slate-800">Normal</span>
+</div>
+</div>
+<!-- Risk Factors Table/List -->
+<div class="mt-4 space-y-2 text-xs">
+<div class="flex items-center justify-between py-1 border-b border-slate-50">
+<span class="text-slate-500">Contractor Concentration:</span>
+<span class="font-medium text-slate-800">Low (14 Execution Agencies)</span>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-slate-50">
+<span class="text-slate-500">Fund Allocation Velocity:</span>
+<span class="font-medium text-emerald-700">Consistent Milestone Release</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-slate-500">NIC Geotagged Site Verification:</span>
+<span class="font-medium text-blue-600">94.2% verified on portal</span>
+</div>
+</div>
+</div>
+<!-- AI Confidence Banner -->
+<div class="mt-5 pt-3 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-600">
+<svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill-rule="evenodd"></path>
+</svg>
+<span><strong class="text-slate-800 font-semibold">AI Confidence: High</strong> • No expenditure anomalies detected in Shillong.</span>
+</div>
+</section>
+</div>
+<!-- END: TopMetricCardsRow -->
+<!-- BEGIN: NavigationTabs -->
+<nav aria-label="Tabs" class="border-b border-slate-200 mt-6" data-purpose="section-navigation">
+<div class="flex space-x-8">
+<a class="border-transparent text-slate-600 hover:text-slate-800 hover:border-slate-300 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors duration-150" href="#">
+          Overview
+        </a>
+<a class="border-transparent text-slate-600 hover:text-slate-800 hover:border-slate-300 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors duration-150" href="#">
+          Projects
+        </a>
+<a aria-current="page" class="border-blue-600 text-blue-600 whitespace-nowrap py-3 px-1 border-b-2 font-semibold text-sm" href="#">
+          Financial Details
+        </a>
+</div>
+</nav>
+<!-- END: NavigationTabs -->
+<!-- BEGIN: FinancialBreakdownSection -->
+<section class="space-y-6 pt-2" data-purpose="financial-breakdown">
+<h2 class="text-xl sm:text-2xl font-bold text-slate-900 font-serif">Financial Breakdown</h2>
+<!-- Two Side-by-Side Breakdown Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Fund Allocation Card -->
+<div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 card-hover-effect flex flex-col justify-between">
+<h3 class="text-xl font-bold text-slate-900 mb-6">Fund Allocation</h3>
+<div class="space-y-5">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<span class="text-sm text-slate-600 font-medium">Initial<br class="hidden sm:inline"/> Allocation</span>
+<span class="text-lg font-bold text-slate-900 tracking-tight">₹9,80,00,000</span>
+</div>
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<span class="text-sm text-slate-600 font-medium">Total<br class="hidden sm:inline"/> Expenditure</span>
+<span class="text-lg font-bold text-slate-900 tracking-tight">₹7,14,30,000</span>
+</div>
+<!-- Remaining Balance Highlight Box -->
+<div class="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200/70 flex items-center justify-between">
+<span class="text-sm font-bold text-slate-800">Remaining<br class="hidden sm:inline"/> Balance</span>
+<span class="text-xl font-extrabold text-slate-900 tracking-tight">₹2,65,70,000</span>
+</div>
+</div>
+</div>
+<!-- Utilization Metrics Card -->
+<div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 card-hover-effect flex flex-col justify-between">
+<h3 class="text-xl font-bold text-slate-900 mb-6">Utilization Metrics</h3>
+<div class="space-y-5">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div class="flex items-center gap-1.5">
+<span class="text-sm text-slate-600 font-medium">Fund Utilization</span>
+<svg class="w-4 h-4 text-blue-500" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<span class="text-lg font-bold text-emerald-600">100.00%</span>
+</div>
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<span class="text-sm text-slate-600 font-medium">Works Completed</span>
+<span class="text-lg font-bold text-slate-900">98</span>
+</div>
+<div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<span class="text-sm text-slate-600 font-medium">Average per Project</span>
+<span class="text-lg font-bold text-slate-900 tracking-tight">₹2,96,390</span>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="text-sm text-slate-600 font-medium">Completion Rate</span>
+<span class="text-lg font-bold text-rose-500">40.7%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Expenditure vs Allocation Velocity Bottom Card -->
+<div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 card-hover-effect" data-purpose="velocity-bar">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+<div class="flex items-center gap-2.5">
+<span class="text-xs font-bold text-slate-800 tracking-wider uppercase">Expenditure vs Allocation Velocity</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100/70 text-emerald-800">
+              On Track
+            </span>
+</div>
+<div class="text-xs text-slate-600 font-medium">
+            Disbursed: <span class="font-bold text-slate-900">₹7.14 CR</span> (72.89%) • Unspent: <span class="font-bold text-slate-900">₹2.66 CR</span> (27.11%)
+          </div>
+</div>
+<!-- Segmented Velocity Progress Bar -->
+<div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+<div class="bg-emerald-500 h-full rounded-l-full transition-all duration-500" style="width: 72.89%;" title="Disbursed: 72.89%"></div>
+<div class="bg-blue-500 h-full rounded-r-full transition-all duration-500" style="width: 27.11%;" title="Unspent: 27.11%"></div>
+</div>
+<!-- Progress Indicators/Legend -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 text-xs text-slate-600">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+<span>Total Expenditure (<strong class="text-slate-800 font-semibold">₹7,14,30,000</strong>)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+<span>Unspent Balance (<strong class="text-slate-800 font-semibold">₹2,65,70,000</strong>)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: FinancialBreakdownSection -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: PageFooter -->
+<footer class="w-full border-t border-slate-200 bg-white py-4 mt-8 text-xs text-slate-500" data-purpose="source-footer">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+<div>
+        Data source: MPLADS Portal (Ministry of Statistics and Programme Implementation)
+      </div>
+<div class="flex items-center gap-4">
+<span>Updated: Sept 2026</span>
+<span class="inline-block text-slate-300">•</span>
+<span class="font-medium text-slate-700">NIC Verified</span>
+</div>
+</div>
+</footer>
+<!-- END: PageFooter -->
+</body></html>

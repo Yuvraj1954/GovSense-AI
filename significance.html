@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Road Development — Ward 12 | CivicLens Dashboard</title>
+<!-- Tailwind CSS CDN with Forms & Container Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration for a Refined, Elegant Theme -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f5fa',
+              100: '#e1ecf5',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              800: '#1e3a8a',
+              900: '#0f172a',
+            },
+            surface: {
+              base: '#f6f8fb',
+              card: '#ffffff',
+              subtle: '#f8fafc',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-enhancements">
+    /* Subtle custom scrollbar and refined rendering */
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+</head>
+<body class="bg-[#f4f7fb] text-slate-800 min-h-screen font-sans pb-12 antialiased selection:bg-blue-100 selection:text-blue-900">
+<!-- BEGIN: MainContainer -->
+<div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-5">
+<!-- BEGIN: TopNotificationBar -->
+<!-- AI Status Notification Banner -->
+<div class="flex justify-end mb-3">
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200/80 text-rose-800 text-xs sm:text-sm font-medium shadow-xs transition-all duration-200 hover:bg-rose-100/70">
+<svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Displaying AI Risk &amp; Integrity diagnostics</span>
+</div>
+</div>
+<!-- END: TopNotificationBar -->
+<!-- BEGIN: HeaderSection -->
+<!-- Breadcrumb & Main Actions Header -->
+<header class="mb-6">
+<nav aria-label="Breadcrumb" class="mb-2.5">
+<a class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-500 hover:text-blue-600 transition-all duration-200 hover:-translate-x-0.5" href="projects.html">
+<svg class="w-4 h-4 text-slate-500 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          ← Back to Projects
+        </a>
+</nav>
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<!-- Title and Metadata badges -->
+<div class="flex flex-wrap items-center gap-3">
+<h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            Road Development — Ward 12
+          </h1>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 transition-colors">
+              ID: PRJ-2024-W12-089
+            </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 transition-colors">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+              In Progress
+            </span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-wrap items-center gap-2.5">
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 hover:shadow-xs active:scale-[0.98] text-slate-700 text-sm font-medium shadow-xs transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-300" type="button">
+<svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+            Download Dossier PDF
+          </button>
+<button class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 hover:shadow-md active:scale-[0.98] text-white text-sm font-medium shadow-xs transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-1" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+            Record Site Inspection
+          </button>
+</div>
+</div>
+</header>
+<!-- END: HeaderSection -->
+<!-- BEGIN: TopKpiCards -->
+<!-- Top KPI Overview Metrics (3 Cards Grid) -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
+<!-- Metric 1: Financial Utilization -->
+<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 flex flex-col justify-between cursor-default">
+<div>
+<div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+<span>Total Sanctioned vs. Spent</span>
+<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center text-slate-600">
+<svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6H2.25m0 0v10.5m0 0h19.5m-19.5 0h.008v.008H2.25V16.5Zm19.5 0h.008v.008h-.008V16.5Zm0 0V6a.75.75 0 0 0-.75-.75h-.75M3.75 4.5h16.5m-16.5 0a.75.75 0 0 0-.75.75v.75m17.25-.75a.75.75 0 0 1 .75.75v.75" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<div class="flex items-baseline gap-1.5 my-2">
+<span class="text-2xl sm:text-3xl font-bold text-slate-900">₹32.98 L</span>
+<span class="text-sm font-medium text-slate-400">/ ₹48.50 L</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between items-center text-xs mb-1.5 font-medium">
+<span class="text-blue-700 font-semibold">68.0% Utilized</span>
+<span class="text-slate-500">₹15.52 L Remaining</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+<div class="bg-blue-600 h-2 rounded-full" style="width: 68%;"></div>
+</div>
+</div>
+</div>
+<!-- Metric 2: Physical Progress -->
+<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 flex flex-col justify-between cursor-default">
+<div>
+<div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+<span>Physical Progress</span>
+<div class="w-6 h-6 rounded-md bg-amber-50 flex items-center justify-center text-amber-700">
+<svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<div class="flex items-baseline gap-1.5 my-2">
+<span class="text-2xl sm:text-3xl font-bold text-slate-900">0.96 KM</span>
+<span class="text-sm font-medium text-slate-400">/ 2.86 KM</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex justify-between items-center text-xs mb-1.5 font-medium">
+<span class="text-amber-800 font-semibold flex items-center gap-1">
+<svg class="w-3 h-3 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+              ~33.6% Verified
+            </span>
+<span class="text-slate-500">Drone / Site Telemetry</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+<div class="bg-amber-600 h-2 rounded-full" style="width: 33.6%;"></div>
+</div>
+</div>
+</div>
+<!-- Metric 3: AI Risk Score -->
+<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 flex flex-col justify-between cursor-default">
+<div>
+<div class="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+<span>AI Risk Score</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+<span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+              Critical Attention
+            </span>
+</div>
+<div class="flex items-baseline gap-1.5 my-2">
+<span class="text-2xl sm:text-3xl font-bold text-rose-700">8.5</span>
+<span class="text-sm font-medium text-slate-400">/ 10</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex items-center gap-1.5 text-xs text-rose-700 font-medium mb-1.5">
+<svg class="w-3.5 h-3.5 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.008v.008H12v-.008Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="truncate">3 high-probability delay factors detected in paving...</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+<div class="bg-rose-600 h-2 rounded-full" style="width: 85%;"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: TopKpiCards -->
+<!-- BEGIN: NavigationTabs -->
+<!-- Tab Controls Navigation -->
+<div class="flex items-center gap-2 border-b border-slate-200/80 mb-6 pb-2"><a class="px-3.5 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-700 hover:bg-slate-100/70 rounded-md transition-all duration-200 inline-flex items-center" href="overview.html">Overview</a>
+<button class="px-3.5 py-1.5 text-sm font-bold text-blue-700 bg-white shadow-xs border border-slate-200 rounded-md inline-flex items-center gap-1.5 transition-all duration-200" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+<span>Physical Significance</span>
+</button>
+<a class="px-3.5 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-700 hover:bg-slate-100/70 rounded-md inline-flex items-center gap-1.5 transition-all duration-200" href="projectaireport.html">
+<span>AI Report</span>
+<span class="inline-block w-2 h-2 rounded-full bg-rose-500 ml-1"></span>
+</a></div>
+<!-- END: NavigationTabs -->
+<!-- BEGIN: PhysicalSignificanceContainer -->
+<section class="space-y-6">
+<!-- Header: Title and Subtitle -->
+<div class="pb-1">
+<h2 class="text-2xl font-bold tracking-tight text-slate-900">Project Status &amp; Physical Progress</h2>
+<p class="text-sm text-slate-500 mt-1 font-medium">Verified linear mileage &amp; telemetry data</p>
+</div>
+<!-- Grid for Donut & Timeline Cards -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+<!-- Left Card: Circular / Donut Progress -->
+<div class="lg:col-span-6 bg-white rounded-xl border border-slate-200/90 p-8 shadow-xs hover:border-blue-500 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center min-h-[300px]">
+<div class="relative flex items-center justify-center">
+<svg class="w-48 h-48 -rotate-90 transform" viewbox="0 0 160 160">
+<!-- Background ring (Pending 66.4%) -->
+<circle cx="80" cy="80" fill="transparent" r="62" stroke="#e2e8f0" stroke-width="16"></circle>
+<!-- Progress ring (Verified 33.6% -> 33.6% of 389.56 circumference = ~131) -->
+<circle cx="80" cy="80" fill="transparent" r="62" stroke="#2563eb" stroke-dasharray="131 259" stroke-linecap="round" stroke-width="16"></circle>
+</svg>
+<div class="absolute flex flex-col items-center justify-center text-center">
+<span class="text-3xl font-extrabold text-slate-900 tracking-tight">33.6%</span>
+<span class="text-[11px] font-bold text-slate-400 tracking-wider uppercase mt-0.5">VERIFIED<br/>PHYSICAL</span>
+</div>
+</div>
+<!-- Donut Legend -->
+<div class="flex flex-wrap items-center justify-center gap-6 mt-6 text-xs font-semibold text-slate-700">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0"></span>
+<span>Verified Base (33.6%)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-slate-300 shrink-0"></span>
+<span class="text-slate-500 font-medium">Pending (66.4%)</span>
+</div>
+</div>
+</div>
+<!-- Right Card: Milestones & Chronological Timeline -->
+<div class="lg:col-span-6 bg-white rounded-xl border border-slate-200/90 p-8 shadow-xs hover:border-blue-500 hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+<div class="flex items-center gap-2.5 mb-6 text-slate-900 font-bold text-lg">
+<svg class="w-5 h-5 text-blue-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewbox="0 0 24 24">
+<path d="M12 4.5v15m0 0l-3-3m3 3l3-3m-9-9h4m2 0h4" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="6" cy="7.5" fill="currentColor" r="2"></circle>
+<circle cx="18" cy="7.5" fill="currentColor" r="2"></circle>
+<circle cx="12" cy="18.5" fill="currentColor" r="2"></circle>
+</svg>
+<h3>Milestones &amp; Chronological Timeline</h3>
+</div>
+<!-- Timeline items with connector line -->
+<div class="relative space-y-6 pl-2">
+<!-- Vertical connector line -->
+<div class="absolute left-[13px] top-3 bottom-3 w-0.5 bg-slate-200"></div>
+<!-- Milestone 1 -->
+<div class="relative flex items-start justify-between gap-4">
+<div class="flex items-start gap-4">
+<span class="relative z-10 w-3 h-3 rounded-full bg-blue-600 ring-4 ring-white shrink-0 mt-1.5"></span>
+<div>
+<h4 class="text-sm font-bold text-slate-900">DPR &amp; Sanction Clearance</h4>
+<p class="text-xs text-slate-500 font-medium mt-0.5">10 Dec 2024 — Approved by Chief Municipal Engineer</p>
+</div>
+</div>
+<span class="px-2.5 py-0.5 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-200/70 shrink-0">Completed</span>
+</div>
+<!-- Milestone 2 -->
+<div class="relative flex items-start justify-between gap-4">
+<div class="flex items-start gap-4">
+<span class="relative z-10 w-3 h-3 rounded-full bg-blue-600 ring-4 ring-white shrink-0 mt-1.5"></span>
+<div>
+<h4 class="text-sm font-bold text-slate-900">Site Clearance &amp; Excavation</h4>
+<p class="text-xs text-slate-500 font-medium mt-0.5">28 Dec 2024 — 12.80 KM grubbing</p>
+</div>
+</div>
+<span class="px-2.5 py-0.5 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-200/70 shrink-0">Completed</span>
+</div>
+<!-- Milestone 3 -->
+<div class="relative flex items-start justify-between gap-4">
+<div class="flex items-start gap-4">
+<span class="relative z-10 w-3 h-3 rounded-full bg-blue-600 ring-4 ring-white shrink-0 mt-1.5"></span>
+<div>
+<h4 class="text-sm font-bold text-slate-900">Sub-grade &amp; Bituminous Paving</h4>
+<p class="text-xs text-slate-500 font-medium mt-0.5">Active 0.96 KM laid / 2.86 KM remaining</p>
+</div>
+</div>
+<span class="px-2.5 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded-full border border-blue-200/80 shrink-0">In Progress</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Card: Physical Significance & Geospatial Telemetry Breakdown -->
+<div class="bg-white rounded-xl border border-slate-200/90 p-7 shadow-xs hover:border-blue-500 hover:shadow-md transition-all duration-300">
+<!-- Header with layer stack icon -->
+<div class="flex items-center gap-2.5 mb-6 text-slate-900 font-bold text-base sm:text-lg">
+<svg class="w-5 h-5 text-blue-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewbox="0 0 24 24">
+<path d="M6.429 9.75L2.25 12l9.75 5.25 9.75-5.25-4.179-2.25m-11.321 4.5L2.25 16.5l9.75 5.25 9.75-5.25-4.179-2.25M12 3L2.25 8.25l9.75 5.25 9.75-5.25L12 3z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<h3>Physical Significance &amp; Geospatial Telemetry Breakdown</h3>
+</div>
+<!-- 4 Columns Grid Breakdown -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-1 text-sm">
+<!-- Column 1: Financial Summary -->
+<div class="space-y-2.5">
+<div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Financial Summary</div>
+<div class="text-slate-700">Total Budget: <span class="font-bold text-slate-900">₹48.50 L</span></div>
+<div class="text-slate-700">Spent Outlay: <span class="font-bold text-slate-900">₹32.98 L</span></div>
+</div>
+<!-- Column 2: Execution Status -->
+<div class="space-y-2.5">
+<div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Execution Status</div>
+<div class="text-slate-700">Earthwork / Grading: <span class="font-bold text-emerald-600">100%</span></div>
+<div class="text-slate-700">Basic Course (WMM): <span class="font-bold text-blue-600">33.6%</span></div>
+</div>
+<!-- Column 3: Detailed Work Items -->
+<div class="space-y-2.5">
+<div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Detailed Work Items</div>
+<div class="text-slate-700 font-medium">Ch 0+000 - 2+860</div>
+<div class="text-slate-700 font-medium">Ch 0+960 WMM Laying</div>
+</div>
+<!-- Column 4: AI Risk Indication -->
+<div class="space-y-2.5">
+<div class="text-xs font-bold text-slate-400 uppercase tracking-wider">AI Risk Indication</div>
+<div>
+<span class="px-2 py-0.5 text-xs font-bold text-rose-700 bg-rose-50 rounded border border-rose-200 tracking-wide">CRITICAL</span>
+</div>
+<div class="text-slate-700">AI Risk Score: <span class="font-bold text-slate-900">8.5</span></div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: PhysicalSignificanceContainer -->
+</div>
+<!-- END: MainContainer -->
+</body></html>

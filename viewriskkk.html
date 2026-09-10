@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP Projects Risk Analysis Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+            padding: 24px 40px;
+            min-height: 100vh;
+        }
+
+        /* Full Width Web Dashboard Container */
+        .web-dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Top Navigation & Actions */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-link {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            text-decoration: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #0284c7;
+        }
+
+        .sync-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #16a34a;
+            background: #f0fdf4;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #bbf7d0;
+            font-weight: 600;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #16a34a;
+            border-radius: 50%;
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        /* Main Page Heading */
+        .page-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 16px;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+        }
+
+        .page-title p {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .filters-container {
+            display: flex;
+            gap: 12px;
+        }
+
+        .filter-btn {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+        }
+
+        /* Top Split Banner & Key Metrics */
+        .overview-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        .ai-status-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .ai-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #0369a1;
+        }
+
+        .audit-tag {
+            font-size: 11px;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+
+        .ai-desc {
+            font-size: 13px;
+            color: #475569;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+
+        .metric-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 8px 0;
+        }
+
+        .metric-sub {
+            font-size: 12px;
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        /* Severity Breakdown Bar Area */
+        .breakdown-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .severity-bar {
+            height: 12px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .bar-segment { height: 100%; }
+        .bg-critical { background: #ef4444; }
+        .bg-high { background: #f97316; }
+        .bg-medium { background: #eab308; }
+        .bg-low { background: #22c55e; }
+
+        .severity-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            text-align: center;
+        }
+
+        .stat-box {
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .stat-box .count {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .stat-box .label {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* MP Risk Grid - Full Screen Layout */
+        .section-heading {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .risk-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .risk-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+
+        .risk-card.critical::before { background: #ef4444; }
+        .risk-card.high::before { background: #f97316; }
+        .risk-card.medium::before { background: #eab308; }
+        .risk-card.low::before { background: #22c55e; }
+
+        .risk-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+            border-color: #cbd5e1;
+        }
+
+        .risk-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .risk-tag {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .critical .risk-tag { color: #dc2626; }
+        .high .risk-tag { color: #ea580c; }
+        .medium .risk-tag { color: #ca8a04; }
+        .low .risk-tag { color: #16a34a; }
+
+        .amount-tag {
+            font-size: 12px;
+            font-weight: 700;
+            background: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .risk-card-body {
+            margin-bottom: 16px;
+        }
+
+        .risk-number {
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .risk-label {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .risk-card-footer {
+            font-size: 12px;
+            color: #64748b;
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 12px;
+            line-height: 1.4;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Responsive adjustments for smaller laptop screens */
+        @media (max-width: 1024px) {
+            .overview-row { grid-template-columns: 1fr; }
+            .risk-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="web-dashboard">
+        
+        <!-- Top Nav & Status -->
+        <div class="top-header">
+            <a onclick="window.history.back()" class="back-link">← Back to Overview</a>
+            <div class="sync-badge">
+                <div class="live-dot"></div> Live Sync Active
+            </div>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-title">
+            <div>
+                <h1>MP Projects Risk Analysis</h1>
+                <p>Instant decision overview of flagged constituency projects and risk metrics</p>
+            </div>
+            <div class="filters-container">
+                <button class="filter-btn">Lok Sabha & Rajya Sabha ▾</button>
+                <button class="filter-btn">FY 2023–24 ▾</button>
+            </div>
+        </div>
+
+        <!-- Summary Metrics Row -->
+        <div class="overview-row">
+            <div class="ai-status-card">
+                <div class="ai-title">
+                    ✨ AI Monitoring Active
+                    <span class="audit-tag">v2.4 AUDIT</span>
+                </div>
+                <p class="ai-desc">
+                    Algorithmic model cross-examines physical milestone reports against PFMS disbursements across all <b>543 constituencies</b>.
+                </p>
+                <div style="font-size: 12px; color: #0284c7; font-weight: 600;">
+                    ● System Active &nbsp;&nbsp;|&nbsp;&nbsp; <span style="color:#ef4444;">● 1,248 risk signals detected</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">ANALYZED SCOPE</div>
+                <div class="metric-value">14,820</div>
+                <div class="metric-sub">▲ +342 this month</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">FLAGGED SIGNALS</div>
+                <div class="metric-value" style="color: #ef4444;">1,248</div>
+                <div style="font-size: 12px; color: #64748b;">Across 543 Lok Sabha</div>
+            </div>
+        </div>
+
+        <!-- Severity Breakdown -->
+        <div class="breakdown-card">
+            <div style="font-size: 13px; font-weight: 700; color: #475569;">ANOMALY SEVERITY BREAKDOWN</div>
+            <div class="severity-bar">
+                <div class="bar-segment bg-critical" style="width: 10%;"></div>
+                <div class="bar-segment bg-high" style="width: 20%;"></div>
+                <div class="bar-segment bg-medium" style="width: 35%;"></div>
+                <div class="bar-segment bg-low" style="width: 35%;"></div>
+            </div>
+            <div class="severity-stats">
+                <div class="stat-box"><div class="count" style="color:#ef4444;">84</div><div class="label">CRITICAL</div></div>
+                <div class="stat-box"><div class="count" style="color:#f97316;">216</div><div class="label">HIGH</div></div>
+                <div class="stat-box"><div class="count" style="color:#eab308;">412</div><div class="label">MEDIUM</div></div>
+                <div class="stat-box"><div class="count" style="color:#22c55e;">536</div><div class="label">LOW</div></div>
+            </div>
+        </div>
+
+        <!-- Risk Category Grid (Instant Overview) -->
+        <div class="section-heading">Risk Tiers Overview</div>
+
+        <div class="risk-grid">
+            
+            <!-- Critical Card -->
+            <div class="risk-card critical">
+                <div>
+                    <div class="risk-card-header">
+                        <span class="risk-tag">CRITICAL</span>
+                        <span class="amount-tag">₹ 48.6 Cr</span>
+                    </div>
+                    <div class="risk-card-body">
+                        <div class="risk-number">84</div>
+                        <div class="risk-label">Constituency Nodes</div>
+                    </div>
+                </div>
+                <div class="risk-card-footer">
+                    ⚠️ Severe spatial & fiscal reconciliation breach • <b>18 Dists</b>
+                </div>
+            </div>
+
+            <!-- High Risk Card -->
+            <div class="risk-card high">
+                <div>
+                    <div class="risk-card-header">
+                        <span class="risk-tag">HIGH RISK</span>
+                        <span class="amount-tag">₹ 112.4 Cr</span>
+                    </div>
+                    <div class="risk-card-body">
+                        <div class="risk-number">216</div>
+                        <div class="risk-label">Inconsistencies</div>
+                    </div>
+                </div>
+                <div class="risk-card-footer">
+                    ⚠️ Progress vs fund disbursement mismatch • <b>52 Dists</b>
+                </div>
+            </div>
+
+            <!-- Medium Risk Card -->
+            <div class="risk-card medium">
+                <div>
+                    <div class="risk-card-header">
+                        <span class="risk-tag">MEDIUM RISK</span>
+                        <span class="amount-tag">₹ 184.2 Cr</span>
+                    </div>
+                    <div class="risk-card-body">
+                        <div class="risk-number">412</div>
+                        <div class="risk-label">Pattern Clusters</div>
+                    </div>
+                </div>
+                <div class="risk-card-footer">
+                    ⚠️ Single-bid contractor pooling & overlap • <b>94 Dists</b>
+                </div>
+            </div>
+
+            <!-- Low Risk Card -->
+            <div class="risk-card low">
+                <div>
+                    <div class="risk-card-header">
+                        <span class="risk-tag">LOW RISK</span>
+                        <span class="amount-tag">₹ 241.0 Cr</span>
+                    </div>
+                    <div class="risk-card-body">
+                        <div class="risk-number">536</div>
+                        <div class="risk-label">Variance Notices</div>
+                    </div>
+                </div>
+                <div class="risk-card-footer">
+                    🟢 Timeline lag &lt;15% with zero cost overrun • <b>148 Dists</b>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
