@@ -40,22 +40,3 @@ async def api_health():
 @app.get("/health")
 async def health():
     return {"status": "ok"}
-
-
-# ---------------------------------------------------------------------------
-# Serve the static frontend. On Vercel the `public/` directory is served by the
-# CDN, but mounting it here is a safety net so the app also works when it is
-# reached as a single function (and during local runs with uvicorn).
-# ---------------------------------------------------------------------------
-import os as _os
-from fastapi.staticfiles import StaticFiles as _StaticFiles
-
-_APP_DIR = _os.path.dirname(_os.path.abspath(__file__))
-for _cand in (
-    _os.path.normpath(_os.path.join(_APP_DIR, "..", "..", "public")),
-    _os.path.normpath(_os.path.join(_APP_DIR, "..", "public")),
-    _os.path.normpath(_os.path.join(_APP_DIR, "public")),
-):
-    if _os.path.isdir(_cand):
-        app.mount("/", _StaticFiles(directory=_cand, html=True), name="static")
-        break

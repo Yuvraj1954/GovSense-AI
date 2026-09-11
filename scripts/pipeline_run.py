@@ -13,9 +13,8 @@ TODO: DAILY PIPELINE — MP/MLA/STATE PERFORMANCE CLASSIFICATION
     Use exactly the same 200-point classification algorithm.
     Do not create a separate classification process.
 
-Usage:
-    cd "back end"
-    .venv/bin/python scripts/pipeline_run.py
+Usage (from the repository root):
+    python scripts/pipeline_run.py
 """
 
 import asyncio

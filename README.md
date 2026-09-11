@@ -1,4 +1,4 @@
-# CivicLens AI — MPLADS Monitoring Dashboard
+# Govesense AI — MPLADS Monitoring Dashboard
 
 Interactive dashboards and analytics for the MPLADS (Members of Parliament
 Local Area Development Scheme) dataset: national overview, state/MP/MLA
@@ -13,26 +13,22 @@ by a **FastAPI** service that reads from two Supabase Postgres databases.
 
 ```
 .
-├── *.html                  # Static pages (dashboard, mps, mpdetail, state,
-│                           # statedetail, project, airiskcentre, workdetail)
-├── index.html              # Splash screen → dashboard.html
-├── js/                     # Frontend logic (one data module per page)
-│   ├── config.js           # Resolves the API base URL (local vs Vercel)
-│   └── …
-├── favicon/ · logo.png     # Static assets
+├── app/                    # FastAPI application
+│   ├── main.py             # ASGI entrypoint (exposes `app`) — Vercel entrypoint
+│   ├── config.py           # Settings (reads environment / .env)
+│   ├── database.py         # asyncpg connection pools (DB1 + DB2)
+│   └── routes/             # dashboard / classification / data_updated routers
+├── public/                 # Static frontend, served from the CDN at the root URL
+│   ├── *.html              # dashboard, mps, mpdetail, state, statedetail, …
+│   ├── index.html          # Splash screen → dashboard.html
+│   ├── js/                 # Frontend logic (config.js resolves the API base)
+│   └── favicon/ · logo.png # Static assets
+├── scripts/                # Classification / pipeline helpers
+├── requirements.txt        # Python dependencies
 ├── vercel.json             # Vercel configuration
-├── api/                    # Vercel serverless backend
-│   ├── index.py            # FastAPI entrypoint (exposes `app`)
-│   ├── app/                # FastAPI application (routers, config, db)
-│   └── requirements.txt    # Function dependencies
-└── back end/               # Local development copy of the backend
-    ├── app/                # Same application code as api/app
-    ├── scripts/            # Classification/pipeline helpers
-    └── .env.example        # Environment variable template
+├── run_all.py              # Local dev launcher (API + static server)
+└── .env.example            # Environment variable template
 ```
-
-> `api/app` and `back end/app` contain the same FastAPI application. `back end`
-> is used by `run_all.py` for local development; `api` is what Vercel deploys.
 
 ---
 
@@ -41,13 +37,13 @@ by a **FastAPI** service that reads from two Supabase Postgres databases.
 1. Create the environment file and fill in the Supabase credentials:
 
    ```bash
-   cp "back end/.env.example" "back end/.env"
+   cp .env.example .env
    ```
 
 2. Install dependencies and start both servers:
 
    ```bash
-   pip install -r "back end/requirements.txt"
+   pip install -r requirements.txt
    python run_all.py          # FastAPI on :8000, static server on :5500
    ```
 
@@ -61,15 +57,16 @@ by a **FastAPI** service that reads from two Supabase Postgres databases.
 
 ## Deploying to Vercel
 
-The project deploys as a single Vercel project: the static pages are served
-from the repository root and the FastAPI app runs as a serverless function
-under `/api/*` (Vercel's `api/` directory convention).
+The project deploys as a single Vercel project. Vercel auto-detects the
+FastAPI app at `app/main.py` (a supported entrypoint) and turns it into one
+serverless function; the static pages in `public/` are served from the CDN at
+their root paths.
 
-1. **Import the repository** in the Vercel dashboard (framework preset:
-   **Other**). No build command or output directory is required.
+1. **Import the repository** in the Vercel dashboard. No build command or
+   output directory is required.
 
 2. **Add Environment Variables** (Project → Settings → Environment Variables).
-   These mirror `back end/.env` and are **never committed**:
+   These mirror the local `.env` and are **never committed**:
 
    | Variable | Required | Purpose |
    |---|---|---|
@@ -84,7 +81,7 @@ under `/api/*` (Vercel's `api/` directory convention).
 
 ### How the API base works
 
-`js/config.js` sets `window.API_BASE`:
+`public/js/config.js` sets `window.API_BASE`:
 
 - on `localhost` / `127.0.0.1` / `file:` → `http://127.0.0.1:8000`
 - on any deployed host → `''` (relative), so every request targets
