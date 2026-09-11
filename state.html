@@ -1,0 +1,670 @@
+<!DOCTYPE html><html class="h-full" lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>CivicLens AI - MPLADS Monitoring Dashboard</title>
+<link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+<link rel="manifest" href="favicon/site.webmanifest">
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>#appSidebar.w-16 .sidebar-text-content{display:none !important}</style>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              teal: '#0d9488',
+              orange: '#ea580c',
+              blue: '#0284c7',
+              navy: '#0f172a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="scrollbar-and-helpers">
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style data-purpose="chart-styles">
+    .scatter-point {
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), r 0.2s ease, filter 0.2s ease;
+      cursor: pointer;
+    }
+    .scatter-point:hover {
+      transform: scale(1.4);
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
+    }
+    .rank-bar {
+      transition: width 0.5s ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-full bg-[#f8fafc] text-slate-800 font-sans antialiased overflow-hidden flex flex-col">
+<div id="page-transition-overlay"></div>
+
+<div class="flex h-screen w-screen overflow-hidden">
+<!-- BEGIN: Sidebar (Matching MP Performance Shell) -->
+<aside class="flex-shrink-0 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out flex flex-col z-30 w-16" data-purpose="collapsible-sidebar" id="appSidebar">
+  <div class="h-16 border-b border-slate-100 flex items-center justify-center overflow-hidden">
+<a href="dashboard.html" class="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm hover:bg-slate-50 transition-colors overflow-hidden">
+  <img src="logo.png" alt="CivicLens AI" class="w-full h-full object-contain p-0.5">
+</a>
+    <div class="sidebar-text-content hidden flex-col leading-tight whitespace-nowrap overflow-hidden transition-opacity duration-200 ml-3">
+      <span class="font-bold text-slate-900 tracking-tight text-sm">CivicLens AI</span>
+      <span class="text-xs font-medium text-slate-400">MPLADS Portal</span>
+    </div>
+  </div>
+
+  <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="dashboard.html" title="Home">
+      <svg class="w-5 h-5 text-slate-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+      </svg>
+      <span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">Home</span>
+    </a>
+
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="airiskcentre.html" title="AI Risk Center">
+      <svg class="w-5 h-5 text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+      </svg>
+      <span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">AI Risk Center</span>
+    </a>
+
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="project.html" title="Projects">
+      <svg class="w-5 h-5 text-slate-500 flex-shrink-0 group-hover:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+      </svg>
+      <span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">Projects</span>
+    </a>
+
+    <!-- Explore States (Active) -->
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-100 text-slate-900 font-medium text-sm transition-all group border border-slate-200/60" href="state.html" title="Explore States">
+      <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+      </svg>
+      <span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap font-semibold">Explore States</span>
+    </a>
+
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="mps.html" title="MPs">
+      <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+      </svg>
+      <span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">MPs</span>
+    </a>
+  </nav>
+
+  <!-- Sidebar Footer -->
+  <div class="p-3 border-t border-slate-100 bg-slate-50/50">
+    <div class="hidden flex justify-center py-2" id="sidebarCollapsedStatus">
+      <span class="relative flex h-3 w-3" title="Data Status: Synced · 10 Sep 2026 · 07:04 IST">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+      </span>
+    </div>
+    <div class="sidebar-text-content hidden rounded-lg bg-white p-2.5 border border-slate-200 text-xs shadow-2xs" id="sidebarExpandedStatus">
+      <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">DATA STATUS</div>
+      <div class="flex items-center gap-2 font-semibold text-slate-800">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
+        <span class="text-xs">Database synced</span>
+      </div>
+      <p class="text-[10px] text-slate-400 mt-1 leading-snug">Last updated: 10 Sep 2026 · 07:04 IST</p>
+    </div>
+  </div>
+</aside>
+<!-- END: Sidebar -->
+
+<!-- BEGIN: MainContentWrapper -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f8fafc] h-screen">
+  <!-- BEGIN: TopHeader -->
+  <header class="h-16 px-6 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0 z-20">
+    <div class="flex items-center gap-4">
+      <button aria-label="Toggle Navigation Sidebar" class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300" id="sidebarToggleBtn" type="button">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+        </svg>
+      </button>
+      <div>
+        <div class="flex items-center gap-2.5">
+          <h1 class="text-base md:text-lg font-bold text-slate-900 tracking-tight leading-none">State Performance</h1>
+          <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Data updated 10 Sep 2026 · 07:04 IST
+          </span>
+        </div>
+        <p class="text-xs text-slate-500 mt-1 leading-none font-normal">Compare fund utilization, project execution, and implementation performance across 36 States & UTs.</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="text-xs font-semibold text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1 rounded-lg">36 States & UTs Monitored</span>
+    </div>
+  </header>
+  <!-- END: TopHeader -->
+
+  <!-- BEGIN: ScrollableContent -->
+  <main class="flex-1 overflow-y-auto p-4 space-y-4">
+    
+    <!-- 1. SEARCH & FILTERS -->
+    <section class="space-y-3" data-purpose="search-filters-bar">
+      <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div class="relative w-full lg:w-[380px]" id="searchWrapper">
+            <div class="flex items-center gap-2 px-3 py-2 border border-slate-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
+              <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+              <input autocomplete="off" class="w-full text-xs text-slate-800 placeholder-slate-400 bg-transparent border-none p-0 focus:ring-0 focus:outline-none" id="stateSearchInput" placeholder="Search states & UTs..." type="text">
+              <button class="hidden text-slate-400 hover:text-slate-600" id="clearSearchBtn" type="button">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              </button>
+            </div>
+            <!-- Autocomplete dropdown (populated dynamically) -->
+            <div class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden divide-y divide-slate-100 text-xs max-h-72 overflow-y-auto" id="autocompleteDropdown">
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <select aria-label="Performance Classification" id="clsFilter" class="bg-white border border-slate-300 hover:border-slate-400 text-slate-700 text-xs py-1.5 pl-2.5 pr-7 rounded-lg shadow-2xs focus:ring-1 focus:ring-blue-500 focus:outline-none">
+              <option selected="" value="">All Performance</option>
+              <option value="performer">Performer</option>
+              <option value="average">Average</option>
+              <option value="needs_attention">Needs Attention</option>
+              <option value="underperformer">Underperformer</option>
+            </select>
+            <select aria-label="Fund Utilization Range" id="utilFilter" class="bg-white border border-slate-300 hover:border-slate-400 text-slate-700 text-xs py-1.5 pl-2.5 pr-7 rounded-lg shadow-2xs focus:ring-1 focus:ring-blue-500 focus:outline-none">
+              <option selected="" value="">All Utilization</option>
+              <option value="high">≥70% High</option>
+              <option value="moderate">50–69% Moderate</option>
+              <option value="low">30–49% Low</option>
+              <option value="critical">&lt;30% Critical</option>
+            </select>
+            <div class="flex items-center gap-1.5 pl-1">
+              <span class="text-[11px] text-slate-400 font-medium whitespace-nowrap">Sort:</span>
+              <select aria-label="Sort By" id="sortFilter" class="bg-white border border-slate-300 hover:border-slate-400 text-slate-700 text-xs py-1.5 pl-2.5 pr-7 rounded-lg shadow-2xs focus:ring-1 focus:ring-blue-500 focus:outline-none font-medium">
+                <option selected="" value="util">Fund Utilization %</option>
+                <option value="comp">Completion Rate %</option>
+                <option value="exp">Total Expenditure</option>
+                <option value="works">Total Works</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-slate-800" id="resultCount">Loading...</span>
+            <span class="text-slate-400">·</span>
+            <span class="text-slate-500">showing all active federated jurisdictions</span>
+          </div>
+          <button class="text-[11px] font-semibold text-blue-600 hover:text-blue-700 hover:underline" type="button" id="resetFiltersBtn">Reset Filters</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. EIGHT KPI CARDS (4 x 2 Grid matching MP Performance) -->
+    <section data-purpose="overview-metrics-grid">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <!-- Card 1: Total States & UTs -->
+        <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs relative">
+          <div class="flex items-center justify-between text-slate-500 text-xs">
+            <div class="flex items-center gap-2 font-semibold tracking-wider uppercase text-[11px] text-slate-600">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+              <span class="">TOTAL STATES & UTS</span>
+            </div>
+            <button class="info-btn text-slate-300 hover:text-slate-500 cursor-pointer relative" data-title="Total States & UTs" data-desc="The total number of States and Union Territories covered under MPLADS monitoring. Each region has multiple parliamentary constituencies with dedicated MP fund allocations.">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="mt-2 text-2xl font-bold text-slate-900 tracking-tight" id="kpiTotalStates">—</div>
+          <p class="text-[11px] text-slate-500 mt-0.5">States and union territories</p>
+        </div>
+
+        <!-- Card 2: Total Allocated -->
+        <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs relative">
+          <div class="flex items-center justify-between text-slate-500 text-xs">
+            <div class="flex items-center gap-2 font-semibold tracking-wider uppercase text-[11px] text-slate-600">
+              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+              <span class="">TOTAL ALLOCATED</span>
+            </div>
+            <button class="info-btn text-slate-300 hover:text-slate-500 cursor-pointer relative" data-title="Total Allocated" data-desc="The cumulative MPLADS funds sanctioned and allocated to all MPs across all states and UTs. This is the total financial ceiling available for developmental works nationally.">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="mt-2 text-2xl font-bold text-slate-900 tracking-tight" id="kpiTotalAllocated">—</div>
+          <p class="text-[11px] text-slate-500 mt-0.5">Total allocation across states & UTs</p>
+        </div>
+
+        <!-- Card 3: Total Expenditure -->
+        <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs relative">
+          <div class="flex items-center justify-between text-slate-500 text-xs">
+            <div class="flex items-center gap-2 font-semibold tracking-wider uppercase text-[11px] text-slate-600">
+              <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+              <span class="">TOTAL EXPENDITURE</span>
+            </div>
+            <button class="info-btn text-slate-300 hover:text-slate-500 cursor-pointer relative" data-title="Total Expenditure" data-desc="The total disbursed and settled expenditure across all MPLADS works nationally. This includes payments for completed and ongoing projects across all states and UTs.">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="mt-2 text-2xl font-bold text-slate-900 tracking-tight" id="kpiTotalExpenditure">—</div>
+          <p class="text-[11px] text-slate-500 mt-0.5">Recorded expenditure</p>
+        </div>
+
+        <!-- Card 4: Fund Utilization -->
+        <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs relative">
+          <div class="flex items-center justify-between text-slate-500 text-xs">
+            <div class="flex items-center gap-2 font-semibold tracking-wider uppercase text-[11px] text-slate-600">
+              <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+              <span class="">FUND UTILIZATION</span>
+            </div>
+            <button class="info-btn text-slate-300 hover:text-slate-500 cursor-pointer relative" data-title="Fund Utilization" data-desc="The percentage of allocated funds that have been utilized nationally. Calculated as (Total Expenditure / Total Allocated) x 100. Benchmark target is above 50%.">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="mt-2 text-2xl font-bold text-slate-900 tracking-tight" id="kpiFundUtilization">—</div>
+          <p class="text-[11px] text-slate-500 mt-0.5">Expenditure as share of sanctioned funds</p>
+        </div>
+
+        <!-- Card 5: Total Works -->
+        <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs relative">
+          <div class="flex items-center justify-between text-slate-500 text-xs">
+            <div class="flex items-center gap-2 font-semibold tracking-wider uppercase text-[11px] text-slate-600">
+              <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+              <span class="">TOTAL WORKS</span>
+            </div>
+            <button class="info-btn text-slate-300 hover:text-slate-500 cursor-pointer relative" data-title="Total Works" data-desc="The total number of developmental works registered under MPLADS across all states and constituencies. Includes infrastructure, education, health, water, and rural development projects.">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="mt-2 text-2xl font-bold text-slate-900 tracking-tight" id="kpiTotalWorks">—</div>
+          <p class="text-[11px] text-slate-500 mt-0.5">Development projects registered</p>
+        </div>
+
+        <!-- Card 6: Completed Works -->
+        <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs relative">
+          <div class="flex items-center justify-between text-slate-500 text-xs">
+            <div class="flex items-center gap-2 font-semibold tracking-wider uppercase text-[11px] text-slate-600">
+              <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+              <span class="">COMPLETED WORKS</span>
+            </div>
+            <button class="info-btn text-slate-300 hover:text-slate-500 cursor-pointer relative" data-title="Completed Works" data-desc="Works that have been fully executed, inspected, and verified as complete across all states. Higher completion rates indicate better project execution and ground-level implementation.">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="mt-2 text-2xl font-bold text-slate-900 tracking-tight" id="kpiCompletedWorks">—</div>
+          <p class="text-[11px] text-slate-500 mt-0.5">Inspected & verified delivery</p>
+        </div>
+
+        <!-- Card 7: Ongoing Works -->
+        <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs relative">
+          <div class="flex items-center justify-between text-slate-500 text-xs">
+            <div class="flex items-center gap-2 font-semibold tracking-wider uppercase text-[11px] text-slate-600">
+              <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+              <span class="">ONGOING WORKS</span>
+            </div>
+            <button class="info-btn text-slate-300 hover:text-slate-500 cursor-pointer relative" data-title="Ongoing Works" data-desc="Works currently under active execution on the ground across all states. These have been sanctioned and funds disbursed, but construction/implementation is still in progress.">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="mt-2 text-2xl font-bold text-slate-900 tracking-tight" id="kpiOngoingWorks">—</div>
+          <p class="text-[11px] text-slate-500 mt-0.5">Active execution on ground</p>
+        </div>
+
+        <!-- Card 8: Pending Works -->
+        <div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs relative">
+          <div class="flex items-center justify-between text-slate-500 text-xs">
+            <div class="flex items-center gap-2 font-semibold tracking-wider uppercase text-[11px] text-slate-600">
+              <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+              <span class="">PENDING WORKS</span>
+            </div>
+            <button class="info-btn text-slate-300 hover:text-slate-500 cursor-pointer relative" data-title="Pending Works" data-desc="Sanctioned works that have not yet commenced on the ground. These may be awaiting contractor appointment, material procurement, or administrative clearances across various states.">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="mt-2 text-2xl font-bold text-slate-900 tracking-tight">
+            <span class="text-2xl font-bold text-slate-900 tracking-tight" id="kpiPendingWorks">—</span>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-0.5">Sanctioned awaiting ground kick-off</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ANALYTICS ROW 1: 2 Side-by-Side Distribution Cards -->
+    <section class="space-y-4" data-purpose="state-analytics-distributions">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        <!-- LEFT: State Performance Distribution -->
+        <div class="lg:col-span-6 bg-white border border-slate-200 rounded-xl p-4 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div>
+                <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider">State Performance Distribution</h2>
+                <p class="text-[11px] text-slate-500 mt-0.5">Performance classification across states & UTs</p>
+              </div>
+            </div>
+            <div class="mt-4 space-y-3" id="clsDistBars">
+              <div class="text-xs text-slate-400 text-center py-4">Loading...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Fund Utilization Distribution -->
+        <div class="lg:col-span-6 bg-white border border-slate-200 rounded-xl p-4 shadow-2xs flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div>
+                <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Fund Utilization Distribution</h2>
+                <p class="text-[11px] text-slate-500 mt-0.5">Threshold distribution across expenditure tiers</p>
+              </div>
+            </div>
+            <div class="mt-4 space-y-3" id="utilDistBars">
+              <div class="text-xs text-slate-400 text-center py-4">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. MAIN FULL-WIDTH CHART: State Performance Landscape (Scatter Plot) -->
+    <section class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
+        <div>
+          <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider">State Performance Landscape</h2>
+          <p class="text-[11px] text-slate-500 mt-0.5">Fund utilization rate vs work completion rate across 36 States & UTs</p>
+        </div>
+        <!-- Quadrant Legends -->
+        <div class="flex flex-wrap items-center gap-3 text-[11px]">
+          <span class="flex items-center gap-1.5 text-slate-600">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Performer
+          </span>
+          <span class="flex items-center gap-1.5 text-slate-600">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Average
+          </span>
+          <span class="flex items-center gap-1.5 text-slate-600">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Needs Attention
+          </span>
+          <span class="flex items-center gap-1.5 text-slate-600">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Underperformer
+          </span>
+        </div>
+      </div>
+
+      <!-- Scatter Plot Canvas Wrapper -->
+      <div class="relative w-full pt-4">
+        <!-- Tooltip -->
+        <div class="opacity-0 pointer-events-none absolute z-30 bg-slate-900 text-white rounded-lg p-2.5 text-xs shadow-lg transition-opacity duration-150 transform -translate-x-1/2 -translate-y-full mb-2" id="scatterTooltip"></div>
+
+        <div class="w-full overflow-x-auto">
+          <div class="min-w-[650px]">
+            <svg class="w-full h-72 select-none" viewBox="0 0 1000 380">
+              <defs>
+                <pattern height="35" id="stateScatterGrid" patternUnits="userSpaceOnUse" width="100">
+                  <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#f1f5f9" stroke-width="1"></path>
+                </pattern>
+              </defs>
+              <rect fill="url(#stateScatterGrid)" height="300" width="900" x="60" y="30"></rect>
+
+              <!-- Subtle Quadrant Guidelines (50% X, 50% Y) -->
+              <line stroke="#cbd5e1" stroke-dasharray="4" stroke-width="1.5" x1="510" x2="510" y1="30" y2="330"></line>
+              <line stroke="#cbd5e1" stroke-dasharray="4" stroke-width="1.5" x1="60" x2="960" y1="180" y2="180"></line>
+
+              <!-- Subtle Quadrant Guides -->
+              <text fill="#94a3b8" font-size="11" font-weight="600" text-anchor="start" x="70" y="50">EFFICIENT DELIVERY</text>
+              <text fill="#0d9488" font-size="11" font-weight="700" text-anchor="end" x="950" y="50">★ LEADERS</text>
+              <text fill="#94a3b8" font-size="11" font-weight="600" text-anchor="start" x="70" y="320">NEEDS ATTENTION</text>
+              <text fill="#94a3b8" font-size="11" font-weight="600" text-anchor="end" x="950" y="320">HIGH SPEND / LOW COMPLETION</text>
+
+              <!-- Axis Lines -->
+              <line stroke="#94a3b8" stroke-width="1.5" x1="60" x2="960" y1="330" y2="330"></line>
+              <line stroke="#94a3b8" stroke-width="1.5" x1="60" x2="60" y1="30" y2="330"></line>
+
+              <!-- Y-Axis (Completion Rate %) -->
+              <text fill="#64748b" font-size="11" text-anchor="end" x="50" y="35">100%</text>
+              <text fill="#64748b" font-size="11" text-anchor="end" x="50" y="105">75%</text>
+              <text fill="#64748b" font-size="11" text-anchor="end" x="50" y="184">50%</text>
+              <text fill="#64748b" font-size="11" text-anchor="end" x="50" y="258">25%</text>
+              <text fill="#64748b" font-size="11" text-anchor="end" x="50" y="334">0%</text>
+
+              <!-- X-Axis (Utilization %) -->
+              <text fill="#64748b" font-size="11" text-anchor="middle" x="60" y="355">0%</text>
+              <text fill="#64748b" font-size="11" text-anchor="middle" x="285" y="355">25%</text>
+              <text fill="#64748b" font-size="11" text-anchor="middle" x="510" y="355">50%</text>
+              <text fill="#64748b" font-size="11" text-anchor="middle" x="735" y="355">75%</text>
+              <text fill="#64748b" font-size="11" text-anchor="middle" x="960" y="355">100%</text>
+
+              <!-- Axis Titles -->
+              <text fill="#475569" font-size="11" font-weight="700" text-anchor="middle" x="510" y="375">Fund Utilization Rate (%) →</text>
+              <text fill="#475569" font-size="11" font-weight="700" text-anchor="middle" transform="rotate(-90 20 180)" x="20" y="180">Completion Rate (%) →</text>
+
+              <!-- Plotted State Points (Dynamic) -->
+              <g id="scatterPoints"></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. STATE RANKING SECTION (Horizontal Ranking Bar Chart with 4 Metric Tabs) -->
+    <section class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs" data-purpose="state-ranking-section">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
+        <div>
+          <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider">State Performance Ranking</h2>
+          <p class="text-[11px] text-slate-500 mt-0.5">Compare states across key implementation measures</p>
+        </div>
+
+        <!-- 4 Metric Toggles -->
+        <div class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs font-medium" id="rankTabs">
+          <button class="rank-tab-btn active px-3 py-1 rounded-md bg-white text-slate-900 shadow-2xs font-semibold" data-metric="utilization">Fund Utilization</button>
+          <button class="rank-tab-btn px-3 py-1 rounded-md text-slate-600 hover:text-slate-900" data-metric="completion">Completion Rate</button>
+          <button class="rank-tab-btn px-3 py-1 rounded-md text-slate-600 hover:text-slate-900" data-metric="expenditure">Expenditure</button>
+          <button class="rank-tab-btn px-3 py-1 rounded-md text-slate-600 hover:text-slate-900" data-metric="works">Total Works</button>
+        </div>
+      </div>
+
+      <!-- Ranking Chart Container -->
+      <div class="mt-4 space-y-2.5" id="rankingBarsList">
+      </div>
+      <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+        <span class="text-slate-400">Showing top 10 ranked states · National average: 50.62%</span>
+        <a href="#stateListSection" class="font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition">
+          <span>View all 36 states</span>
+          <span>↓</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- 6. ALL STATES: 3-Column Grid of State Cards -->
+    <section class="space-y-3" id="stateListSection" data-purpose="all-states-cards-grid">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-bold text-slate-900">All States & UTs</h2>
+          <p class="text-xs text-slate-500">Comprehensive jurisdiction directory and execution metrics</p>
+        </div>
+        <span class="text-xs text-slate-400" id="showingText">Loading...</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="stateCardsGrid">
+        <div class="col-span-full text-center py-8 text-slate-400 text-sm">Loading states...</div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200 text-xs text-slate-600">
+        <span id="paginationInfo">Loading...</span>
+        <div class="flex items-center gap-1 select-none" id="paginationBtns">
+        </div>
+      </div>
+    </section>
+
+    <!-- System Metadata Footer -->
+    <footer class="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2 pb-4">
+      <div>CivicLens AI · Official data aggregated from MoSPI MPLADS Portal (NIC) · Performance Metrics System</div>
+      <div class="flex items-center gap-4">
+        <a class="hover:text-slate-600 transition" href="#">Methodology & Audit Metrics</a>
+        <a class="hover:text-slate-600 transition" href="#">Privacy Policy</a>
+        <a class="hover:text-slate-600 transition" href="#">API Documentation</a>
+      </div>
+    </footer>
+  </main>
+  <!-- END: ScrollableContent -->
+</div>
+<!-- END: MainContentWrapper -->
+</div>
+
+<!-- Interactive Scripts -->
+<script data-purpose="interactive-scripts">
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Collapsible Sidebar
+    const toggleBtn = document.getElementById('sidebarToggleBtn');
+    const sidebar = document.getElementById('appSidebar');
+    const textElements = document.querySelectorAll('.sidebar-text-content');
+    const collapsedStatus = document.getElementById('sidebarCollapsedStatus');
+    const expandedStatus = document.getElementById('sidebarExpandedStatus');
+    let isCollapsed = localStorage.getItem('sidebarCollapsed') !== 'false';
+
+    if (toggleBtn && sidebar) {
+      if (isCollapsed) {
+        textElements.forEach(el => el.classList.add('hidden'));
+        if (collapsedStatus) collapsedStatus.classList.remove('hidden');
+        if (expandedStatus) expandedStatus.classList.add('hidden');
+        sidebar.classList.remove('w-64');
+        sidebar.classList.add('w-16');
+      } else {
+        sidebar.classList.remove('w-16');
+        sidebar.classList.add('w-64');
+      }
+
+      toggleBtn.addEventListener('click', () => {
+        isCollapsed = !isCollapsed;
+        localStorage.setItem('sidebarCollapsed', isCollapsed);
+        if (isCollapsed) {
+          sidebar.classList.remove('w-64');
+          sidebar.classList.add('w-16');
+          textElements.forEach(el => el.classList.add('hidden'));
+          if (collapsedStatus) collapsedStatus.classList.remove('hidden');
+          if (expandedStatus) expandedStatus.classList.add('hidden');
+        } else {
+          sidebar.classList.remove('w-16');
+          sidebar.classList.add('w-64');
+          textElements.forEach(el => el.classList.remove('hidden'));
+          if (collapsedStatus) collapsedStatus.classList.add('hidden');
+          if (expandedStatus) expandedStatus.classList.remove('hidden');
+        }
+      });
+    }
+
+    // 2. Search & Filters handled by state-data.js
+
+    // 3. Scatter Plot Tooltips handled by state-data.js
+
+    // 4. Ranking handled by state-data.js
+
+
+    // Reset filters handled by state-data.js
+  });
+</script>
+<!-- Page Transition Script -->
+
+
+<!-- KPI Info Popup -->
+<div id="kpi-info-popup" class="fixed z-50 bg-white border border-slate-200 text-slate-900 rounded-lg shadow-xl p-4 max-w-xs hidden" style="pointer-events:auto;">
+  <div class="flex items-start justify-between gap-2 mb-1">
+    <h4 id="kpi-info-title" class="text-xs font-bold tracking-wide text-slate-900"></h4>
+    <button id="kpi-info-close" class="text-slate-400 hover:text-slate-700 shrink-0 mt-0.5">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <p id="kpi-info-desc" class="text-[11px] text-slate-600 leading-relaxed"></p>
+</div>
+
+<script data-purpose="kpi-info-popups">
+document.addEventListener('DOMContentLoaded', () => {
+  const popup  = document.getElementById('kpi-info-popup');
+  const titleEl = document.getElementById('kpi-info-title');
+  const descEl  = document.getElementById('kpi-info-desc');
+  const closeBtn = document.getElementById('kpi-info-close');
+  let activeBtn = null;
+
+  function positionPopup(btn) {
+    const rect = btn.getBoundingClientRect();
+    popup.style.top  = (rect.bottom + 8) + 'px';
+    popup.style.left = Math.min(rect.left, window.innerWidth - 280) + 'px';
+  }
+
+  document.querySelectorAll('.info-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (activeBtn === btn) { popup.classList.add('hidden'); activeBtn = null; return; }
+      titleEl.textContent = btn.dataset.title;
+      descEl.textContent  = btn.dataset.desc;
+      popup.classList.remove('hidden');
+      positionPopup(btn);
+      activeBtn = btn;
+    });
+  });
+
+  closeBtn.addEventListener('click', () => { popup.classList.add('hidden'); activeBtn = null; });
+  document.addEventListener('click', (e) => { if (!popup.contains(e.target)) { popup.classList.add('hidden'); activeBtn = null; } });
+  window.addEventListener('scroll', () => { if (activeBtn) positionPopup(activeBtn); }, { passive: true });
+});
+</script>
+<script src="js/config.js?v=3"></script>
+<script src="js/data-updated.js?v=3"></script>
+<script src="js/chart-anim.js?v=3"></script>
+<script src="js/state-data.js?v=3"></script>
+</body>
+</html>

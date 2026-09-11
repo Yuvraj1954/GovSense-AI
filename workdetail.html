@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html class="h-full" lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>CivicLens AI - MPLADS Monitoring Dashboard</title>
+<link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+<link rel="manifest" href="favicon/site.webmanifest">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>#appSidebar.w-16 .sidebar-text-content{display:none !important}</style>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            teal: '#0d9488',
+            orange: '#ea580c',
+            blue: '#0284c7',
+            navy: '#0f172a'
+          }
+        },
+        boxShadow: {
+          '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
+          'xs': '0 1px 3px 0 rgba(0, 0, 0, 0.05)'
+        }
+      }
+    }
+  }
+</script>
+<style data-purpose="scrollbar-and-helpers">
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+</style>
+</head>
+<body class="h-full bg-[#f8fafc] text-slate-800 font-sans antialiased overflow-hidden flex flex-col">
+
+<div class="flex h-screen w-screen overflow-hidden">
+  <!-- BEGIN: Sidebar -->
+  <aside class="flex-shrink-0 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out flex flex-col z-30 w-16" data-purpose="collapsible-sidebar" id="appSidebar">
+    <!-- Logo Branding -->
+    <div class="h-16 border-b border-slate-100 flex items-center justify-center overflow-hidden">
+<a href="dashboard.html" class="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm hover:bg-slate-50 transition-colors overflow-hidden">
+  <img src="logo.png" alt="CivicLens AI" class="w-full h-full object-contain p-0.5">
+</a>
+      <div class="sidebar-text-content hidden flex flex-col leading-tight whitespace-nowrap overflow-hidden transition-opacity duration-200 pl-3">
+        <span class="font-bold text-slate-900 tracking-tight text-sm">CivicLens AI</span>
+        <span class="text-xs font-medium text-slate-400">MPLADS Portal</span>
+      </div>
+    </div>
+    <!-- Navigation Links -->
+    <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="dashboard.html" title="Home">
+        <svg class="w-5 h-5 text-slate-500 group-hover:text-slate-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+        </svg>
+        <span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">Home</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="airiskcentre.html" title="AI Risk Center">
+        <svg class="w-5 h-5 text-slate-500 group-hover:text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+        </svg>
+        <span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">AI Risk Center</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-slate-100 text-slate-900 font-medium text-sm transition-all group border border-slate-200/60" href="project.html" title="Projects">
+        <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+        </svg>
+        <span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">Projects</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="state.html" title="Explore States">
+        <svg class="w-5 h-5 text-slate-500 group-hover:text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+        </svg>
+        <span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">Explore States</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="mps.html" title="MPs">
+        <svg class="w-5 h-5 text-slate-500 group-hover:text-slate-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+        </svg>
+        <span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">MPs</span>
+      </a>
+    </nav>
+    <!-- Sidebar Footer Details -->
+    <div class="p-3 border-t border-slate-100 bg-slate-50/50">
+      <div class="flex justify-center py-2" id="sidebarCollapsedStatus">
+        <span class="relative flex h-3 w-3" title="Database Synced: 10 Sep 2026 · 07:04 IST">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+        </span>
+      </div>
+      <div class="sidebar-text-content hidden rounded-lg bg-white p-2.5 border border-slate-200 text-xs shadow-2xs" id="sidebarExpandedStatus">
+        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">DATA STATUS</div>
+        <div class="flex items-center gap-2 font-semibold text-slate-800">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
+          <span class="text-xs">Database synced</span>
+        </div>
+        <p class="text-[10px] text-slate-400 mt-1 leading-snug">Last updated: 10 Sep 2026 · 07:04 IST</p>
+      </div>
+    </div>
+  </aside>
+  <!-- END: Sidebar -->
+
+  <!-- BEGIN: MainContentWrapper -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f8fafc] h-screen">
+    <!-- TopHeader -->
+    <header class="h-16 px-6 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0 z-20">
+      <div class="flex items-center gap-4">
+        <button aria-label="Toggle Navigation Sidebar" class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300" id="sidebarToggleBtn" type="button">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+          </svg>
+        </button>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-base md:text-lg font-bold text-slate-900 tracking-tight leading-none">Work Record Details</h1>
+            <span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Data updated 10 Sep 2026 · 07:04 IST
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1 leading-none font-normal">Official verified record of individual sanctioned MPLADS development work.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-mono text-slate-400 hidden sm:inline">WORK ID: ML-SHL-2024-0089</span>
+      </div>
+    </header>
+
+    <!-- ScrollableContent -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
+      
+      <!-- Back Navigation & Page Header Summary Card -->
+      <section class="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
+        <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+          <div class="space-y-2">
+            <a href="project.html" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline mb-1 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              Back to Work Analysis
+            </a>
+            
+            <div class="flex flex-wrap items-center gap-2.5">
+              <h2 class="text-lg md:text-xl font-bold text-slate-900 tracking-tight">
+                Construction of Multipurpose Community Hall at Mawlai Phudmuri
+              </h2>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+                ONGOING
+              </span>
+            </div>
+
+            <!-- Breadcrumb location & Representative -->
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 pt-0.5">
+              <span class="font-medium text-slate-700">Meghalaya</span>
+              <span>›</span>
+              <span class="font-medium text-slate-700">Shillong Parliamentary Constituency</span>
+              <span>›</span>
+              <span class="text-slate-600">MP: <strong class="text-slate-800 font-semibold">Dr. Andrew J. Syngkon</strong> (Lok Sabha)</span>
+              <span class="hidden sm:inline text-slate-300">•</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 font-medium text-[11px]">
+                Community Halls & Public Spaces
+              </span>
+            </div>
+          </div>
+
+          <!-- Quick Actions / Meta Badge -->
+          <div class="flex flex-col sm:items-end justify-center shrink-0 border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
+            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Sanction Order</div>
+            <div class="font-mono text-xs font-bold text-slate-800 mt-0.5">PLN/MPLADS/2024/782</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Sanctioned: 14 Oct 2024</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Grid Layout: Left Details + Right Visuals/Summary -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- Left Column: Work Details + Work Analysis + Payment Table (8 cols) -->
+        <div class="lg:col-span-8 space-y-5">
+          
+          <!-- Section 1: Work Details -->
+          <section class="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Work Details
+              </h3>
+              <span class="text-[11px] text-slate-400">Administrative Record</span>
+            </div>
+
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-y-3.5 gap-x-6 text-xs">
+              <div class="sm:col-span-2 bg-slate-50/70 p-3 rounded-lg border border-slate-100">
+                <dt class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Work Description</dt>
+                <dd class="text-slate-800 font-medium mt-1 leading-relaxed text-xs">
+                  Construction of a two-storey reinforced concrete community welfare center and meeting hall equipped with sanitary fittings, rain-water harvesting tank, and accessibility ramp at Mawlai Phudmuri Dorbar Shnong premises.
+                </dd>
+              </div>
+
+              <div>
+                <dt class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Activity Specification</dt>
+                <dd class="text-slate-800 font-semibold mt-0.5">Civil Infrastructure / Building Construction</dd>
+              </div>
+
+              <div>
+                <dt class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Category</dt>
+                <dd class="text-slate-800 font-semibold mt-0.5">Community Halls</dd>
+              </div>
+
+              <div>
+                <dt class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">State / Union Territory</dt>
+                <dd class="text-slate-800 font-semibold mt-0.5">Meghalaya</dd>
+              </div>
+
+              <div>
+                <dt class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Parliamentary Constituency</dt>
+                <dd class="text-slate-800 font-semibold mt-0.5">Shillong (Lok Sabha)</dd>
+              </div>
+
+              <div>
+                <dt class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Elected Representative</dt>
+                <dd class="text-slate-800 font-semibold mt-0.5">Dr. Andrew J. Syngkon (VPP)</dd>
+              </div>
+
+              <div>
+                <dt class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Implementing Agency</dt>
+                <dd class="text-slate-800 font-semibold mt-0.5">Executive Engineer, PWD (Buildings) Division, Shillong</dd>
+              </div>
+            </dl>
+          </section>
+
+          <!-- Section 2: Work Analysis -->
+          <section class="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                Work Analysis &amp; Progress Metrics
+              </h3>
+              <span class="text-[11px] font-mono text-slate-400">Calculated Metrics</span>
+            </div>
+
+            <!-- Financial Analysis Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recommended Amount</div>
+                <div class="text-base font-bold text-slate-900 mt-1">₹35.00 <span class="text-xs font-medium text-slate-500">Lakh</span></div>
+                <div class="text-[10px] text-slate-400 mt-0.5">By MP recommendation</div>
+              </div>
+
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sanctioned Amount</div>
+                <div class="text-base font-bold text-slate-900 mt-1">₹35.00 <span class="text-xs font-medium text-slate-500">Lakh</span></div>
+                <div class="text-[10px] text-emerald-600 font-medium mt-0.5">100% of recommendation</div>
+              </div>
+
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Expenditure Incurred</div>
+                <div class="text-base font-bold text-blue-600 mt-1">₹24.50 <span class="text-xs font-medium text-slate-500">Lakh</span></div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Recorded disbursement</div>
+              </div>
+
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Completion Valuation</div>
+                <div class="text-base font-bold text-emerald-600 mt-1">₹22.75 <span class="text-xs font-medium text-slate-500">Lakh</span></div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Physical value verified</div>
+              </div>
+            </div>
+
+            <!-- Ratios and Percentiles in Clean Structured Data List -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
+                <span class="text-slate-500">Expenditure Share (%)</span>
+                <span class="font-bold text-slate-900">70.0% <span class="text-[10px] font-normal text-slate-400">(₹24.5L / ₹35.0L)</span></span>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
+                <span class="text-slate-500">Physical Completion (%)</span>
+                <span class="font-bold text-emerald-600">65.0% <span class="text-[10px] font-normal text-slate-400">(Roof casting complete)</span></span>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
+                <span class="text-slate-500">Sanction Delay</span>
+                <span class="font-semibold text-slate-800">42 Days <span class="text-[10px] font-normal text-slate-400">(Recommendation to Sanction)</span></span>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
+                <span class="text-slate-500">Execution Days</span>
+                <span class="font-semibold text-slate-800">198 Days <span class="text-[10px] font-normal text-slate-400">(Since 1st Expenditure)</span></span>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
+                <span class="text-slate-500">Project Age</span>
+                <span class="font-semibold text-slate-800">331 Days <span class="text-[10px] font-normal text-slate-400">(Since Sanction Order)</span></span>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
+                <span class="text-slate-500">Pending Days (Awaiting Milestone)</span>
+                <span class="font-semibold text-slate-800">45 Days <span class="text-[10px] font-normal text-slate-400">(Final finishing phase)</span></span>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
+                <span class="text-slate-500">Cost Status / Percentile</span>
+                <div class="text-right">
+                  <span class="font-semibold text-slate-800">Normal Sized Work</span>
+                  <span class="block text-[10px] text-slate-400">58th Percentile in Community Halls</span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
+                <span class="text-slate-500">Duration Status / Percentile</span>
+                <div class="text-right">
+                  <span class="font-semibold text-emerald-700">On Schedule</span>
+                  <span class="block text-[10px] text-slate-400">42nd Percentile (Below State avg 280d)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Risk Level & Flags Banner (Compact, strictly supported fields) -->
+            <div class="mt-4 p-3 rounded-lg border border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div class="flex items-center gap-2.5">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Risk Classification:</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                  LOW RISK
+                </span>
+              </div>
+              <div class="flex items-center gap-2 text-[11px]">
+                <span class="text-slate-400 font-medium">Flag Status:</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-medium">
+                  No Over-Expenditure Flag
+                </span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-medium">
+                  Active Disbursal Rhythm
+                </span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section 3: Financial / Payment Details Table -->
+          <section class="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <div>
+                <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                  </svg>
+                  Financial &amp; Payment History
+                </h3>
+                <p class="text-[11px] text-slate-500 mt-0.5">Itemized public disbursement vouchers and contractor payments</p>
+              </div>
+              <span class="text-[11px] font-mono text-slate-400">3 Payment Records</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-700">
+                <thead class="bg-slate-50 text-[10px] text-slate-500 uppercase tracking-wider border-y border-slate-200">
+                  <tr>
+                    <th class="py-2.5 px-3 font-semibold">Payment Date</th>
+                    <th class="py-2.5 px-3 font-semibold">Vendor / Beneficiary Entity</th>
+                    <th class="py-2.5 px-3 font-semibold text-right">Amount Disbursed</th>
+                    <th class="py-2.5 px-3 font-semibold text-center">Payment Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr class="hover:bg-slate-50/70 transition-colors">
+                    <td class="py-2.5 px-3 font-mono text-slate-600 text-[11px]">18 Dec 2024</td>
+                    <td class="py-2.5 px-3 font-medium text-slate-800">
+                      <div>K. Kharkongor Constructions Ltd.</div>
+                      <span class="text-[10px] text-slate-400">Initial mobilization &amp; foundation excavation tranche</span>
+                    </td>
+                    <td class="py-2.5 px-3 font-bold text-slate-900 text-right">₹10,50,000</td>
+                    <td class="py-2.5 px-3 text-center">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        SETTLED
+                      </span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-slate-50/70 transition-colors">
+                    <td class="py-2.5 px-3 font-mono text-slate-600 text-[11px]">15 Mar 2025</td>
+                    <td class="py-2.5 px-3 font-medium text-slate-800">
+                      <div>K. Kharkongor Constructions Ltd.</div>
+                      <span class="text-[10px] text-slate-400">RCC column casting &amp; brick masonry completion</span>
+                    </td>
+                    <td class="py-2.5 px-3 font-bold text-slate-900 text-right">₹8,00,000</td>
+                    <td class="py-2.5 px-3 text-center">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        SETTLED
+                      </span>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-slate-50/70 transition-colors">
+                    <td class="py-2.5 px-3 font-mono text-slate-600 text-[11px]">22 Jun 2025</td>
+                    <td class="py-2.5 px-3 font-medium text-slate-800">
+                      <div>Meghalaya Electrical &amp; Sanitations</div>
+                      <span class="text-[10px] text-slate-400">Roof slab casting, conduit piping, and water tank installation</span>
+                    </td>
+                    <td class="py-2.5 px-3 font-bold text-slate-900 text-right">₹6,00,000</td>
+                    <td class="py-2.5 px-3 text-center">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        SETTLED
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot class="bg-slate-50/80 font-bold border-t border-slate-200 text-xs">
+                  <tr>
+                    <td colspan="2" class="py-2.5 px-3 text-slate-700">Cumulative Recorded Expenditure</td>
+                    <td class="py-2.5 px-3 text-right text-blue-700 font-bold text-sm">₹24,50,000</td>
+                    <td class="py-2.5 px-3 text-center text-[10px] text-slate-400 font-normal">3 payments verified</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Right Column: 2-3 Restrained Visuals + Timeline (4 cols) -->
+        <div class="lg:col-span-4 space-y-5">
+
+          <!-- Visual 1: Financial Progress Bar (Sanctioned vs Expenditure vs Completion) -->
+          <section class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
+            <div class="pb-3 border-b border-slate-100">
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Financial Progress</h3>
+              <p class="text-[11px] text-slate-500 mt-0.5">Sanctioned vs. Expenditure vs. Physical Value</p>
+            </div>
+
+            <div class="mt-4 space-y-3.5 text-xs">
+              <!-- Sanctioned Ceiling -->
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-slate-600 font-medium">Sanctioned Amount</span>
+                  <span class="font-bold text-slate-900">₹35.00 L <span class="text-[10px] text-slate-400">(100%)</span></span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-slate-800 rounded-full" style="width: 100%;"></div>
+                </div>
+              </div>
+
+              <!-- Expenditure Incurred -->
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-slate-600 font-medium">Disbursed Expenditure</span>
+                  <span class="font-bold text-blue-600">₹24.50 L <span class="text-[10px] font-normal text-slate-500">(70.0%)</span></span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-blue-500 rounded-full" style="width: 70%;"></div>
+                </div>
+              </div>
+
+              <!-- Completion Valuation -->
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-slate-600 font-medium">Physical Completion</span>
+                  <span class="font-bold text-emerald-600">₹22.75 L <span class="text-[10px] font-normal text-slate-500">(65.0%)</span></span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full" style="width: 65%;"></div>
+                </div>
+              </div>
+
+              <!-- Unexpended Balance Note -->
+              <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                <span class="text-slate-500">Unexpended Balance</span>
+                <span class="font-bold text-slate-800">₹10.50 L <span class="text-[10px] font-normal text-slate-400">(30.0%)</span></span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Visual 2: Work Lifecycle Timeline -->
+          <section class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
+            <div class="pb-3 border-b border-slate-100">
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Work Lifecycle Timeline</h3>
+              <p class="text-[11px] text-slate-500 mt-0.5">Chronological milestones with verified dates</p>
+            </div>
+
+            <!-- Vertical Timeline Sequence -->
+            <div class="mt-4 relative pl-6 space-y-5 text-xs before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+              
+              <!-- Milestone 1: Recommendation -->
+              <div class="relative group">
+                <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white shadow-xs flex items-center justify-center">
+                  <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-slate-800">Recommendation</span>
+                    <span class="text-[10px] font-mono text-slate-400">02 Sep 2024</span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Proposed by MP Dr. Andrew J. Syngkon</p>
+                </div>
+              </div>
+
+              <!-- Milestone 2: Sanction -->
+              <div class="relative group">
+                <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white shadow-xs flex items-center justify-center">
+                  <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-slate-800">Administrative Sanction</span>
+                    <span class="text-[10px] font-mono text-slate-400">14 Oct 2024</span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 mt-0.5">₹35.0L approved (42d sanction delay)</p>
+                </div>
+              </div>
+
+              <!-- Milestone 3: First Expenditure -->
+              <div class="relative group">
+                <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white shadow-xs flex items-center justify-center">
+                  <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-slate-800">First Expenditure</span>
+                    <span class="text-[10px] font-mono text-slate-400">18 Dec 2024</span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 mt-0.5">₹10.5L disbursed to contractor</p>
+                </div>
+              </div>
+
+              <!-- Milestone 4: Last Expenditure -->
+              <div class="relative group">
+                <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white shadow-xs flex items-center justify-center">
+                  <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-slate-800">Last Expenditure</span>
+                    <span class="text-[10px] font-mono text-slate-400">22 Jun 2025</span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 mt-0.5">₹6.0L 3rd tranche disbursed</p>
+                </div>
+              </div>
+
+              <!-- Milestone 5: Completion (Future/Projected pending date) -->
+              <div class="relative group">
+                <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-amber-400 border-2 border-white shadow-xs flex items-center justify-center">
+                  <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-amber-900">Completion</span>
+                    <span class="text-[10px] font-mono text-amber-600 font-semibold">In Progress (65%)</span>
+                  </div>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Roof &amp; wall structure verified</p>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- Visual 3: Small Risk / Anomaly Gauge Indicator -->
+          <section class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
+            <div class="pb-2.5 border-b border-slate-100 flex items-center justify-between">
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Health &amp; Risk Indicator</h3>
+              <span class="text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Nominal</span>
+            </div>
+
+            <div class="mt-3 text-xs space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Expenditure-to-Progress Delta</span>
+                <span class="font-semibold text-slate-800">+5.0% <span class="text-[10px] font-normal text-slate-400">(In tolerance)</span></span>
+              </div>
+
+              <!-- Micro Bar Indicator -->
+              <div>
+                <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                  <span>Low Risk (0–20%)</span>
+                  <span class="font-bold text-emerald-600">5.0%</span>
+                  <span>High Risk (&gt;25%)</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full" style="width: 20%;"></div>
+                </div>
+              </div>
+
+              <p class="text-[11px] text-slate-400 leading-snug pt-1">
+                Disbursements strictly match physical milestone progress reports submitted by PWD Engineers.
+              </p>
+            </div>
+          </section>
+
+        </div>
+
+      </div>
+
+      <!-- Footer Metadata -->
+      <footer class="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2 pb-4">
+        <div>CivicLens AI · Official data aggregated from MoSPI MPLADS Portal (NIC) · Individual Work Record</div>
+        <div class="flex items-center gap-4">
+          <a class="hover:text-slate-600 transition" href="#">Methodology &amp; Audit Metrics</a>
+          <a class="hover:text-slate-600 transition" href="#">Privacy Policy</a>
+          <a class="hover:text-slate-600 transition" href="#">MoSPI Disclaimers</a>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+</div>
+
+<!-- Interactive Scripts for Sidebar Collapse -->
+<script data-purpose="sidebar-toggle">
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggleBtn = document.getElementById('sidebarToggleBtn');
+    const sidebar = document.getElementById('appSidebar');
+    const textElements = document.querySelectorAll('.sidebar-text-content');
+    const collapsedStatus = document.getElementById('sidebarCollapsedStatus');
+    const expandedStatus = document.getElementById('sidebarExpandedStatus');
+    let isCollapsed = localStorage.getItem('sidebarCollapsed') !== 'false';
+
+    if (toggleBtn && sidebar) {
+      if (isCollapsed) {
+        textElements.forEach(el => el.classList.add('hidden'));
+        if (collapsedStatus) collapsedStatus.classList.remove('hidden');
+        if (expandedStatus) expandedStatus.classList.add('hidden');
+        sidebar.classList.remove('w-64');
+        sidebar.classList.add('w-16');
+      } else {
+        sidebar.classList.remove('w-16');
+        sidebar.classList.add('w-64');
+      }
+
+      toggleBtn.addEventListener('click', () => {
+        isCollapsed = !isCollapsed;
+        localStorage.setItem('sidebarCollapsed', isCollapsed);
+        if (isCollapsed) {
+          sidebar.classList.remove('w-64');
+          sidebar.classList.add('w-16');
+          textElements.forEach(el => el.classList.add('hidden'));
+          if (collapsedStatus) collapsedStatus.classList.remove('hidden');
+          if (expandedStatus) expandedStatus.classList.add('hidden');
+        } else {
+          sidebar.classList.remove('w-16');
+          sidebar.classList.add('w-64');
+          textElements.forEach(el => el.classList.remove('hidden'));
+          if (collapsedStatus) collapsedStatus.classList.add('hidden');
+          if (expandedStatus) expandedStatus.classList.remove('hidden');
+        }
+      });
+    }
+  });
+</script>
+
+<script src="js/config.js?v=3"></script>
+<script src="js/data-updated.js?v=3"></script>
+</body>
+</html>
