@@ -32,6 +32,11 @@ app.include_router(classification_router, prefix="/api")
 app.include_router(dashboard_router)
 
 
+@app.get("/api/health")
+async def api_health():
+    return {"status": "ok"}
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}

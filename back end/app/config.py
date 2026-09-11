@@ -3,7 +3,7 @@ from pydantic import Field
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str
+    DATABASE_URL: str = ""
     DB2_DATABASE_URL: str = ""
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = ""
