@@ -25,7 +25,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 
 # Backend directory should be the folder that contains the `app` package
 BACKEND_DIR = PROJECT_ROOT / "back end"          # <-- parent of the app package
-FRONTEND_DIR = PROJECT_ROOT                      # holds index.html, etc.
+FRONTEND_DIR = PROJECT_ROOT / "public"           # holds index.html, etc.
 
 BACKEND_HOST = "127.0.0.1"
 BACKEND_PORT = "8000"

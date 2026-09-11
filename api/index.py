@@ -31,7 +31,7 @@ for _cand in (
     os.path.join(_PARENT, "back end"),  # local layout  -> back end/app
 ):
     if _cand and os.path.isdir(os.path.join(_cand, "app")) and _cand not in sys.path:
-        sys.path.insert(0, _cand)
+        sys.path.append(_cand)
 
 try:
     from app.main import app  # noqa: F401  (ASGI app; Vercel loads `app`)
