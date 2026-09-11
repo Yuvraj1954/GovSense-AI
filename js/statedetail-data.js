@@ -97,7 +97,7 @@
 
   // ===== HEADER =====
   function populateHeader(s) {
-    document.title = (s.state_name || 'State') + ' — CivicLens AI';
+    document.title = (s.state_name || 'State') + ' — Govsense AI';
     setText('stateName', (s.state_name || '—').toUpperCase());
     var cls = s.performance_classification || 'N/A';
     var c = getClsColor(cls);

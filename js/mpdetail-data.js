@@ -96,7 +96,7 @@
 
   // ========== HEADER ==========
   function populateHeader(m) {
-    document.title = (m.member_name || 'MP') + ' — CivicLens AI';
+    document.title = (m.member_name || 'MP') + ' — Govsense AI';
     setText('mpName', m.member_name || 'Unknown');
     setText('mpState', m.state_name || 'India');
     setText('mpHouse', m.house_name || (m.member_type === 'MLA' ? 'Rajya Sabha' : 'Lok Sabha'));
