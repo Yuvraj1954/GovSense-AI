@@ -67,7 +67,7 @@ async def main():
     # Step 2: Update data_updated
     P("\n--- Step 2: Update data_updated ---")
     now = datetime.now(timezone.utc)
-    await db2.execute(
+    await db1.execute(
         """INSERT INTO public.data_updated (id, completed_at, status, updated_at)
            VALUES (1, $1, 'complete', $2)
            ON CONFLICT (id) DO UPDATE SET
