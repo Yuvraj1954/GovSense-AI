@@ -15,8 +15,8 @@
   function memberDetailHref(m) {
     return 'mpdetail.html?member_id=' + encodeURIComponent(m.member_id) + '&from=dashboard';
   }
-  function stateDetailHref(name) {
-    return 'statedetail.html?state=' + encodeURIComponent(name) + '&from=dashboard';
+  function stateDetailHref(id, name) {
+    return 'statedetail.html?state_id=' + encodeURIComponent(id) + '&state=' + encodeURIComponent(name) + '&from=dashboard';
   }
 
   function render(members, states, q) {
@@ -37,7 +37,7 @@
     if (states.length) {
       html += '<div class="p-1 bg-slate-50/50"><div class="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">States &amp; Union Territories</div>';
       states.forEach(function (s) {
-        var href = stateDetailHref(s.state_name);
+        var href = stateDetailHref(s.state_id, s.state_name);
         html += '<a class="flex items-center justify-between px-2.5 py-1.5 hover:bg-white rounded cursor-pointer transition" href="' + href + '">' +
           '<span class="font-medium text-slate-700">' + esc(s.state_name) + '</span>' +
           '<span class="text-[10px] text-slate-400">State / UT</span></a>';

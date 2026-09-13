@@ -357,7 +357,7 @@
       var rank = start + i + 1;
       var stateCode = (s.state_name || '').substring(0, 2).toUpperCase();
 
-      html += '<a class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:shadow-md hover:border-blue-400 transition-all duration-200 flex flex-col justify-between block cursor-pointer group" href="statedetail.html?state=' + encodeURIComponent(s.state_name) + '">' +
+      html += '<a class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:shadow-md hover:border-blue-400 transition-all duration-200 flex flex-col justify-between block cursor-pointer group" href="statedetail.html?state_id=' + encodeURIComponent(s.state_id) + '&state=' + encodeURIComponent(s.state_name) + '">' +
         '<div><div class="flex items-start justify-between gap-2">' +
         '<div class="flex items-center gap-3">' +
         '<div class="w-10 h-10 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 font-bold text-sm flex-shrink-0">' + stateCode + '</div>' +
@@ -421,7 +421,7 @@
       var html = '<div class="p-1"><div class="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">States & UTs</div>';
       matches.forEach(function(s) {
         var util = Number(s.fund_utilization_pct) || Number(s.expenditure_sanction_utilization_pct) || 0;
-        html += '<div class="search-suggest-item flex items-center justify-between px-2.5 py-1.5 hover:bg-slate-50 rounded cursor-pointer transition" data-name="' + (s.state_name || '') + '">' +
+        html += '<div class="search-suggest-item flex items-center justify-between px-2.5 py-1.5 hover:bg-slate-50 rounded cursor-pointer transition" data-name="' + (s.state_name || '') + '" data-id="' + (s.state_id || '') + '">' +
           '<span class="font-medium text-slate-800">' + s.state_name + '</span>' +
           '<span class="text-[10px] text-slate-400">' + fmtPct(util) + ' utilization</span></div>';
       });
@@ -432,7 +432,7 @@
         item.addEventListener('click', function() {
           var name = item.getAttribute('data-name');
           dropdown.classList.add('hidden');
-          window.location.href = 'statedetail.html?state=' + encodeURIComponent(name);
+          window.location.href = 'statedetail.html?state_id=' + encodeURIComponent(item.getAttribute('data-id')) + '&state=' + encodeURIComponent(name);
         });
       });
     }
@@ -462,7 +462,7 @@
           || allStates.find(function(s) { return (s.state_name || '').toLowerCase().indexOf(val) !== -1; });
         dropdown.classList.add('hidden');
         if (val.length > 0 && match) {
-          window.location.href = 'statedetail.html?state=' + encodeURIComponent(match.state_name);
+          window.location.href = 'statedetail.html?state_id=' + encodeURIComponent(match.state_id) + '&state=' + encodeURIComponent(match.state_name);
         }
       }
       if (e.key === 'Escape') { dropdown.classList.add('hidden'); input.blur(); }

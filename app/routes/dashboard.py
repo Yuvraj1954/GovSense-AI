@@ -1,13 +1,36 @@
 import asyncio
 import json
 import time
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Response
 from ..database import get_pool, get_db2_pool
 
 router = APIRouter(prefix="/api", tags=["dashboard"])
 
 # Lightweight in-process TTL cache for expensive, rarely-changing national queries.
 _cache_store = {}
+
+# Cache TTL policy (seconds). Aggregates that only change on a daily pipeline
+# can afford longer TTLs; user-driven filters stay short.
+TTL = {
+    "overview": 120,           # /api/overview
+    "trends": 300,             # /api/trends
+    "state_perf": 300,         # /api/state-performance
+    "states": 600,             # /api/states (master list)
+    "class_dist": 300,         # /api/classification/distribution
+    "class_states": 300,       # /api/classification/states
+    "scatter": 300,            # /api/members/scatter
+    "projects_summary": 300,   # /api/projects/summary
+    "risk_overview": 300,      # /api/risk/overview
+    "risk_alerts": 300,        # /api/risk/alerts
+    "members_search": 30,      # /api/members/search (param-dependent)
+    "members_list": 30,        # /api/members/list (param-dependent)
+    "works": 60,               # /api/works (param-dependent)
+    "state_detail": 600,       # /api/states/detail/{id}
+    "state_works": 60,         # /api/states/detail/{id}/works
+    "member_detail": 600,      # /api/members/detail/{id}
+    "member_works": 60,        # /api/members/detail/{id}/works
+    "constituencies": 600,     # /api/constituencies (state list)
+}
 
 
 def _cache_get(key):
@@ -22,17 +45,45 @@ def _cache_set(key, value, ttl=300):
     return value
 
 
+def _cacheable(key_prefix, ttl_name, *parts):
+    """Build cache key + ttl pair for a given endpoint + params."""
+    return key_prefix + "::" + "::".join("" if p is None else str(p) for p in parts), TTL.get(ttl_name, 300)
+
+
+def _with_cache_headers(response: Response, max_age: int, stale_while_revalidate: int = 0):
+    """Set HTTP Cache-Control on the response so repeat visitors / CDNs can
+    skip the network round-trip entirely."""
+    if stale_while_revalidate > 0:
+        response.headers["Cache-Control"] = (
+            f"public, max-age={max_age}, stale-while-revalidate={stale_while_revalidate}"
+        )
+    else:
+        response.headers["Cache-Control"] = f"public, max-age={max_age}"
+
+
 @router.get("/overview")
-async def get_overview(scope: str = Query("BOTH", pattern="^(BOTH|MP|MLA)$")):
+async def get_overview(response: Response, scope: str = Query("BOTH", pattern="^(BOTH|MP|MLA)$")):
+    cache_key, ttl = _cacheable("overview", "overview", scope)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db2 = await get_db2_pool()
     row = await db2.fetchrow("""
         SELECT * FROM public.overall_metrics WHERE scope = $1 LIMIT 1
     """, scope)
-    return dict(row) if row else {}
+    value = dict(row) if row else {}
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
 
 
 @router.get("/trends")
-async def get_trends(member_type: str = Query(None, pattern="^(MP|MLA)$")):
+async def get_trends(response: Response, member_type: str = Query(None, pattern="^(MP|MLA)$")):
+    cache_key, ttl = _cacheable("trends", "trends", member_type)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db2 = await get_db2_pool()
     if member_type:
         rows = await db2.fetch("""
@@ -53,11 +104,18 @@ async def get_trends(member_type: str = Query(None, pattern="^(MP|MLA)$")):
             FROM public.trends
             ORDER BY year, member_type
         """)
-    return [dict(r) for r in rows]
+    value = [dict(r) for r in rows]
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
 
 
 @router.get("/state-performance")
-async def get_state_performance(member_type: str = Query(None, pattern="^(MP|MLA)$")):
+async def get_state_performance(response: Response, member_type: str = Query(None, pattern="^(MP|MLA)$")):
+    cache_key, ttl = _cacheable("state_perf", "state_perf", member_type)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     if member_type:
         db2 = await get_db2_pool()
         rows = await db2.fetch("""
@@ -105,11 +163,18 @@ async def get_state_performance(member_type: str = Query(None, pattern="^(MP|MLA
             FROM public.state_metrics
             ORDER BY fund_utilization_pct DESC
         """)
-    return [dict(r) for r in rows]
+    value = [dict(r) for r in rows]
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
 
 
 @router.get("/members/scatter")
-async def get_members_scatter(member_type: str = Query("MP", pattern="^(MP|MLA|BOTH)$")):
+async def get_members_scatter(response: Response, member_type: str = Query("MP", pattern="^(MP|MLA|BOTH)$")):
+    cache_key, ttl = _cacheable("scatter", "scatter", member_type)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db2 = await get_db2_pool()
     if member_type == "BOTH":
         rows = await db2.fetch("""
@@ -132,11 +197,14 @@ async def get_members_scatter(member_type: str = Query("MP", pattern="^(MP|MLA|B
               AND total_works >= 5
             ORDER BY member_name
         """, member_type)
-    return [dict(r) for r in rows]
+    value = [dict(r) for r in rows]
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
 
 
 @router.get("/members/list")
 async def get_members_list(
+    response: Response,
     member_type: str = Query("MP", pattern="^(MP|MLA|BOTH)$"),
     page: int = Query(1, ge=1),
     page_size: int = Query(6, ge=1, le=50),
@@ -145,6 +213,15 @@ async def get_members_list(
     state: str = Query(None),
     classification: str = Query(None),
 ):
+    cache_key, ttl = _cacheable(
+        "members_list", "members_list",
+        member_type, page, page_size, sort_by, sort_dir,
+        (state or "").lower(), classification,
+    )
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db2 = await get_db2_pool()
 
     if member_type == "BOTH":
@@ -185,13 +262,15 @@ async def get_members_list(
             rows = await _fetch_mixed_page_filtered(db2, member_type, page_size, offset, extra, extra_args, next_idx)
         else:
             rows = await _fetch_mixed_page(db2, member_type, page_size, offset)
-        return {
+        value = {
             "items": [dict(r) for r in rows],
             "total": total,
             "page": page,
             "page_size": page_size,
             "total_pages": max(1, (total + page_size - 1) // page_size),
         }
+        _with_cache_headers(response, ttl)
+        return _cache_set(cache_key, value, ttl=ttl)
 
     allowed = {"completion_rate_pct", "fund_utilization_pct", "total_works", "expenditure_amount", "member_name", "performance_score"}
     col = sort_by if sort_by in allowed else "completion_rate_pct"
@@ -209,23 +288,34 @@ async def get_members_list(
         LIMIT ${len(all_args) - 1} OFFSET ${len(all_args)}
     """, *all_args)
 
-    return {
+    value = {
         "items": [dict(r) for r in rows],
         "total": total,
         "page": page,
         "page_size": page_size,
         "total_pages": max(1, (total + page_size - 1) // page_size),
     }
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
 
 
 @router.get("/members/search")
 async def search_members(
+    response: Response,
     q: str = Query("", min_length=0, max_length=100),
     member_type: str = Query("MP", pattern="^(MP|MLA|BOTH)$"),
     state: str = Query(None),
     classification: str = Query(None),
     limit: int = Query(20, ge=1, le=50),
 ):
+    cache_key, ttl = _cacheable(
+        "members_search", "members_search",
+        (q or "").lower(), member_type, (state or "").lower(), classification, limit,
+    )
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db2 = await get_db2_pool()
     if member_type == "BOTH":
         conditions = ["total_works >= 5"]
@@ -263,7 +353,9 @@ async def search_members(
         LIMIT ${idx}
     """, *args, limit)
 
-    return {"items": [dict(r) for r in rows], "total": len(rows)}
+    value = {"items": [dict(r) for r in rows], "total": len(rows)}
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
 
 
 async def _fetch_mixed_page(pool, member_type: str, page_size: int, offset: int):
@@ -408,8 +500,13 @@ async def _fetch_mixed_page_filtered(pool, member_type: str, page_size: int, off
 
 
 @router.get("/members/detail/{member_id}")
-async def get_member_detail(member_id: int):
+async def get_member_detail(response: Response, member_id: int):
     """Comprehensive member profile: metrics, AI analysis, evidence, benchmarks and works."""
+    cache_key, ttl = _cacheable("member_detail", "member_detail", member_id)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db2 = await get_db2_pool()
     db1 = await get_pool()
 
@@ -497,7 +594,7 @@ async def get_member_detail(member_id: int):
         fetch_analysis(), fetch_evidence(), fetch_benchmarks()
     )
 
-    return {
+    value = {
         "member": member_dict,
         "analysis": analysis_result,
         "evidence": evidence_result,
@@ -506,16 +603,24 @@ async def get_member_detail(member_id: int):
                           "total_sanction_amount": 0.0, "total_expenditure_amount": 0.0, "total_completion_amount": 0.0},
         "works": [],
     }
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
 
 
 @router.get("/members/detail/{member_id}/works")
 async def get_member_works_paginated(
+    response: Response,
     member_id: int,
     category: str = Query("all", pattern="^(all|completed|ongoing|recommended)$"),
     page: int = Query(1, ge=1),
     page_size: int = Query(6, ge=1, le=50),
 ):
     """Server-side category-filtered, paginated works for a member."""
+    cache_key, ttl = _cacheable("member_works", "member_works", member_id, category, page, page_size)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db2 = await get_db2_pool()
     db1 = await get_pool()
 
@@ -601,18 +706,25 @@ async def get_member_works_paginated(
             pass
 
     total_pages = max(1, (total + page_size - 1) // page_size)
-    return {
+    value = {
         "items": items,
         "total": total,
         "page": page,
         "page_size": page_size,
         "total_pages": total_pages,
     }
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
 
 
 @router.get("/states/detail/{state_id}")
-async def get_state_detail(state_id: int):
+async def get_state_detail(response: Response, state_id: int):
     """Comprehensive state profile: metrics, AI analysis, evidence and benchmarks."""
+    cache_key, ttl = _cacheable("state_detail", "state_detail", state_id)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db2 = await get_db2_pool()
 
     state = await db2.fetchrow("""
@@ -715,23 +827,31 @@ async def get_state_detail(state_id: int):
         fetch_analysis(), fetch_evidence(), fetch_benchmarks(), fetch_members()
     )
 
-    return {
+    value = {
         "state": state_dict,
         "analysis": analysis_result,
         "evidence": evidence_result,
         "benchmarks": benchmarks_result,
         "members": members,
     }
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
 
 
 @router.get("/states/detail/{state_id}/works")
 async def get_state_works_paginated(
+    response: Response,
     state_id: int,
     category: str = Query("all", pattern="^(all|completed|ongoing|recommended)$"),
     page: int = Query(1, ge=1),
     page_size: int = Query(6, ge=1, le=50),
 ):
     """Server-side category-filtered, paginated works for a state."""
+    cache_key, ttl = _cacheable("state_works", "state_works", state_id, category, page, page_size)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db1 = await get_pool()
 
     if category == "completed":
@@ -794,13 +914,15 @@ async def get_state_works_paginated(
             pass
 
     total_pages = max(1, (total + page_size - 1) // page_size)
-    return {
+    value = {
         "items": items,
         "total": total,
         "page": page,
         "page_size": page_size,
         "total_pages": total_pages,
     }
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
 
 
 @router.get("/states/detail/{state_id}/constituencies")
@@ -843,22 +965,34 @@ async def get_state_constituencies(state_id: int):
 
 
 @router.get("/states")
-async def list_states():
+async def list_states(response: Response):
     """Canonical list of states/UTs for dropdowns. Uses state_metrics so the
     state_id numbering matches work_analysis.state_id."""
+    cache_key, ttl = _cacheable("states", "states")
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db2 = await get_db2_pool()
     try:
         rows = await db2.fetch("SELECT state_id, state_name FROM public.state_metrics ORDER BY state_name")
-        return [dict(r) for r in rows]
+        value = [dict(r) for r in rows]
+        _with_cache_headers(response, ttl)
+        return _cache_set(cache_key, value, ttl=ttl)
     except Exception:
         return []
 
 
 @router.get("/constituencies")
-async def list_constituencies(state_id: int = Query(None)):
+async def list_constituencies(response: Response, state_id: int = Query(None)):
     """List constituencies present in the works data for a state. Names are
     resolved from member records (work constituency_id maps to member_id in
     the source data)."""
+    cache_key, ttl = _cacheable("constituencies", "constituencies", state_id)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db1 = await get_pool()
     db2 = await get_db2_pool()
     if state_id:
@@ -908,7 +1042,8 @@ async def list_constituencies(state_id: int = Query(None)):
                     "work_count": int(r["work_count"]),
                 })
             out.sort(key=lambda x: (-x["work_count"], (x["member_type"] or "Z")))
-            return out
+            _with_cache_headers(response, ttl)
+            return _cache_set(cache_key, out, ttl=ttl)
         except Exception:
             return []
     try:
@@ -916,7 +1051,9 @@ async def list_constituencies(state_id: int = Query(None)):
             SELECT constituency_id, constituency_name, state_id
             FROM public.constituencies ORDER BY constituency_name
         """)
-        return [dict(r) for r in rows]
+        value = [dict(r) for r in rows]
+        _with_cache_headers(response, ttl)
+        return _cache_set(cache_key, value, ttl=ttl)
     except Exception:
         return []
 
@@ -935,6 +1072,7 @@ def _work_status_clause(category: str) -> str:
 
 @router.get("/works")
 async def list_works(
+    response: Response,
     state_id: int = Query(None),
     constituency_id: int = Query(None),
     member_id: int = Query(None),
@@ -947,6 +1085,16 @@ async def list_works(
 ):
     """Global paginated works listing with filters. Works with real names are
     prioritized ahead of unnamed/NA entries."""
+    cache_key, ttl = _cacheable(
+        "works", "works",
+        state_id, constituency_id, member_id, category,
+        (work_category or "").lower(), (q or "").lower(),
+        sort, page, page_size,
+    )
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db1 = await get_pool()
 
     filters = []
@@ -967,7 +1115,7 @@ async def list_works(
     where = ("WHERE " + " AND ".join(filters)) if filters else ""
 
     order_map = {
-        "newest": "recommendation_date DESC NULLS LAST",
+        "newest": "recommendation_date DESC, work_id DESC",
         "highest_sanction": "sanction_amount DESC NULLS LAST",
         "highest_comp": "completion_percentage DESC NULLS LAST",
         "longest_running": "project_age_days DESC NULLS LAST",
@@ -1015,15 +1163,18 @@ async def list_works(
         pass
 
     total_pages = max(1, (total + page_size - 1) // page_size)
-    return {"items": items, "total": total, "page": page, "page_size": page_size, "total_pages": total_pages}
+    value = {"items": items, "total": total, "page": page, "page_size": page_size, "total_pages": total_pages}
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
 
 
 @router.get("/projects/summary")
-async def projects_summary(state_id: int = Query(None)):
+async def projects_summary(response: Response, state_id: int = Query(None)):
     """Aggregates for the Projects dashboard KPIs and charts."""
-    cache_key = "projects_summary_" + str(state_id or "all")
+    cache_key, ttl = _cacheable("projects_summary", "projects_summary", state_id or "all")
     cached = _cache_get(cache_key)
     if cached is not None:
+        _with_cache_headers(response, ttl)
         return cached
     db1 = await get_pool()
     args = []
@@ -1048,8 +1199,9 @@ async def projects_summary(state_id: int = Query(None)):
         "completion_rate_pct": 0.0, "categories": [],
         "milestones": [], "duration": [], "age": [], "cost": [],
     }
-    try:
-        row = await db1.fetchrow(f"""
+
+    async def fetch_kpis():
+        return await db1.fetchrow(f"""
             SELECT
               COUNT(*) AS total,
               COUNT(*) FILTER (WHERE LOWER(status)='completed') AS completed,
@@ -1078,68 +1230,71 @@ async def projects_summary(state_id: int = Query(None)):
               COUNT(*) FILTER (WHERE sanction_amount >= 5000000) AS c4
             FROM ({union}) t
         """, *args)
-        if row:
-            total = int(row["total"] or 0)
-            completed = int(row["completed"] or 0)
-            out["total_works"] = total
-            out["completed_works"] = completed
-            out["ongoing_works"] = int(row["ongoing"] or 0)
-            out["pending_works"] = int(row["pending"] or 0)
-            out["recommended_works"] = total
-            out["sanctioned_works"] = int(row["sanctioned_count"] or 0)
-            out["sanctioned_amount"] = float(row["sanctioned_amount"] or 0)
-            out["recommended_amount"] = float(row["recommended_amount"] or 0)
-            out["expenditure_amount"] = float(row["expenditure_amount"] or 0)
-            out["completion_rate_pct"] = round(completed / total * 100, 2) if total else 0
-            out["milestones"] = [
-                {"label": "100% Complete", "count": int(row["m100"] or 0)},
-                {"label": "75-99%", "count": int(row["m75"] or 0)},
-                {"label": "25-74%", "count": int(row["m25"] or 0)},
-                {"label": "1-24%", "count": int(row["m0a"] or 0)},
-                {"label": "Not Started", "count": int(row["m0"] or 0)},
-            ]
-            out["duration"] = [
-                {"label": "<6 months", "count": int(row["d1"] or 0)},
-                {"label": "6-12 months", "count": int(row["d2"] or 0)},
-                {"label": "12-24 months", "count": int(row["d3"] or 0)},
-                {"label": ">24 months", "count": int(row["d4"] or 0)},
-            ]
-            out["age"] = [
-                {"label": "0-1 year", "count": int(row["a1"] or 0)},
-                {"label": "1-2 years", "count": int(row["a2"] or 0)},
-                {"label": "2-3 years", "count": int(row["a3"] or 0)},
-                {"label": ">3 years", "count": int(row["a4"] or 0)},
-            ]
-            out["cost"] = [
-                {"label": "< 5L", "count": int(row["c1"] or 0)},
-                {"label": "5-15L", "count": int(row["c2"] or 0)},
-                {"label": "15-50L", "count": int(row["c3"] or 0)},
-                {"label": "> 50L", "count": int(row["c4"] or 0)},
-            ]
-    except Exception:
-        pass
 
-    # Category breakdown
-    try:
-        crows = await db1.fetch(f"""
+    async def fetch_categories():
+        return await db1.fetch(f"""
             SELECT work_category AS category, COUNT(*) AS cnt,
                    COALESCE(SUM(sanction_amount),0) AS amount
             FROM ({union}) t
             GROUP BY work_category
             ORDER BY cnt DESC
         """, *args)
-        out["categories"] = [{"category": r["category"] or "Other", "count": int(r["cnt"]), "amount": float(r["amount"])} for r in crows]
-    except Exception:
-        pass
 
-    return _cache_set(cache_key, out, ttl=300)
+    # Both db1 queries were serial in the original code (~2×500ms).
+    # Run them concurrently on the same pool to halve the wait.
+    row, crows = await asyncio.gather(fetch_kpis(), fetch_categories(), return_exceptions=True)
+    if not isinstance(row, Exception) and row:
+        total = int(row["total"] or 0)
+        completed = int(row["completed"] or 0)
+        out["total_works"] = total
+        out["completed_works"] = completed
+        out["ongoing_works"] = int(row["ongoing"] or 0)
+        out["pending_works"] = int(row["pending"] or 0)
+        out["recommended_works"] = total
+        out["sanctioned_works"] = int(row["sanctioned_count"] or 0)
+        out["sanctioned_amount"] = float(row["sanctioned_amount"] or 0)
+        out["recommended_amount"] = float(row["recommended_amount"] or 0)
+        out["expenditure_amount"] = float(row["expenditure_amount"] or 0)
+        out["completion_rate_pct"] = round(completed / total * 100, 2) if total else 0
+        out["milestones"] = [
+            {"label": "100% Complete", "count": int(row["m100"] or 0)},
+            {"label": "75-99%", "count": int(row["m75"] or 0)},
+            {"label": "25-74%", "count": int(row["m25"] or 0)},
+            {"label": "1-24%", "count": int(row["m0a"] or 0)},
+            {"label": "Not Started", "count": int(row["m0"] or 0)},
+        ]
+        out["duration"] = [
+            {"label": "<6 months", "count": int(row["d1"] or 0)},
+            {"label": "6-12 months", "count": int(row["d2"] or 0)},
+            {"label": "12-24 months", "count": int(row["d3"] or 0)},
+            {"label": ">24 months", "count": int(row["d4"] or 0)},
+        ]
+        out["age"] = [
+            {"label": "0-1 year", "count": int(row["a1"] or 0)},
+            {"label": "1-2 years", "count": int(row["a2"] or 0)},
+            {"label": "2-3 years", "count": int(row["a3"] or 0)},
+            {"label": ">3 years", "count": int(row["a4"] or 0)},
+        ]
+        out["cost"] = [
+            {"label": "< 5L", "count": int(row["c1"] or 0)},
+            {"label": "5-15L", "count": int(row["c2"] or 0)},
+            {"label": "15-50L", "count": int(row["c3"] or 0)},
+            {"label": "> 50L", "count": int(row["c4"] or 0)},
+        ]
+    if not isinstance(crows, Exception):
+        out["categories"] = [{"category": r["category"] or "Other", "count": int(r["cnt"]), "amount": float(r["amount"])} for r in crows]
+
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, out, ttl=ttl)
 
 
 @router.get("/risk/overview")
-async def risk_overview():
+async def risk_overview(response: Response):
     """National risk KPIs and chart aggregates."""
-    cached = _cache_get("risk_overview")
+    cache_key, ttl = _cacheable("risk_overview", "risk_overview")
+    cached = _cache_get(cache_key)
     if cached is not None:
+        _with_cache_headers(response, ttl)
         return cached
     db2 = await get_db2_pool()
     db1 = await get_pool()
@@ -1149,9 +1304,48 @@ async def risk_overview():
         "cost_only": 0, "duration_only": 0, "dual_anomaly": 0, "cost_total": 0, "duration_total": 0,
         "rep_distribution": [], "trend": [], "total_members": 0, "total_works": 0, "completion_rate_pct": 0,
     }
-    try:
-        rows = await db2.fetch("SELECT anomaly_level, COUNT(*) AS cnt FROM public.member_metrics GROUP BY anomaly_level")
-        levels = {(r["anomaly_level"] or "NORMAL").upper(): int(r["cnt"]) for r in rows}
+
+    # All 5 reads were sequential in the original code. Fan them out.
+    async def q_member_levels():
+        return await db2.fetch(
+            "SELECT anomaly_level, COUNT(*) AS cnt FROM public.member_metrics GROUP BY anomaly_level"
+        )
+    async def q_high_states():
+        return await db2.fetchrow(
+            "SELECT COUNT(*) FILTER (WHERE UPPER(anomaly_level)='HIGH') AS h FROM public.state_metrics"
+        )
+    async def q_overall():
+        return await db2.fetchrow(
+            "SELECT * FROM public.overall_metrics WHERE scope='BOTH' LIMIT 1"
+        )
+    async def q_work_anomalies():
+        return await db1.fetchrow("""
+            SELECT
+              COUNT(*) FILTER (WHERE risk_flags && ARRAY['COST_ANOMALY'] AND NOT (risk_flags && ARRAY['DURATION_ANOMALY'])) AS cost_only,
+              COUNT(*) FILTER (WHERE risk_flags && ARRAY['DURATION_ANOMALY'] AND NOT (risk_flags && ARRAY['COST_ANOMALY'])) AS duration_only,
+              COUNT(*) FILTER (WHERE risk_flags && ARRAY['COST_ANOMALY'] AND risk_flags && ARRAY['DURATION_ANOMALY']) AS dual,
+              COUNT(*) FILTER (WHERE risk_flags && ARRAY['COST_ANOMALY']) AS cost_total,
+              COUNT(*) FILTER (WHERE risk_flags && ARRAY['DURATION_ANOMALY']) AS duration_total
+            FROM public.work_analysis
+        """)
+    async def q_trend():
+        return await db1.fetch("""
+            SELECT EXTRACT(YEAR FROM recommendation_date)::int AS yr,
+                   COUNT(*) FILTER (WHERE COALESCE(flag_count, 0) > 0) AS flagged,
+                   COUNT(*) FILTER (WHERE LOWER(status) = 'completed') AS resolved,
+                   COUNT(*) AS total
+            FROM public.work_analysis
+            WHERE recommendation_date IS NOT NULL
+            GROUP BY yr ORDER BY yr
+        """)
+
+    member_levels, high_states, overall, work_anom, trend_rows = await asyncio.gather(
+        q_member_levels(), q_high_states(), q_overall(), q_work_anomalies(), q_trend(),
+        return_exceptions=True,
+    )
+
+    if not isinstance(member_levels, Exception):
+        levels = {(r["anomaly_level"] or "NORMAL").upper(): int(r["cnt"]) for r in member_levels}
         out["high_reps"] = levels.get("HIGH", 0)
         out["medium_reps"] = levels.get("MEDIUM", 0)
         out["normal_reps"] = levels.get("NORMAL", 0)
@@ -1161,64 +1355,35 @@ async def risk_overview():
             {"level": "Medium", "count": out["medium_reps"]},
             {"level": "High", "count": out["high_reps"]},
         ]
-    except Exception:
-        pass
-    try:
-        r = await db2.fetchrow("SELECT COUNT(*) FILTER (WHERE UPPER(anomaly_level)='HIGH') AS h FROM public.state_metrics")
-        out["high_states"] = int(r["h"]) if r else 0
-    except Exception:
-        pass
-    try:
-        r = await db2.fetchrow("SELECT * FROM public.overall_metrics WHERE scope='BOTH' LIMIT 1")
-        if r:
-            d = dict(r)
-            out["flagged_works"] = int(d.get("flagged_works") or 0)
-            out["cost_anomaly_works"] = int(d.get("cost_anomaly_works") or 0)
-            out["duration_anomaly_works"] = int(d.get("duration_anomaly_works") or 0)
-            out["overdue_works"] = int(d.get("overdue_over_1_year") or 0)
-            out["total_works"] = int(d.get("total_works") or 0)
-            out["completion_rate_pct"] = float(d.get("completion_rate_pct") or 0)
-    except Exception:
-        pass
-    try:
-        r = await db1.fetchrow("""
-            SELECT
-              COUNT(*) FILTER (WHERE risk_flags && ARRAY['COST_ANOMALY'] AND NOT (risk_flags && ARRAY['DURATION_ANOMALY'])) AS cost_only,
-              COUNT(*) FILTER (WHERE risk_flags && ARRAY['DURATION_ANOMALY'] AND NOT (risk_flags && ARRAY['COST_ANOMALY'])) AS duration_only,
-              COUNT(*) FILTER (WHERE risk_flags && ARRAY['COST_ANOMALY'] AND risk_flags && ARRAY['DURATION_ANOMALY']) AS dual,
-              COUNT(*) FILTER (WHERE risk_flags && ARRAY['COST_ANOMALY']) AS cost_total,
-              COUNT(*) FILTER (WHERE risk_flags && ARRAY['DURATION_ANOMALY']) AS duration_total
-            FROM public.work_analysis
-        """)
-        if r:
-            out["cost_only"] = int(r["cost_only"] or 0)
-            out["duration_only"] = int(r["duration_only"] or 0)
-            out["dual_anomaly"] = int(r["dual"] or 0)
-            out["cost_total"] = int(r["cost_total"] or 0)
-            out["duration_total"] = int(r["duration_total"] or 0)
-    except Exception:
-        pass
-    try:
-        rows = await db1.fetch("""
-            SELECT EXTRACT(YEAR FROM recommendation_date)::int AS yr,
-                   COUNT(*) FILTER (WHERE COALESCE(flag_count, 0) > 0) AS flagged,
-                   COUNT(*) FILTER (WHERE LOWER(status) = 'completed') AS resolved,
-                   COUNT(*) AS total
-            FROM public.work_analysis
-            WHERE recommendation_date IS NOT NULL
-            GROUP BY yr ORDER BY yr
-        """)
+    if not isinstance(high_states, Exception) and high_states:
+        out["high_states"] = int(high_states["h"] or 0)
+    if not isinstance(overall, Exception) and overall:
+        d = dict(overall)
+        out["flagged_works"] = int(d.get("flagged_works") or 0)
+        out["cost_anomaly_works"] = int(d.get("cost_anomaly_works") or 0)
+        out["duration_anomaly_works"] = int(d.get("duration_anomaly_works") or 0)
+        out["overdue_works"] = int(d.get("overdue_over_1_year") or 0)
+        out["total_works"] = int(d.get("total_works") or 0)
+        out["completion_rate_pct"] = float(d.get("completion_rate_pct") or 0)
+    if not isinstance(work_anom, Exception) and work_anom:
+        out["cost_only"] = int(work_anom["cost_only"] or 0)
+        out["duration_only"] = int(work_anom["duration_only"] or 0)
+        out["dual_anomaly"] = int(work_anom["dual"] or 0)
+        out["cost_total"] = int(work_anom["cost_total"] or 0)
+        out["duration_total"] = int(work_anom["duration_total"] or 0)
+    if not isinstance(trend_rows, Exception):
         out["trend"] = [
             {"year": r["yr"], "flagged": int(r["flagged"]), "resolved": int(r["resolved"]), "total": int(r["total"])}
-            for r in rows if r["yr"]
+            for r in trend_rows if r["yr"]
         ]
-    except Exception:
-        pass
-    return _cache_set("risk_overview", out, ttl=300)
+
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, out, ttl=ttl)
 
 
 @router.get("/risk/entities")
 async def risk_entities(
+    response: Response,
     entity: str = Query("mp", pattern="^(mp|mla|state)$"),
     sort: str = Query("score", pattern="^(score|flagged|utilization|alpha)$"),
     state_id: int = Query(None),
@@ -1227,6 +1392,14 @@ async def risk_entities(
     page_size: int = Query(9, ge=1, le=50),
 ):
     """Risk-ranked members or states."""
+    cache_key, ttl = _cacheable(
+        "risk_entities", "members_list",  # use a shorter TTL group
+        entity, sort, state_id, (level or "").lower(), page, page_size,
+    )
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
     db2 = await get_db2_pool()
     offset = (page - 1) * page_size
 
@@ -1290,44 +1463,57 @@ async def risk_entities(
         """, *args)
 
     total_pages = max(1, (total + page_size - 1) // page_size)
-    return {"items": [dict(r) for r in rows], "total": total, "page": page, "page_size": page_size, "total_pages": total_pages}
+    value = {"items": [dict(r) for r in rows], "total": total, "page": page, "page_size": page_size, "total_pages": total_pages}
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
 
 
 @router.get("/risk/alerts")
-async def risk_alerts(limit: int = Query(6, ge=1, le=50), entity_type: str = Query("all", pattern="^(all|mp|mla|state)$")):
+async def risk_alerts(response: Response, limit: int = Query(6, ge=1, le=50), entity_type: str = Query("all", pattern="^(all|mp|mla|state)$")):
     """Top entities by anomaly score."""
-    cache_key = "risk_alerts_" + str(limit) + "_" + entity_type
+    cache_key, ttl = _cacheable("risk_alerts", "risk_alerts", limit, entity_type)
     cached = _cache_get(cache_key)
     if cached is not None:
+        _with_cache_headers(response, ttl)
         return cached
     db2 = await get_db2_pool()
     out = []
-    try:
-        if entity_type in ("all", "mp", "mla"):
+
+    async def fetch_members():
+        if entity_type not in ("all", "mp", "mla"):
+            return []
+        if entity_type == "mp":
+            w = "WHERE member_type = 'MP'"
+        elif entity_type == "mla":
+            w = "WHERE member_type = 'MLA'"
+        else:
             w = "WHERE member_type IN ('MP','MLA')"
-            if entity_type == "mp":
-                w = "WHERE member_type = 'MP'"
-            elif entity_type == "mla":
-                w = "WHERE member_type = 'MLA'"
-            rows = await db2.fetch(f"""
-                SELECT member_id AS id, member_name AS name, member_type, state_name,
-                       anomaly_score, anomaly_level, confidence_level, flagged_works, high_risk_works, flagged_rate_pct
-                FROM public.member_metrics {w}
-                ORDER BY anomaly_score DESC NULLS LAST LIMIT {limit}
-            """)
-            for r in rows:
-                d = dict(r); d["entity_type"] = (d.get("member_type") or "").lower(); out.append(d)
-        if entity_type in ("all", "state"):
-            rows = await db2.fetch(f"""
-                SELECT state_id AS id, state_name AS name, 'State'::text AS member_type, state_name,
-                       anomaly_score, anomaly_level, confidence_level, flagged_works, high_risk_works,
-                       risk_rate_pct AS flagged_rate_pct
-                FROM public.state_metrics
-                ORDER BY anomaly_score DESC NULLS LAST LIMIT {limit}
-            """)
-            for r in rows:
-                d = dict(r); d["entity_type"] = "state"; out.append(d)
-    except Exception:
-        pass
+        return await db2.fetch(f"""
+            SELECT member_id AS id, member_name AS name, member_type, state_name,
+                   anomaly_score, anomaly_level, confidence_level, flagged_works, high_risk_works, flagged_rate_pct
+            FROM public.member_metrics {w}
+            ORDER BY anomaly_score DESC NULLS LAST LIMIT {limit}
+        """)
+
+    async def fetch_states():
+        if entity_type not in ("all", "state"):
+            return []
+        return await db2.fetch(f"""
+            SELECT state_id AS id, state_name AS name, 'State'::text AS member_type, state_name,
+                   anomaly_score, anomaly_level, confidence_level, flagged_works, high_risk_works,
+                   risk_rate_pct AS flagged_rate_pct
+            FROM public.state_metrics
+            ORDER BY anomaly_score DESC NULLS LAST LIMIT {limit}
+        """)
+
+    member_rows, state_rows = await asyncio.gather(fetch_members(), fetch_states(), return_exceptions=True)
+    if not isinstance(member_rows, Exception):
+        for r in member_rows:
+            d = dict(r); d["entity_type"] = (d.get("member_type") or "").lower(); out.append(d)
+    if not isinstance(state_rows, Exception):
+        for r in state_rows:
+            d = dict(r); d["entity_type"] = "state"; out.append(d)
     out.sort(key=lambda x: -(x.get("anomaly_score") or 0))
-    return _cache_set(cache_key, {"items": out[:limit]}, ttl=300)
+    value = {"items": out[:limit]}
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)

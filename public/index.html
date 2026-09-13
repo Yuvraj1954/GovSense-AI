@@ -69,14 +69,28 @@
   });
   setTimeout(function(){ window.location.href = 'dashboard.html'; }, 1100);
 
-  // Pre-fetch missing data in background during the 1s
-  var keys = ['overviewCache','trendCache','statePerfCache','classificationCache','stateClassificationCache','dataUpdatedCache'];
+  // Pre-fetch missing data in background during the 1s. The lists and localStorage
+  // keys mirror the page-side caches so the first navigation reads from localStorage
+  // and renders instantly. Heavy endpoints are last so a slow network won't block
+  // the dashboard redirect.
+  var keys = [
+    'overviewCache','trendCache','statePerfCache',
+    'classificationCache','stateClassificationCache','dataUpdatedCache',
+    'projectSummaryCache','riskOverviewCache','riskAlertsCache',
+    'statesListCache','riskEntitiesCache','scatterCache',
+  ];
   var missing = [
     ['overviewCache',            '/api/overview'],
     ['trendCache',               '/api/trends'],
     ['statePerfCache',           '/api/state-performance'],
     ['classificationCache',      '/api/classification/distribution'],
     ['stateClassificationCache', '/api/classification/states'],
+    ['statesListCache',          '/api/states'],
+    ['projectSummaryCache',      '/api/projects/summary'],
+    ['riskOverviewCache',        '/api/risk/overview'],
+    ['riskAlertsCache',          '/api/risk/alerts?limit=12'],
+    ['riskEntitiesCache',        '/api/risk/entities?entity=mp&sort=score&page_size=9'],
+    ['scatterCache',             '/api/members/scatter?member_type=MP'],
     ['dataUpdatedCache',         '/api/data-updated']
   ].filter(function(p){ return !isFresh(p[0]); });
 

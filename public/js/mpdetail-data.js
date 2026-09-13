@@ -601,8 +601,13 @@
       renderWorksData(worksCache[key]);
       return;
     }
-    if (grid) grid.innerHTML = '<div class="col-span-full text-center py-8 text-slate-400 text-sm">Loading works...</div>';
-    setText('worksShowingText', 'Loading...');
+    if (grid) grid.innerHTML =
+      '<div class="col-span-full grid grid-cols-1 sm:grid-cols-2 gap-3">' +
+      Array.from({length: 4}).map(function () {
+        return '<div class="bg-white border border-slate-200 rounded-xl p-4"><div class="flex justify-between mb-3"><div class="skeleton h-4 w-20"></div><div class="skeleton h-4 w-16"></div></div><div class="skeleton h-3 w-3/4 mb-2"></div><div class="skeleton h-3 w-1/2 mb-4"></div><div class="grid grid-cols-3 gap-2"><div class="skeleton h-10"></div><div class="skeleton h-10"></div><div class="skeleton h-10"></div></div></div>';
+      }).join('') +
+      '</div>';
+    setText('worksShowingText', 'Loading…');
     setHTML('worksPageButtons', '');
     fetch(API_BASE + '/api/members/detail/' + currentMemberId + '/works?category=' + category + '&page=' + page + '&page_size=' + pageSize)
       .then(function(r) { if (!r.ok) throw new Error('works error'); return r.json(); })
@@ -611,7 +616,15 @@
         renderWorksData(data);
       })
       .catch(function() {
-        if (grid) grid.innerHTML = '<div class="col-span-full text-center py-8 text-rose-400 text-sm">Failed to load works. Please try again.</div>';
+        if (!grid) return;
+        grid.innerHTML =
+          '<div class="col-span-full section-error">' +
+            '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>' +
+            '<span>Could not load works for this MP.</span>' +
+            '<button type="button" data-retry-mpworks="' + category + '|' + page + '">Retry</button>' +
+          '</div>';
+        var btn = grid.querySelector('[data-retry-mpworks]');
+        if (btn) btn.addEventListener('click', function () { loadWorks(category, page); });
       });
   }
 

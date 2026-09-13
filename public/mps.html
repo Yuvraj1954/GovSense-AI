@@ -1,6 +1,36 @@
 <!DOCTYPE html><html class="h-full" lang="en" style="">
 <head>
 <meta charset="utf-8">
+<style data-purpose="mobile-overrides">
+@media(max-width:767px){
+  #appSidebar{
+    position:fixed!important;
+    left:-264px!important;
+    top:0!important;
+    width:264px!important;
+    height:100vh!important;
+    z-index:60;
+    transform:none!important;
+    transition:left .25s ease-out;
+    border-right:1px solid #e2e8f0;
+    box-shadow:none;
+  }
+  #appSidebar.mobile-drawer-active{
+    left:0!important;
+    box-shadow:4px 0 24px rgba(15,23,42,.18);
+  }
+  #appSidebar.mobile-drawer-active .sidebar-text-content{
+    display:flex!important;
+  }
+  #appSidebar.mobile-drawer-active.w-16{
+    width:264px!important;
+  }
+  #sidebarToggleBtn{
+    display:none!important;
+  }
+}
+</style>
+
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Govsense AI</title>
 <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
@@ -145,7 +175,13 @@
 <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f8fafc] h-screen">
 <!-- BEGIN: TopHeader -->
 <header class="h-16 px-6 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0 z-20">
-<div class="flex items-center gap-4">
+<div class="flex items-center gap-3 md:gap-4">
+<!-- Mobile menu (3 dots) -->
+<button aria-label="Open navigation" aria-expanded="false" aria-controls="appSidebar" class="md:hidden w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300" id="mobileMenuBtn" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
 <!-- Sidebar Toggle Hamburger -->
 <button aria-label="Toggle Navigation Sidebar" class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300" id="sidebarToggleBtn" type="button">
 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -742,7 +778,7 @@
     const textElements = document.querySelectorAll('.sidebar-text-content');
     const collapsedStatus = document.getElementById('sidebarCollapsedStatus');
     const expandedStatus = document.getElementById('sidebarExpandedStatus');
-    let isCollapsed = localStorage.getItem('sidebarCollapsed') !== 'false';
+    let isCollapsed = true;  // Always start collapsed (no localStorage persistence)
 
     if (toggleBtn && sidebar) {
       if (isCollapsed) {
@@ -758,7 +794,7 @@
 
       toggleBtn.addEventListener('click', () => {
         isCollapsed = !isCollapsed;
-        localStorage.setItem('sidebarCollapsed', isCollapsed);
+        localStorage.removeItem('sidebarCollapsed');
         if (isCollapsed) {
           sidebar.classList.remove('w-64');
           sidebar.classList.add('w-16');
@@ -828,6 +864,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <script src="js/config.js?v=3"></script>
+<script src="js/mobile-shell.js?v=4"></script>
 <script src="js/data-updated.js?v=3"></script>
 <script src="js/chart-anim.js?v=3"></script>
 <script src="js/searchable-select.js?v=3"></script>

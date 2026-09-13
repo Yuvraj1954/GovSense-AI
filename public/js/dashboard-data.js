@@ -419,12 +419,17 @@
   function scopeKey(base, scope) { return base + '_' + scope; }
 
   function setupHouseFilter() {
-    var sel = document.getElementById('houseFilter');
-    if (!sel) return;
-    sel.addEventListener('change', function () {
-      _currentHouse = sel.value;
-      loadFilteredData(_currentHouse);
-    });
+    var sel = document.getElementById('houseFilter');           // desktop (header)
+    var selM = document.getElementById('houseFilterMobile');    // mobile (below header)
+    if (!sel && !selM) return;
+    function apply(value) {
+      _currentHouse = value;
+      if (sel) sel.value = value;
+      if (selM) selM.value = value;
+      loadFilteredData(value);
+    }
+    if (sel) sel.addEventListener('change', function () { apply(sel.value); });
+    if (selM) selM.addEventListener('change', function () { apply(selM.value); });
   }
 
   function loadFilteredData(house) {

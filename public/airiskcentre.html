@@ -1,5 +1,58 @@
 <!DOCTYPE html><html class="h-full" lang="en"><head>
 <meta charset="utf-8">
+<style data-purpose="mobile-overrides">
+@media(max-width:767px){
+  #appSidebar{
+    position:fixed!important;
+    left:-264px!important;
+    top:0!important;
+    width:264px!important;
+    height:100vh!important;
+    z-index:60;
+    transform:none!important;
+    transition:left .25s ease-out;
+    border-right:1px solid #e2e8f0;
+    box-shadow:none;
+  }
+  #appSidebar.mobile-drawer-active{
+    left:0!important;
+    box-shadow:4px 0 24px rgba(15,23,42,.18);
+  }
+  #appSidebar.mobile-drawer-active .sidebar-text-content{
+    display:flex!important;
+  }
+  #appSidebar.mobile-drawer-active.w-16{
+    width:264px!important;
+  }
+  #appSidebar.mobile-drawer-active #sidebarCollapsedStatus{
+    display:none!important;
+  }
+  #appSidebar.mobile-drawer-active #sidebarExpandedStatus{
+    display:block!important;
+  }
+  #sidebarToggleBtn{
+    display:none!important;
+  }
+  header.h-16 h1{
+    display:inline-block!important;
+    font-size:15px!important;
+    line-height:1.2!important;
+  }
+  header.h-16 h1+span{
+    display:none!important;
+  }
+  header.h-16>div>p.text-xs.text-slate-500{
+    display:none!important;
+  }
+  header.h-16>div>div>p.text-xs.text-slate-500{
+    display:none!important;
+  }
+  header.h-16>div>div.hidden.sm\:block{
+    display:block!important;
+  }
+}
+</style>
+
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Govsense AI</title>
 <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
@@ -31,6 +84,28 @@
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    @keyframes skeleton-shimmer {
+      0% { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 40%, #f1f5f9 80%);
+      background-size: 800px 100%;
+      animation: skeleton-shimmer 1.4s ease-in-out infinite;
+      border-radius: 8px;
+    }
+    .section-error {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 14px; border-radius: 10px;
+      background: #fff1f2; border: 1px solid #fecdd3; color: #9f1239;
+      font-size: 12px;
+    }
+    .section-error button {
+      margin-left: auto; font-weight: 600; color: #be123c;
+      background: white; border: 1px solid #fecdd3; padding: 4px 10px;
+      border-radius: 6px; cursor: pointer;
+    }
+    .section-error button:hover { background: #fff1f2; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -147,7 +222,13 @@
 <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f8fafc] h-screen">
 <!-- BEGIN: TopHeader -->
 <header class="h-16 px-6 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0 z-20">
-<div class="flex items-center gap-4">
+<div class="flex items-center gap-3 md:gap-4">
+<!-- Mobile menu (3 dots) -->
+<button aria-label="Open navigation" aria-expanded="false" aria-controls="appSidebar" class="md:hidden w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300" id="mobileMenuBtn" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
 <!-- Sidebar Toggle Hamburger -->
 <button aria-label="Toggle Navigation Sidebar" class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300" id="sidebarToggleBtn" type="button">
 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,11 +256,15 @@
 <!-- END: TopHeader -->
 <!-- BEGIN: ScrollableContent -->
 <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+<!-- Risk overview loading banner -->
+<div id="riskOverviewBanner" class="flex items-center gap-2 text-xs text-slate-500">
+  <svg class="animate-spin h-3.5 w-3.5 text-cyan-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+  <span class="font-semibold text-slate-700">Loading risk intelligence…</span>
+</div>
 <!-- 1. OVERALL NATIONAL RISK OVERVIEW (8 Tiles in 4x2 Grid) -->
 <section data-purpose="national-risk-overview">
 <div class="flex items-center justify-between mb-2.5">
 <div class="flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-cyan-600"></span>
 <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Overall National Risk Overview</h2>
 </div>
 <span class="text-[11px] text-slate-500 font-medium"><span id="riskSubtitle">—</span></span>
@@ -279,7 +364,6 @@
 <section class="space-y-4" data-purpose="risk-visualization-suite">
 <div class="flex items-center justify-between">
 <div class="flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-cyan-600"></span>
 <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Analytical Risk Visualizations</h2>
 </div>
 <span class="text-[11px] text-slate-400 font-medium">Deterministic MoSPI Aggregations</span>
@@ -435,7 +519,6 @@
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-slate-200">
 <div>
 <div class="flex items-center gap-2">
-<span class="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse"></span>
 <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Highest Priority · Action Triage</h2>
 <span class="text-[10px] font-bold bg-rose-100 text-rose-800 px-2 py-0.5 rounded border border-rose-200 uppercase">Immediate Oversight</span>
 </div>
@@ -906,7 +989,6 @@
 <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-200 gap-2">
 <div>
 <div class="flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-cyan-600"></span>
 <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Explore Risk · Investigative Filters</h2>
 </div>
 <p class="text-xs text-slate-500 mt-0.5">Investigate risk anomalies across parliamentary representatives and state administrations with persistent context.</p>
@@ -1039,6 +1121,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script src="js/config.js?v=3"></script>
+<script src="js/mobile-shell.js?v=4"></script>
 <script src="js/data-updated.js?v=3"></script>
 <script src="js/chart-anim.js?v=3"></script>
 <script src="js/airisk-data.js?v=3"></script>

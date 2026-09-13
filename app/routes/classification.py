@@ -1,9 +1,29 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from pydantic import BaseModel
+import time
 
 from app.database import get_db2_pool
 
 router = APIRouter()
+
+# Lightweight in-process TTL cache, mirroring the pattern in routes/dashboard.py.
+_cache_store: dict = {}
+
+
+def _cache_get(key):
+    e = _cache_store.get(key)
+    if e and (time.time() - e["t"]) < e["ttl"]:
+        return e["v"]
+    return None
+
+
+def _cache_set(key, value, ttl=300):
+    _cache_store[key] = {"t": time.time(), "ttl": ttl, "v": value}
+    return value
+
+
+def _with_cache_headers(response: Response, max_age: int):
+    response.headers["Cache-Control"] = f"public, max-age={max_age}"
 
 
 class ClassificationDistItem(BaseModel):
@@ -59,7 +79,11 @@ class StateClassificationResponse(BaseModel):
 
 
 @router.get("/classification/distribution", response_model=ClassificationDistResponse)
-async def get_member_classification_distribution():
+async def get_member_classification_distribution(response: Response):
+    cached = _cache_get("class_dist")
+    if cached is not None:
+        _with_cache_headers(response, 300)
+        return cached
     pool = await get_db2_pool()
     try:
         rows = await pool.fetch(
@@ -73,7 +97,9 @@ async def get_member_classification_distribution():
 
     items = [ClassificationDistItem(classification=r["classification"], count=r["count"]) for r in rows]
     total = sum(i.count for i in items)
-    return ClassificationDistResponse(items=items, total=total)
+    value = ClassificationDistResponse(items=items, total=total)
+    _with_cache_headers(response, 300)
+    return _cache_set("class_dist", value, ttl=300)
 
 
 @router.get("/classification/member/{member_id}", response_model=MemberClassificationResponse)
@@ -101,7 +127,11 @@ async def get_member_classification(member_id: int):
 
 
 @router.get("/classification/states", response_model=list[StateClassificationResponse])
-async def get_state_classifications():
+async def get_state_classifications(response: Response):
+    cached = _cache_get("class_states")
+    if cached is not None:
+        _with_cache_headers(response, 300)
+        return cached
     pool = await get_db2_pool()
     try:
         rows = await pool.fetch(
@@ -113,7 +143,9 @@ async def get_state_classifications():
     except Exception:
         raise HTTPException(status_code=500, detail="Database error")
 
-    return [StateClassificationResponse(**dict(r)) for r in rows]
+    value = [StateClassificationResponse(**dict(r)) for r in rows]
+    _with_cache_headers(response, 300)
+    return _cache_set("class_states", value, ttl=300)
 
 
 @router.get("/classification/member/{member_id}/evidence")

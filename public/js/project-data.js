@@ -260,10 +260,53 @@
     var cached = null;
     try { var raw = localStorage.getItem(CACHE_KEY); if (raw) { var cc = JSON.parse(raw); if (Date.now() - cc.ts < CACHE_TTL) cached = cc.data; } } catch (e) {}
     if (cached) { renderSummary(cached); }
+    else { showSummarySkeleton(true); }
     fetch(API_BASE + '/api/projects/summary')
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) { if (d) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data: d, ts: Date.now() })); } catch (e) {} renderSummary(d); } })
-      .catch(function () {});
+      .then(function (d) {
+        if (d) {
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data: d, ts: Date.now() })); } catch (e) {}
+          renderSummary(d);
+          showSummarySkeleton(false);
+        }
+      })
+      .catch(function () { showSummarySkeleton(false, true); });
+  }
+
+  function showSummarySkeleton(on, error) {
+    var ids = ['kpiTotalWorks','kpiRecommended','kpiSanctioned','kpiCompleted','kpiOngoing','kpiPending','kpiCompletionRate','kpiSanctionConversion'];
+    ids.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      if (on) {
+        el.innerHTML = '<span class="skeleton inline-block align-middle" style="width:64px;height:22px"></span>';
+      }
+    });
+    // Banner
+    var banner = document.getElementById('projectSummaryBanner');
+    if (banner) {
+      banner.hidden = false;
+      if (on) {
+        banner.className = 'flex items-center gap-2 text-xs text-slate-500';
+        banner.innerHTML =
+          '<svg class="animate-spin h-3.5 w-3.5 text-blue-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>' +
+          '<span class="font-semibold text-slate-700">Loading project analytics…</span>';
+      } else if (error) {
+        banner.className = 'section-error';
+        banner.innerHTML =
+          '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>' +
+          '<span>Could not load project analytics. Charts below may be incomplete.</span>' +
+          '<button type="button" id="retrySummaryBtn">Retry</button>';
+        var btn = document.getElementById('retrySummaryBtn');
+        if (btn) btn.addEventListener('click', function () { loadSummary(); });
+      } else {
+        // `hidden` attribute removes it from the space-y sibling chain so
+        // there is no extra top gap once analytics load.
+        banner.className = 'hidden';
+        banner.hidden = true;
+        banner.innerHTML = '';
+      }
+    }
   }
 
   function renderSummary(s) {

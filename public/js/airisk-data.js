@@ -15,11 +15,49 @@
   function loadOverview() {
     var cached = null;
     try { var raw = localStorage.getItem(CACHE_KEY); if (raw) { var cc = JSON.parse(raw); if (Date.now() - cc.ts < CACHE_TTL) cached = cc.data; } } catch (e) {}
-    if (cached) renderOverview(cached);
+    if (cached) {
+      renderOverview(cached);
+    } else {
+      showRiskOverviewSkeleton(true);
+    }
     fetch(API_BASE + '/api/risk/overview')
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) { if (d) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data: d, ts: Date.now() })); } catch (e) {} renderOverview(d); } })
-      .catch(function () {});
+      .then(function (d) {
+        if (d) {
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data: d, ts: Date.now() })); } catch (e) {}
+          renderOverview(d);
+          showRiskOverviewSkeleton(false);
+        }
+      })
+      .catch(function () { showRiskOverviewSkeleton(false, true); });
+  }
+
+  function showRiskOverviewSkeleton(on, error) {
+    // Banner
+    var banner = document.getElementById('riskOverviewBanner');
+    if (banner) {
+      banner.hidden = false;
+      if (on) {
+        banner.className = 'flex items-center gap-2 text-xs text-slate-500';
+        banner.innerHTML =
+          '<svg class="animate-spin h-3.5 w-3.5 text-cyan-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>' +
+          '<span class="font-semibold text-slate-700">Loading risk intelligence…</span>';
+      } else if (error) {
+        banner.className = 'section-error';
+        banner.innerHTML =
+          '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>' +
+          '<span>Could not load risk intelligence. Other sections remain available.</span>' +
+          '<button type="button" id="retryRiskOverviewBtn">Retry</button>';
+        var btn = document.getElementById('retryRiskOverviewBtn');
+        if (btn) btn.addEventListener('click', function () { loadOverview(); });
+      } else {
+        // Setting the `hidden` ATTRIBUTE (not just the class) removes the
+        // banner from Tailwind's space-y sibling chain, so no extra top gap.
+        banner.className = 'hidden';
+        banner.hidden = true;
+        banner.innerHTML = '';
+      }
+    }
   }
 
   function renderOverview(d) {
@@ -206,7 +244,7 @@
     var isState = type === 'state';
     var typeLabel = isState ? 'State / UT' : (e.member_type || '').toUpperCase();
     var href = isState
-      ? 'statedetail.html?state=' + encodeURIComponent(e.name || '') + '&from=airiskcentre'
+      ? 'statedetail.html?state_id=' + encodeURIComponent(e.id || '') + '&state=' + encodeURIComponent(e.name || '') + '&from=airiskcentre'
       : 'mpdetail.html?member_id=' + e.id + '&from=airiskcentre';
     var score = e.anomaly_score != null ? Number(e.anomaly_score) : 0;
     var scorePct = Math.min((score / 2) * 100, 100);
@@ -330,7 +368,7 @@
     var lc = lvl === 'HIGH' ? 'rose' : lvl === 'MEDIUM' ? 'amber' : 'emerald';
     var isState = (e.member_type || '') === 'State';
     var href = isState
-      ? 'statedetail.html?state=' + encodeURIComponent(e.name || '') + '&from=airiskcentre'
+      ? 'statedetail.html?state_id=' + encodeURIComponent(e.id || '') + '&state=' + encodeURIComponent(e.name || '') + '&from=airiskcentre'
       : 'mpdetail.html?member_id=' + e.id + '&from=airiskcentre';
     var score = e.anomaly_score != null ? Number(e.anomaly_score) : 0;
     var scorePct = Math.min((score / 2) * 100, 100);
@@ -425,7 +463,7 @@
     var collapsedStatus = document.getElementById('sidebarCollapsedStatus');
     var expandedStatus = document.getElementById('sidebarExpandedStatus');
     if (!toggleBtn || !sidebar) return;
-    var isCollapsed = localStorage.getItem('sidebarCollapsed') !== 'false';
+    var isCollapsed = true;  // Always start collapsed (no localStorage persistence)
     function apply() {
       if (isCollapsed) {
         textElements.forEach(function (el) { el.classList.add('hidden'); });
@@ -442,7 +480,7 @@
     apply();
     toggleBtn.addEventListener('click', function () {
       isCollapsed = !isCollapsed;
-      localStorage.setItem('sidebarCollapsed', isCollapsed);
+      localStorage.removeItem('sidebarCollapsed');
       apply();
     });
   }

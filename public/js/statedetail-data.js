@@ -19,7 +19,7 @@
 
   function getStateParam() {
     var params = new URLSearchParams(window.location.search);
-    return params.get('state') || params.get('state_id') || params.get('id');
+    return params.get('state_id') || params.get('state') || params.get('id');
   }
 
   function getCache(id) {
@@ -77,6 +77,21 @@
   function setHTML(id, html) {
     var el = document.getElementById(id);
     if (el) el.innerHTML = html;
+  }
+
+  function showShell(state, title, msg) {
+    var loading = document.getElementById('stateLoadingState');
+    var errorEl = document.getElementById('stateErrorState');
+    var main = document.getElementById('stateMainContent');
+    if (loading) loading.classList.toggle('hidden', state !== 'loading');
+    if (errorEl) errorEl.classList.toggle('hidden', state !== 'error');
+    if (main) main.classList.toggle('hidden', state !== 'main');
+    if (state === 'error') {
+      var t = document.getElementById('stateErrorTitle');
+      var m = document.getElementById('stateErrorMsg');
+      if (t && title) t.textContent = title;
+      if (m && msg) m.textContent = msg;
+    }
   }
 
   function regionFor(name) {
@@ -219,7 +234,15 @@
       .then(function (r) { if (!r.ok) throw new Error('works'); return r.json(); })
       .then(function (data) { worksCache[key] = data; renderWorksData(data); })
       .catch(function () {
-        if (grid) grid.innerHTML = '<div class="col-span-full text-center py-8 text-rose-400 text-sm">Failed to load works. Please try again.</div>';
+        if (!grid) return;
+        grid.innerHTML =
+          '<div class="col-span-full section-error">' +
+            '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>' +
+            '<span>Could not load works for this state.</span>' +
+            '<button type="button" data-retry-works="' + category + '|' + page + '">Retry</button>' +
+          '</div>';
+        var btn = grid.querySelector('[data-retry-works]');
+        if (btn) btn.addEventListener('click', function () { loadWorks(category, page); });
       });
   }
 
@@ -699,21 +722,43 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     var param = getStateParam();
-    if (!param) return;
+    if (!param) {
+      showShell('error', 'No state selected', 'Please navigate from the States page.');
+      return;
+    }
 
     applyBackLink();
     setupCategoryTabs();
+    showShell('loading');
 
     var aiTabBtn = document.getElementById('tab-btn-ai');
     if (aiTabBtn) aiTabBtn.addEventListener('click', function () { setTimeout(animateStateAiRing, 60); });
 
-    resolveStateId(param).then(function (id) {
-      if (!id) return;
-      stateId = id;
+    var resolvePromise;
+    if (/^\d+$/.test(String(param))) {
+      stateId = parseInt(param, 10);
+      resolvePromise = Promise.resolve(stateId);
+    } else {
+      resolvePromise = resolveStateId(param).then(function (id) {
+        if (id) stateId = id;
+        return id;
+      });
+    }
+
+    resolvePromise.then(function (id) {
+      if (!id) {
+        showShell('error', 'State not found', 'We could not resolve that state. Please try again.');
+        return;
+      }
+
+      // Kick off works request in parallel with the detail request
+      loadWorks(currentCategory, 1);
 
       var cached = getCache(id);
       if (cached) {
         processData(cached);
+        showShell('main');
+        // Refresh in background
         fetch(API_BASE + '/api/states/detail/' + id)
           .then(function (r) { if (!r.ok) return null; return r.json(); })
           .then(function (data) { if (data) { setCache(id, data); processData(data); } })
@@ -723,10 +768,9 @@
 
       fetch(API_BASE + '/api/states/detail/' + id)
         .then(function (r) { if (!r.ok) throw new Error('state'); return r.json(); })
-        .then(function (data) { setCache(id, data); processData(data); })
+        .then(function (data) { setCache(id, data); processData(data); showShell('main'); })
         .catch(function () {
-          var grid = document.getElementById('stateWorksGrid');
-          if (grid) grid.innerHTML = '<div class="col-span-full text-center py-8 text-rose-400 text-sm">Failed to load state data.</div>';
+          showShell('error', 'Failed to load state data', 'Please try again in a moment.');
         });
     });
   });
