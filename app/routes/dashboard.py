@@ -529,11 +529,32 @@ async def get_member_detail(response: Response, member_id: int):
         FROM public.member_metrics
         WHERE member_id = $1
     """, member_id)
+    intel = await db2.fetchrow("""
+        SELECT performance_score_100, performance_label, performance_confidence,
+               national_rank, national_percentile, peer_rank, peer_percentile,
+               cluster_id, cluster_label, risk_score, risk_level, risk_confidence,
+               risk_evidence, sample_size
+        FROM public.member_intelligence
+        WHERE member_id = $1
+    """, member_id)
 
     if member is None:
         raise HTTPException(status_code=404, detail="Member not found")
 
     member_dict = dict(member)
+    if intel:
+        member_dict["performance_score_100"] = intel["performance_score_100"]
+        member_dict["performance_label"] = intel["performance_label"]
+        member_dict["performance_confidence"] = intel["performance_confidence"]
+        member_dict["national_percentile"] = intel["national_percentile"]
+        member_dict["peer_rank"] = intel["peer_rank"]
+        member_dict["peer_percentile"] = intel["peer_percentile"]
+        member_dict["cluster_id"] = intel["cluster_id"]
+        member_dict["cluster_label"] = intel["cluster_label"]
+        member_dict["risk_score"] = intel["risk_score"]
+        member_dict["risk_level"] = intel["risk_level"]
+        member_dict["risk_confidence"] = intel["risk_confidence"]
+        member_dict["risk_evidence"] = intel["risk_evidence"]
     member_type = member_dict.get("member_type") or "MP"
     scope = member_type if member_type in ("MP", "MLA") else "BOTH"
 
@@ -733,7 +754,27 @@ async def get_state_detail(response: Response, state_id: int):
     if state is None:
         raise HTTPException(status_code=404, detail="State not found")
 
+    state_intel = await db2.fetchrow("""
+        SELECT performance_score_100, performance_label, performance_confidence,
+               national_percentile, cluster_id, cluster_label,
+               risk_score, risk_level, risk_confidence, risk_evidence,
+               sample_size
+        FROM public.state_intelligence
+        WHERE state_id = $1
+    """, state_id)
+
     state_dict = dict(state)
+    if state_intel:
+        state_dict["performance_score_100"] = state_intel["performance_score_100"]
+        state_dict["performance_label"] = state_intel["performance_label"]
+        state_dict["performance_confidence"] = state_intel["performance_confidence"]
+        state_dict["national_percentile"] = state_intel["national_percentile"]
+        state_dict["cluster_id"] = state_intel["cluster_id"]
+        state_dict["cluster_label"] = state_intel["cluster_label"]
+        state_dict["risk_score"] = state_intel["risk_score"]
+        state_dict["risk_level"] = state_intel["risk_level"]
+        state_dict["risk_confidence"] = state_intel["risk_confidence"]
+        state_dict["risk_evidence"] = state_intel["risk_evidence"]
     state_name = state_dict.get("state_name")
 
     async def fetch_analysis():
@@ -1468,6 +1509,81 @@ async def risk_entities(
     return _cache_set(cache_key, value, ttl=ttl)
 
 
+@router.get("/categories")
+async def get_categories(
+    response: Response,
+    scope: str = Query("NATIONAL", pattern="^(NATIONAL|STATE)$"),
+    state_id: int = Query(None),
+    min_sample: int = Query(5, ge=1, le=100000),
+    limit: int = Query(200, ge=1, le=2000),
+):
+    """Category intelligence (Phase 6-8). Live aggregation of real works by
+    the source-derived activity label (`normalized_activity`). No fabricated
+    category is ever returned; categories below the sample threshold are
+    excluded (confidence column is also provided)."""
+    cache_key, ttl = _cacheable("categories", "class_dist", scope, state_id, min_sample, limit)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
+    db1 = await get_pool()
+    try:
+        if scope == "STATE" and state_id:
+            rows = await db1.fetch("""
+                SELECT * FROM public.category_metrics
+                WHERE scope = 'STATE' AND state_id = $1 AND sample_size >= $2
+                ORDER BY sample_size DESC LIMIT $3
+            """, state_id, min_sample, limit)
+        elif scope == "STATE":
+            rows = await db1.fetch("""
+                SELECT * FROM public.category_metrics
+                WHERE scope = 'STATE' AND sample_size >= $1
+                ORDER BY state_id, sample_size DESC LIMIT $2
+            """, min_sample, limit)
+        else:
+            rows = await db1.fetch("""
+                SELECT * FROM public.category_metrics
+                WHERE scope = 'NATIONAL' AND sample_size >= $1
+                ORDER BY sample_size DESC LIMIT $2
+            """, min_sample, limit)
+    except Exception:
+        return {"items": [], "total": 0}
+    value = {"items": [dict(r) for r in rows], "total": len(rows)}
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
+
+
+@router.get("/fy")
+async def get_fy_metrics(
+    response: Response,
+    member_type: str = Query(None, pattern="^(MP|MLA)$"),
+):
+    """Real April–March fiscal-year analytics built from raw event dates
+    (Phase 9). Each measure is aggregated by its own event date; this is not
+    a cohort snapshot."""
+    cache_key, ttl = _cacheable("fy", "trends", member_type)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
+    db1 = await get_pool()
+    try:
+        if member_type:
+            rows = await db1.fetch("""
+                SELECT * FROM public.fy_metrics WHERE member_type = $1
+                ORDER BY fy_start, member_type
+            """, member_type)
+        else:
+            rows = await db1.fetch("""
+                SELECT * FROM public.fy_metrics ORDER BY fy_start, member_type
+            """)
+    except Exception:
+        return {"items": []}
+    value = {"items": [dict(r) for r in rows]}
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
+
+
 @router.get("/risk/alerts")
 async def risk_alerts(response: Response, limit: int = Query(6, ge=1, le=50), entity_type: str = Query("all", pattern="^(all|mp|mla|state)$")):
     """Top entities by anomaly score."""
@@ -1515,5 +1631,218 @@ async def risk_alerts(response: Response, limit: int = Query(6, ge=1, le=50), en
             d = dict(r); d["entity_type"] = "state"; out.append(d)
     out.sort(key=lambda x: -(x.get("anomaly_score") or 0))
     value = {"items": out[:limit]}
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
+
+
+@router.get("/intelligence/members")
+async def intelligence_members(
+    response: Response,
+    member_type: str = Query(None, pattern="^(MP|MLA)$"),
+    cluster_id: int = Query(None),
+    risk_level: str = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+):
+    """List members with authoritative intelligence fields (score, rank,
+    percentile, cluster, risk). Supports filtering by member_type, cluster_id,
+    and risk_level.
+    """
+    cache_key, ttl = _cacheable(
+        "intelligence_members", "members_list",
+        member_type, cluster_id, risk_level, page, page_size,
+    )
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
+    db2 = await get_db2_pool()
+
+    conds = []
+    args = []
+    idx = 1
+    if member_type:
+        conds.append(f"m.member_type = ${idx}"); args.append(member_type); idx += 1
+    if cluster_id is not None:
+        conds.append(f"i.cluster_id = ${idx}"); args.append(cluster_id); idx += 1
+    if risk_level:
+        conds.append(f"UPPER(i.risk_level) = UPPER(${idx})"); args.append(risk_level); idx += 1
+    where = "WHERE " + " AND ".join(conds) if conds else ""
+
+    total = int(await db2.fetchval(f"""
+        SELECT COUNT(*) FROM public.member_intelligence i
+        JOIN public.member_metrics m USING (member_id, member_type) {where}
+    """, *args) or 0)
+
+    offset = (page - 1) * page_size
+    rows = await db2.fetch(f"""
+        SELECT m.member_id, m.member_name, m.member_type, m.state_name,
+               i.performance_score_100, i.performance_label, i.performance_confidence,
+               i.national_rank, i.national_percentile, i.peer_rank, i.peer_percentile,
+               i.cluster_id, i.cluster_label,
+               i.risk_score, i.risk_level, i.risk_confidence, i.sample_size
+        FROM public.member_intelligence i
+        JOIN public.member_metrics m USING (member_id, member_type) {where}
+        ORDER BY i.performance_score_100 DESC NULLS LAST, m.member_name
+        LIMIT ${idx} OFFSET ${idx + 1}
+    """, *args, page_size, offset)
+
+    value = {
+        "items": [dict(r) for r in rows],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": max(1, (total + page_size - 1) // page_size),
+    }
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
+
+
+@router.get("/intelligence/states")
+async def intelligence_states(
+    response: Response,
+    cluster_id: int = Query(None),
+    risk_level: str = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+):
+    """List states with authoritative intelligence fields."""
+    cache_key, ttl = _cacheable(
+        "intelligence_states", "state_perf", cluster_id, risk_level, page, page_size,
+    )
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
+    db2 = await get_db2_pool()
+
+    conds = []
+    args = []
+    idx = 1
+    if cluster_id is not None:
+        conds.append(f"i.cluster_id = ${idx}"); args.append(cluster_id); idx += 1
+    if risk_level:
+        conds.append(f"UPPER(i.risk_level) = UPPER(${idx})"); args.append(risk_level); idx += 1
+    where = "WHERE " + " AND ".join(conds) if conds else ""
+
+    total = int(await db2.fetchval(f"""
+        SELECT COUNT(*) FROM public.state_intelligence i
+        JOIN public.state_metrics s USING (state_id) {where}
+    """, *args) or 0)
+
+    offset = (page - 1) * page_size
+    rows = await db2.fetch(f"""
+        SELECT s.state_id, s.state_name,
+               i.performance_score_100, i.performance_label, i.performance_confidence,
+               i.rank AS national_rank, i.national_percentile,
+               i.cluster_id, i.cluster_label,
+               i.risk_score, i.risk_level, i.risk_confidence, i.sample_size
+        FROM public.state_intelligence i
+        JOIN public.state_metrics s USING (state_id) {where}
+        ORDER BY i.performance_score_100 DESC NULLS LAST, s.state_name
+        LIMIT ${idx} OFFSET ${idx + 1}
+    """, *args, page_size, offset)
+
+    value = {
+        "items": [dict(r) for r in rows],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": max(1, (total + page_size - 1) // page_size),
+    }
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
+
+
+@router.get("/intelligence/models")
+async def intelligence_models(response: Response):
+    """Model registry: latest registered version of each model."""
+    cache_key, ttl = _cacheable("intelligence_models", "states")
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
+    db2 = await get_db2_pool()
+    rows = await db2.fetch("""
+        SELECT model_name, model_version, model_type, training_date,
+               training_observations, features, target, validation_method,
+               metrics, threshold, calibration, status, data_version
+        FROM (
+            SELECT *, ROW_NUMBER() OVER (PARTITION BY model_name ORDER BY training_date DESC, model_version DESC) AS rn
+            FROM public.model_registry
+        ) t
+        WHERE rn = 1
+        ORDER BY model_name
+    """)
+    value = [dict(r) for r in rows]
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, value, ttl=ttl)
+
+
+@router.get("/works/risk")
+async def works_risk(
+    response: Response,
+    member_id: int = Query(None),
+    state_id: int = Query(None),
+    risk_band: str = Query(None),
+    isolation_level: str = Query(None, pattern="^(NORMAL|UNUSUAL|HIGHLY_UNUSUAL)$"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+):
+    """Paginated works with ML delay probability and Isolation Forest level.
+
+    Queries both MP and MLA work_analysis tables. Filters by member, state,
+    delay risk band, and isolation level.
+    """
+    cache_key, ttl = _cacheable(
+        "works_risk", "works",
+        member_id, state_id, risk_band, isolation_level, page, page_size,
+    )
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
+    db1 = await get_pool()
+
+    conds = ["1=1"]
+    args = []
+    idx = 1
+    if member_id:
+        conds.append(f"member_id = ${idx}"); args.append(member_id); idx += 1
+    if state_id:
+        conds.append(f"state_id = ${idx}"); args.append(state_id); idx += 1
+    if risk_band:
+        conds.append(f"UPPER(delay_risk_band) = UPPER(${idx})"); args.append(risk_band); idx += 1
+    if isolation_level:
+        conds.append(f"isolation_level = ${idx}"); args.append(isolation_level); idx += 1
+    where = " AND ".join(conds)
+
+    union = f"""
+        SELECT work_id, member_id, member_type, state_id, work_description, activity_name,
+               status, recommended_amount, sanction_amount, expenditure_amount,
+               delay_probability, delay_risk_band, isolation_score, isolation_level
+        FROM public.work_analysis WHERE {where}
+        UNION ALL
+        SELECT work_id, member_id, member_type, state_id, work_description, activity_name,
+               status, recommended_amount, sanction_amount, expenditure_amount,
+               delay_probability, delay_risk_band, isolation_score, isolation_level
+        FROM public.mla_work_analysis WHERE {where}
+    """
+
+    offset = (page - 1) * page_size
+    total = int(await db1.fetchval(f"SELECT COUNT(*) FROM ({union}) t", *args) or 0)
+    rows = await db1.fetch(f"""
+        SELECT * FROM ({union}) t
+        ORDER BY COALESCE(delay_probability, 0) DESC, COALESCE(isolation_score, 0) DESC
+        LIMIT ${idx} OFFSET ${idx + 1}
+    """, *args, page_size, offset)
+
+    value = {
+        "items": [dict(r) for r in rows],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": max(1, (total + page_size - 1) // page_size),
+    }
     _with_cache_headers(response, ttl)
     return _cache_set(cache_key, value, ttl=ttl)

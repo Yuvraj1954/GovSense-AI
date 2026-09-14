@@ -125,6 +125,14 @@
     setText('stateMpCount', fmtNum(s.mp_count || 0) + ' MPs');
     setText('stateMlaCount', fmtNum(s.mla_count || 0) + ' MLAs');
     setText('stateRank', s.rank ? ('National Rank #' + s.rank) : 'Rank: N/A');
+    var pct2 = s.national_percentile;
+    if (pct2 !== null && pct2 !== undefined) {
+      setText('stateRank', (s.rank ? ('National Rank #' + s.rank) : 'Rank: N/A') + '  ·  ' + Number(pct2).toFixed(1) + ' %ile');
+    }
+    if (s.cluster_label && s.cluster_label !== 'insufficient') {
+      var cur = document.getElementById('stateRank') ? document.getElementById('stateRank').textContent : '';
+      setText('stateRank', cur + '  ·  ' + s.cluster_label);
+    }
     setText('tabProjectsCount', fmtNum(s.total_works || 0));
     setText('repDescMp', fmtNum(s.mp_count || 0));
     setText('repDescMla', fmtNum(s.mla_count || 0));
@@ -333,8 +341,9 @@
 
   // ===== AI TAB =====
   function populateAI(s, analysis) {
-    var score = Number(s.performance_score) || 0;
-    var cls = s.performance_classification || 'N/A';
+    var score = Number(s.performance_score_100 != null ? s.performance_score_100 : s.performance_score) || 0;
+    var cls = s.performance_label || s.performance_classification || 'N/A';
+    var displayMax = s.performance_score_100 != null ? 100 : 200;
     var cc = getClsColor(cls);
 
     var ring = document.getElementById('stateAiScoreRing');
@@ -343,13 +352,25 @@
       ring.setAttribute('stroke-dasharray', circ + ' ' + circ);
       ring.setAttribute('stroke-dashoffset', circ);
       ring.setAttribute('stroke', cc === 'emerald' ? '#10b981' : cc === 'blue' ? '#3b82f6' : cc === 'amber' ? '#f59e0b' : '#ef4444');
-      stateAiRingTarget = circ - (circ * Math.min(score / 200, 1));
+      stateAiRingTarget = circ - (circ * Math.min(score / displayMax, 1));
     }
     setText('stateAiScoreValue', Math.round(score));
     var badge = document.getElementById('stateAiScoreBadge');
     if (badge) {
       badge.textContent = cls.replace(/_/g, ' ');
       badge.className = 'mt-3 px-3 py-1 rounded-full text-xs font-bold border bg-' + cc + '-100 text-' + cc + '-800 border-' + cc + '-300';
+    }
+
+    // Intelligence meta: rank, percentile, cluster, risk
+    setText('stateAiNationalRank', s.rank != null ? ('#' + fmtNum(s.rank)) : '—');
+    setText('stateAiNationalPercentile', s.national_percentile != null ? fmtPct(s.national_percentile) : '—');
+    setText('stateAiClusterLabel', s.cluster_label && s.cluster_label !== 'insufficient' ? s.cluster_label : '—');
+    var riskEl = document.getElementById('stateAiRiskLevel');
+    if (riskEl) {
+      var rl = (s.risk_level || 'N/A').toUpperCase();
+      var rc = rl === 'CRITICAL' || rl === 'HIGH' ? 'rose' : rl === 'MODERATE' || rl === 'MEDIUM' ? 'amber' : 'emerald';
+      riskEl.textContent = rl.replace(/_/g, ' ') + (s.risk_confidence ? ' (' + s.risk_confidence + ' confidence)' : '');
+      riskEl.className = 'text-xs font-semibold text-' + rc + '-700';
     }
 
     var breakdown = document.getElementById('stateAiScoreBreakdown');
@@ -362,10 +383,11 @@
         { label: 'Completion Rate', value: comp, color: getColor(comp) },
         { label: 'Fund Utilization', value: util, color: getColor(util) },
         { label: 'Sanction Rate', value: sanction, color: getColor(sanction) },
-        { label: 'Risk Score', value: 100 - riskRate, color: riskRate > 20 ? 'rose' : 'emerald' },
+        // Phase 5: authoritative risk rate, not an invented inverted score.
+        { label: 'Risk / Anomaly Rate', value: riskRate, color: riskRate > 20 ? 'rose' : 'emerald' },
       ];
       var html = '<div class="flex items-center justify-between mb-3"><h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Score Components</h4>' +
-        '<span class="text-xs font-bold text-slate-500">' + Math.round(score) + ' / 200 points</span></div>';
+        '<span class="text-xs font-bold text-slate-500">' + Math.round(score) + ' / ' + displayMax + ' points</span></div>';
       metrics.forEach(function (m) {
         html += '<div class="space-y-1.5"><div class="flex justify-between items-center text-xs">' +
           '<span class="font-medium text-slate-600">' + m.label + '</span>' +
@@ -493,23 +515,30 @@
     setText('benchmarkTitle', (s.state_name || 'State') + ' vs National Benchmark');
     setText('benchmarkRank', s.rank ? ('Rank #' + s.rank) : 'Rank: N/A');
     var benchEl = document.getElementById('benchmarkMetrics');
+    // Phase 5: national benchmarks are shown ONLY when the authoritative DB
+    // value exists. No hardcoded fallbacks.
+    var bval = function (k) {
+      return (benchmarks && benchmarks[k] != null && !isNaN(Number(benchmarks[k])))
+        ? Number(benchmarks[k]) : null;
+    };
     if (benchEl) {
       var metrics = [
-        { label: 'Fund Utilization', value: util, bench: benchmarks.fund_utilization_pct || 50.6, fmt: fmtPct },
-        { label: 'Completion Rate', value: comp, bench: benchmarks.completion_rate_pct || 33.7, fmt: fmtPct },
-        { label: 'Sanctioned / Recommended', value: sanction, bench: benchmarks.sanction_rate_pct || 67.4, fmt: fmtPct },
-        { label: 'Risk / Anomaly Rate', value: Number(s.risk_rate_pct) || 0, bench: 2.8, fmt: fmtPct },
+        { label: 'Fund Utilization', value: util, bench: bval('fund_utilization_pct'), fmt: fmtPct },
+        { label: 'Completion Rate', value: comp, bench: bval('completion_rate_pct'), fmt: fmtPct },
+        { label: 'Sanctioned / Recommended', value: sanction, bench: bval('sanction_rate_pct'), fmt: fmtPct },
+        { label: 'Risk / Anomaly Rate', value: Number(s.risk_rate_pct) || 0, bench: null, fmt: fmtPct },
       ];
       var bh = '';
       metrics.forEach(function (m) {
-        var delta = m.value - m.bench;
-        var dc2 = delta >= 0 ? 'emerald' : 'rose';
+        var hasBench = m.bench != null;
+        var delta = hasBench ? (m.value - m.bench) : null;
+        var dc2 = (delta != null && delta >= 0) ? 'emerald' : 'rose';
         bh += '<div class="p-3 bg-white rounded-lg border border-slate-200 flex items-center justify-between">' +
           '<div><span class="font-semibold text-slate-800 block">' + m.label + '</span>' +
-          '<span class="text-[11px] text-slate-500">Nat. Benchmark: ' + fmtPct(m.bench) + '</span></div>' +
+          '<span class="text-[11px] text-slate-500">Nat. Benchmark: ' + (hasBench ? fmtPct(m.bench) : 'unavailable') + '</span></div>' +
           '<div class="text-right"><div class="text-sm font-bold text-' + getColor(m.value) + '-600">' + m.fmt(m.value) + '</div>' +
-          '<span class="inline-flex items-center text-[10px] font-bold text-' + dc2 + '-700 bg-' + dc2 + '-50 px-1.5 py-0.5 rounded">' +
-          (delta >= 0 ? '+' : '') + fmtPct(delta) + '</span></div></div>';
+          (hasBench ? '<span class="inline-flex items-center text-[10px] font-bold text-' + dc2 + '-700 bg-' + dc2 + '-50 px-1.5 py-0.5 rounded">' +
+          (delta >= 0 ? '+' : '') + fmtPct(delta) + '</span>' : '') + '</div></div>';
       });
       benchEl.innerHTML = bh;
     }
@@ -518,14 +547,15 @@
     var svn = document.getElementById('stateVsNational');
     if (svn) {
       var cards = [
-        { label: 'Fund Utilization', value: util, bench: benchmarks.fund_utilization_pct || 50.6 },
-        { label: 'Completion Rate', value: comp, bench: benchmarks.completion_rate_pct || 33.7 },
-        { label: 'Sanctioned / Recommended', value: sanction, bench: benchmarks.sanction_rate_pct || 67.4 },
+        { label: 'Fund Utilization', value: util, bench: bval('fund_utilization_pct') },
+        { label: 'Completion Rate', value: comp, bench: bval('completion_rate_pct') },
+        { label: 'Sanctioned / Recommended', value: sanction, bench: bval('sanction_rate_pct') },
       ];
       var sh = '';
       cards.forEach(function (m) {
         var c = getColor(m.value);
-        var delta = m.value - m.bench;
+        var hasBench = m.bench != null;
+        var delta = hasBench ? (m.value - m.bench) : null;
         var label = m.value >= 70 ? 'Leader' : m.value >= 50 ? 'Upper Cohort' : m.value >= 30 ? 'Developing' : 'At Risk';
         sh += '<div class="space-y-3 text-xs p-4 bg-slate-50/70 rounded-xl border border-slate-200">' +
           '<div class="flex justify-between items-baseline"><span class="font-bold text-slate-800 text-sm">' + m.label + '</span>' +
@@ -534,12 +564,13 @@
           '<span class="font-bold text-slate-800">' + (s.state_name || '') + '</span>' +
           '<span class="font-bold text-' + c + '-600">' + fmtPct(m.value) + '</span></div>' +
           '<div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden"><div class="bg-' + c + '-500 h-full rounded-full transition-all duration-1000 ease-out" style="width:' + Math.min(m.value, 100) + '%"></div></div></div>' +
-          '<div class="space-y-1 pt-1"><div class="flex justify-between text-[11px] text-slate-500"><span>National Benchmark</span>' +
+          (hasBench ? '<div class="space-y-1 pt-1"><div class="flex justify-between text-[11px] text-slate-500"><span>National Benchmark</span>' +
           '<span class="font-medium text-slate-600">' + fmtPct(m.bench) + '</span></div>' +
           '<div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden"><div class="bg-slate-400 h-full rounded-full" style="width:' + Math.min(m.bench, 100) + '%"></div></div></div>' +
           '<div class="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px]">' +
           '<span class="font-bold text-' + (delta >= 0 ? 'emerald' : 'rose') + '-700">' + (delta >= 0 ? '▲ +' : '▼ ') + fmtPct(delta) + ' vs national</span>' +
-          '<span class="font-bold bg-' + c + '-100 text-' + c + '-800 px-2 py-0.5 rounded text-[10px]">' + label + '</span></div></div>';
+          '<span class="font-bold bg-' + c + '-100 text-' + c + '-800 px-2 py-0.5 rounded text-[10px]">' + label + '</span></div></div>'
+          : '<div class="pt-2 border-t border-slate-200 text-[11px] text-slate-500">National benchmark unavailable</div></div>');
       });
       svn.innerHTML = sh;
     }

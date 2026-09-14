@@ -33,7 +33,9 @@ def _cache_set(key, value, ttl=300):
 async def get_data_updated(response: Response):
     cached = _cache_get("data_updated")
     if cached is not None:
-        response.headers["Cache-Control"] = "public, max-age=60"
+        # Dynamic status endpoint: never let a browser/proxy cache a response
+        # that a newer frontend might read with a different schema.
+        response.headers["Cache-Control"] = "no-store"
         return cached
     pool = await get_pool()
     try:
@@ -48,5 +50,5 @@ async def get_data_updated(response: Response):
         completed_at=row["completed_at"],
         status=row["status"],
     )
-    response.headers["Cache-Control"] = "public, max-age=60"
+    response.headers["Cache-Control"] = "no-store"
     return _cache_set("data_updated", value, ttl=60)

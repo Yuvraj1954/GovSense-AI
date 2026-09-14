@@ -103,7 +103,16 @@
     setText('mpTenure', m.tenure || 'Current Term');
     setText('headerMpName', (m.member_name || '') + ' — ' + (m.state_name || ''));
     var rank = m.rank;
-    setText('mpRank', rank ? ('National Rank #' + rank) : 'Rank: N/A');
+    var rankLabel = rank ? ('National Rank #' + rank) : 'Rank: N/A';
+    var pct = m.national_percentile;
+    if (pct !== null && pct !== undefined && hasNew) {
+      rankLabel += '  ·  ' + Number(pct).toFixed(1) + ' %ile';
+    }
+    var cluster = m.cluster_label;
+    if (cluster && cluster !== 'insufficient') {
+      rankLabel += '  ·  ' + cluster;
+    }
+    setText('mpRank', rankLabel);
     var cls = m.performance_classification || 'N/A';
     var c = getClsColor(cls);
     var clsEl = document.getElementById('mpClassification');
@@ -366,7 +375,9 @@
   // ========== FUND FLOW BARS ==========
   function populateFundFlowSvg(m) {
     var allocated = Number(m.allocated_amount) || Number(m.sanctioned_amount) || 0;
-    var recommended = Number(m.recommended_amount) || allocated * 0.95;
+    // Phase 5: never fabricate a recommended amount. Use the authoritative
+    // value (0 when the DB has none) — the bar simply shows 0.
+    var recommended = Number(m.recommended_amount) || 0;
     var sanctioned = Number(m.sanctioned_amount) || 0;
     var exp = Number(m.expenditure_amount) || 0;
     if (allocated === 0) return;
@@ -478,9 +489,19 @@
 
   // ========== AI ANALYSIS ==========
   function populateAIAnalysis(m, analysis) {
-    var score = Number(m.performance_score) || 0;
-    var cls = m.performance_classification || 'N/A';
-    var cc = getClsColor(cls);
+    // Phase: Intelligence Foundation. Prefer the authoritative 0-100 score +
+    // label + national rank/percentile + cluster label + risk from DB. Fall back
+    // to the legacy 0-200 score + classification only if the new fields are
+    // missing (e.g. before the intelligence backfill has run for this row).
+    var newScore = m.performance_score_100;
+    var newLabel = m.performance_label;
+    var legacyScore = Number(m.performance_score) || 0;
+    var legacyLabel = m.performance_classification || 'N/A';
+    var hasNew = (newScore !== null && newScore !== undefined && newLabel);
+    var displayScore = hasNew ? Number(newScore) : legacyScore;
+    var displayLabel = hasNew ? newLabel : legacyLabel;
+    var displayMax = hasNew ? 100 : 200;
+    var cc = getClsColor(hasNew ? newLabel : legacyLabel);
 
     // Score ring — animated when the AI Analysis tab is opened
     var ring = document.getElementById('aiScoreRing');
@@ -489,13 +510,45 @@
       ring.setAttribute('stroke-dasharray', circ + ' ' + circ);
       ring.setAttribute('stroke-dashoffset', circ);
       ring.setAttribute('stroke', cc === 'emerald' ? '#10b981' : cc === 'blue' ? '#3b82f6' : cc === 'amber' ? '#f59e0b' : '#ef4444');
-      aiRingTarget = circ - (circ * Math.min(score / 200, 1));
+      aiRingTarget = circ - (circ * Math.min(displayScore / displayMax, 1));
     }
-    setText('aiScoreValue', Math.round(score));
+    setText('aiScoreValue', Math.round(displayScore));
     var badge = document.getElementById('aiScoreBadge');
     if (badge) {
-      badge.textContent = cls.replace(/_/g, ' ');
+      badge.textContent = String(displayLabel).replace(/_/g, ' ');
       badge.className = 'px-3 py-1 rounded-full text-xs font-bold border bg-' + cc + '-100 text-' + cc + '-800 border-' + cc + '-300';
+    }
+
+    // Intelligence meta: rank, percentile, cluster, risk
+    setText('aiNationalRank', m.national_rank != null ? ('#' + fmtNum(m.national_rank)) : '—');
+    setText('aiNationalPercentile', m.national_percentile != null ? fmtPct(m.national_percentile) : '—');
+    setText('aiPeerRank', m.peer_rank != null ? ('#' + fmtNum(m.peer_rank)) : '—');
+    setText('aiPeerPercentile', m.peer_percentile != null ? fmtPct(m.peer_percentile) : '—');
+    setText('aiClusterLabel', m.cluster_label && m.cluster_label !== 'insufficient' ? m.cluster_label : '—');
+    var riskEl = document.getElementById('aiRiskLevel');
+    if (riskEl) {
+      var rl = (m.risk_level || 'N/A').toUpperCase();
+      var rc = rl === 'CRITICAL' || rl === 'HIGH' ? 'rose' : rl === 'MODERATE' || rl === 'MEDIUM' ? 'amber' : 'emerald';
+      riskEl.textContent = rl.replace(/_/g, ' ') + (m.risk_confidence ? ' (' + m.risk_confidence + ' confidence)' : '');
+      riskEl.className = 'text-xs font-semibold text-' + rc + '-700';
+    }
+
+    // Append "/100" suffix next to the score when using the new scale
+    var ringContainer = ring ? ring.parentElement && ring.parentElement.parentElement : null;
+    var suffix = document.getElementById('aiScoreMaxSuffix');
+    if (!suffix) {
+      // Create a one-time suffix node next to the aiScoreValue (does not
+      // redesign the layout; just appends a label).
+      var valEl = document.getElementById('aiScoreValue');
+      if (valEl) {
+        suffix = document.createElement('span');
+        suffix.id = 'aiScoreMaxSuffix';
+        suffix.className = 'text-[10px] font-bold text-slate-500 ml-1';
+        suffix.textContent = '/ ' + displayMax;
+        valEl.parentNode && valEl.parentNode.appendChild(suffix);
+      }
+    } else {
+      suffix.textContent = '/ ' + displayMax;
     }
 
     // Score breakdown
@@ -509,10 +562,12 @@
         { label: 'Completion Rate', value: comp, color: getColor(comp) },
         { label: 'Fund Utilization', value: util, color: getColor(util) },
         { label: 'Sanction Rate', value: sanction, color: getColor(sanction) },
-        { label: 'Risk Score', value: 100 - flagged, color: flagged > 20 ? 'rose' : 'emerald' },
+        // Phase 5: show the authoritative flagged rate; do not invent an
+        // inverted "risk score".
+        { label: 'Flagged Rate', value: flagged, color: flagged > 20 ? 'rose' : 'emerald' },
       ];
       var html = '<div class="flex items-center justify-between mb-3"><h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Score Components</h4>' +
-        '<span class="text-xs font-bold text-slate-500">' + Math.round(score) + ' / 200 points</span></div>';
+        '<span class="text-xs font-bold text-slate-500">' + Math.round(displayScore) + ' / ' + displayMax + ' points</span></div>';
       metrics.forEach(function(metric) {
         html += '<div class="space-y-1.5">' +
           '<div class="flex justify-between items-center text-xs">' +
