@@ -51,7 +51,7 @@ async def main():
     P("{:<45} {:>12}".format("state_intelligence", si_total))
     P("{:<45} {:>12}".format("  == state_intelligence = state_metrics", "PASS" if si_total == states_total else "FAIL"))
 
-    works_total = await q(db1, "SELECT COUNT(*) FROM public.work_analysis") + await q(db1, "SELECT COUNT(*) FROM public.mla_work_analysis")
+    works_total = await q(db2, "SELECT COUNT(*) FROM public.work_analysis") + await q(db2, "SELECT COUNT(*) FROM public.mla_work_analysis")
     P("{:<45} {:>12}".format("works (work_analysis + mla_work_analysis)", works_total))
 
     scored = await q(db2, "SELECT COUNT(*) FROM public.member_intelligence WHERE performance_score_100 IS NOT NULL")
@@ -106,12 +106,14 @@ async def main():
         P("{:<45} {:>12}".format(r['model_name'], r['status']))
 
     # Categories
-    cat_count = await q(db1, "SELECT COUNT(*) FROM public.category_metrics")
+    cat_count = await q(db2, "SELECT COUNT(*) FROM public.category_metrics")
     P("\n{:<45} {:>12}".format("category_metrics rows", cat_count))
 
-    # FY
-    fy_count = await q(db1, "SELECT COUNT(*) FROM public.phase_a_trends")
-    P("{:<45} {:>12}".format("phase_a_trends rows", fy_count))
+    # FY / trends
+    fy_count = await q(db2, "SELECT COUNT(*) FROM public.fy_metrics")
+    trend_count = await q(db2, "SELECT COUNT(*) FROM public.trends")
+    P("{:<45} {:>12}".format("fy_metrics rows", fy_count))
+    P("{:<45} {:>12}".format("trends rows", trend_count))
 
     await db1.close()
     await db2.close()

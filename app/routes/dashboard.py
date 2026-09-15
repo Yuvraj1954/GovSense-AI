@@ -666,9 +666,10 @@ async def get_member_works_paginated(
 
     items = []
     total = 0
+    table = "work_analysis" if member_type == "MP" else "mla_work_analysis"
 
     try:
-        rows = await db1.fetch(f"""
+        rows = await db2.fetch(f"""
             SELECT work_id, work_description, activity_name, normalized_activity,
                    work_category, status, risk_level, risk_flags,
                    recommended_amount, sanction_amount, expenditure_amount,
@@ -676,7 +677,7 @@ async def get_member_works_paginated(
                    recommendation_date, sanction_date, completion_date,
                    project_age_days, execution_days, cost_status, duration_status,
                    COUNT(*) OVER() AS _total
-            FROM public.work_analysis
+            FROM public.{table}
             WHERE member_id = $1 AND member_type = $2 {status_clause}
             ORDER BY sanction_amount DESC NULLS LAST
             LIMIT {page_size} OFFSET {offset}
@@ -685,13 +686,13 @@ async def get_member_works_paginated(
             total = int(rows[0]["_total"] or 0)
             items = [{k: v for k, v in dict(r).items() if k != "_total"} for r in rows]
         else:
-            cr = await db1.fetchrow(f"""
-                SELECT COUNT(*) AS cnt FROM public.work_analysis
+            cr = await db2.fetchrow(f"""
+                SELECT COUNT(*) AS cnt FROM public.{table}
                 WHERE member_id = $1 AND member_type = $2 {status_clause}
             """, *args)
             total = int(cr["cnt"]) if cr else 0
     except Exception:
-        # Fallback: query works table directly
+        # Fallback: query raw works table directly from DB1
         try:
             id_col = "mp_id" if member_type == "MP" else "mla_id"
             fb_status = ""
@@ -893,7 +894,7 @@ async def get_state_works_paginated(
     if cached is not None:
         _with_cache_headers(response, ttl)
         return cached
-    db1 = await get_pool()
+    db2 = await get_db2_pool()
 
     if category == "completed":
         status_clause = " AND LOWER(status) = 'completed'"
@@ -909,7 +910,7 @@ async def get_state_works_paginated(
     total = 0
 
     try:
-        count_row = await db1.fetchrow(f"""
+        count_row = await db2.fetchrow(f"""
             SELECT COUNT(*) AS cnt FROM (
                 SELECT work_id FROM public.work_analysis WHERE state_id = $1 {status_clause}
                 UNION ALL
@@ -918,7 +919,7 @@ async def get_state_works_paginated(
         """, state_id)
         total = int(count_row["cnt"]) if count_row else 0
 
-        rows = await db1.fetch(f"""
+        rows = await db2.fetch(f"""
             SELECT * FROM (
                 SELECT work_id, work_description, activity_name, work_category, status, risk_level,
                        recommended_amount, sanction_amount, expenditure_amount, completion_percentage,
@@ -935,24 +936,7 @@ async def get_state_works_paginated(
         """, state_id)
         items = [dict(r) for r in rows]
     except Exception:
-        try:
-            count_row = await db1.fetchrow(f"""
-                SELECT COUNT(*) AS cnt FROM public.work_analysis
-                WHERE state_id = $1 {status_clause}
-            """, state_id)
-            total = int(count_row["cnt"]) if count_row else 0
-            rows = await db1.fetch(f"""
-                SELECT work_id, work_description, activity_name, work_category, status, risk_level,
-                       recommended_amount, sanction_amount, expenditure_amount, completion_percentage,
-                       recommendation_date, sanction_date, completion_date, member_type
-                FROM public.work_analysis
-                WHERE state_id = $1 {status_clause}
-                ORDER BY sanction_amount DESC NULLS LAST
-                LIMIT {page_size} OFFSET {offset}
-            """, state_id)
-            items = [dict(r) for r in rows]
-        except Exception:
-            pass
+        pass
 
     total_pages = max(1, (total + page_size - 1) // page_size)
     value = {
@@ -970,10 +954,10 @@ async def get_state_works_paginated(
 async def get_state_constituencies(state_id: int):
     """Representative/constituency-level aggregation for a state. Names are
     resolved on the frontend from the state's member records."""
-    db1 = await get_pool()
+    db2 = await get_db2_pool()
     rows = []
     try:
-        rows = await db1.fetch("""
+        rows = await db2.fetch("""
             SELECT t.member_id,
                    t.member_type,
                    COUNT(*) AS total_works,
@@ -1038,7 +1022,7 @@ async def list_constituencies(response: Response, state_id: int = Query(None)):
     db2 = await get_db2_pool()
     if state_id:
         try:
-            rows = await db1.fetch("""
+            rows = await db2.fetch("""
                 SELECT constituency_id, COUNT(*) AS work_count FROM (
                     SELECT constituency_id FROM public.work_analysis WHERE state_id = $1
                     UNION ALL
@@ -1136,6 +1120,7 @@ async def list_works(
     if cached is not None:
         _with_cache_headers(response, ttl)
         return cached
+    db2 = await get_db2_pool()
     db1 = await get_pool()
 
     filters = []
@@ -1189,17 +1174,27 @@ async def list_works(
     offset = (page - 1) * page_size
     total = 0
     items = []
+    constituency_names = {}
     try:
-        crow = await db1.fetchrow(f"SELECT COUNT(*) AS cnt FROM ({union}) t", *args)
+        crow = await db2.fetchrow(f"SELECT COUNT(*) AS cnt FROM ({union}) t", *args)
         total = int(crow["cnt"]) if crow else 0
-        rows = await db1.fetch(f"""
-            SELECT t.*, c.constituency_name
+        rows = await db2.fetch(f"""
+            SELECT t.*
             FROM ({union}) t
-            LEFT JOIN public.constituencies c ON c.constituency_id = t.constituency_id
             ORDER BY {unnamed_flag}, {order}
             LIMIT {page_size} OFFSET {offset}
         """, *args)
         items = [dict(r) for r in rows]
+        if items:
+            cids = [i["constituency_id"] for i in items if i.get("constituency_id")]
+            if cids:
+                crows = await db1.fetch(
+                    "SELECT constituency_id, constituency_name FROM public.constituencies WHERE constituency_id = ANY($1)",
+                    cids,
+                )
+                constituency_names = {r["constituency_id"]: r["constituency_name"] for r in crows}
+            for i in items:
+                i["constituency_name"] = constituency_names.get(i.get("constituency_id"))
     except Exception:
         pass
 
@@ -1217,7 +1212,7 @@ async def projects_summary(response: Response, state_id: int = Query(None)):
     if cached is not None:
         _with_cache_headers(response, ttl)
         return cached
-    db1 = await get_pool()
+    db2 = await get_db2_pool()
     args = []
     where = ""
     if state_id:
@@ -1242,7 +1237,7 @@ async def projects_summary(response: Response, state_id: int = Query(None)):
     }
 
     async def fetch_kpis():
-        return await db1.fetchrow(f"""
+        return await db2.fetchrow(f"""
             SELECT
               COUNT(*) AS total,
               COUNT(*) FILTER (WHERE LOWER(status)='completed') AS completed,
@@ -1273,7 +1268,7 @@ async def projects_summary(response: Response, state_id: int = Query(None)):
         """, *args)
 
     async def fetch_categories():
-        return await db1.fetch(f"""
+        return await db2.fetch(f"""
             SELECT work_category AS category, COUNT(*) AS cnt,
                    COALESCE(SUM(sanction_amount),0) AS amount
             FROM ({union}) t
@@ -1360,22 +1355,30 @@ async def risk_overview(response: Response):
             "SELECT * FROM public.overall_metrics WHERE scope='BOTH' LIMIT 1"
         )
     async def q_work_anomalies():
-        return await db1.fetchrow("""
+        return await db2.fetchrow("""
             SELECT
               COUNT(*) FILTER (WHERE risk_flags && ARRAY['COST_ANOMALY'] AND NOT (risk_flags && ARRAY['DURATION_ANOMALY'])) AS cost_only,
               COUNT(*) FILTER (WHERE risk_flags && ARRAY['DURATION_ANOMALY'] AND NOT (risk_flags && ARRAY['COST_ANOMALY'])) AS duration_only,
               COUNT(*) FILTER (WHERE risk_flags && ARRAY['COST_ANOMALY'] AND risk_flags && ARRAY['DURATION_ANOMALY']) AS dual,
               COUNT(*) FILTER (WHERE risk_flags && ARRAY['COST_ANOMALY']) AS cost_total,
               COUNT(*) FILTER (WHERE risk_flags && ARRAY['DURATION_ANOMALY']) AS duration_total
-            FROM public.work_analysis
+            FROM (
+                SELECT risk_flags FROM public.work_analysis
+                UNION ALL
+                SELECT risk_flags FROM public.mla_work_analysis
+            ) all_works
         """)
     async def q_trend():
-        return await db1.fetch("""
+        return await db2.fetch("""
             SELECT EXTRACT(YEAR FROM recommendation_date)::int AS yr,
                    COUNT(*) FILTER (WHERE COALESCE(flag_count, 0) > 0) AS flagged,
                    COUNT(*) FILTER (WHERE LOWER(status) = 'completed') AS resolved,
                    COUNT(*) AS total
-            FROM public.work_analysis
+            FROM (
+                SELECT recommendation_date, flag_count, status FROM public.work_analysis
+                UNION ALL
+                SELECT recommendation_date, flag_count, status FROM public.mla_work_analysis
+            ) all_works
             WHERE recommendation_date IS NOT NULL
             GROUP BY yr ORDER BY yr
         """)
@@ -1526,24 +1529,24 @@ async def get_categories(
     if cached is not None:
         _with_cache_headers(response, ttl)
         return cached
-    db1 = await get_pool()
+    db2 = await get_db2_pool()
     try:
         if scope == "STATE" and state_id:
-            rows = await db1.fetch("""
+            rows = await db2.fetch("""
                 SELECT * FROM public.category_metrics
-                WHERE scope = 'STATE' AND state_id = $1 AND sample_size >= $2
+                WHERE scope = 'state' AND state_id = $1 AND sample_size >= $2
                 ORDER BY sample_size DESC LIMIT $3
             """, state_id, min_sample, limit)
         elif scope == "STATE":
-            rows = await db1.fetch("""
+            rows = await db2.fetch("""
                 SELECT * FROM public.category_metrics
-                WHERE scope = 'STATE' AND sample_size >= $1
+                WHERE scope = 'state' AND sample_size >= $1
                 ORDER BY state_id, sample_size DESC LIMIT $2
             """, min_sample, limit)
         else:
-            rows = await db1.fetch("""
+            rows = await db2.fetch("""
                 SELECT * FROM public.category_metrics
-                WHERE scope = 'NATIONAL' AND sample_size >= $1
+                WHERE scope = 'national' AND sample_size >= $1
                 ORDER BY sample_size DESC LIMIT $2
             """, min_sample, limit)
     except Exception:
@@ -1566,15 +1569,15 @@ async def get_fy_metrics(
     if cached is not None:
         _with_cache_headers(response, ttl)
         return cached
-    db1 = await get_pool()
+    db2 = await get_db2_pool()
     try:
         if member_type:
-            rows = await db1.fetch("""
+            rows = await db2.fetch("""
                 SELECT * FROM public.fy_metrics WHERE member_type = $1
                 ORDER BY fy_start, member_type
             """, member_type)
         else:
-            rows = await db1.fetch("""
+            rows = await db2.fetch("""
                 SELECT * FROM public.fy_metrics ORDER BY fy_start, member_type
             """)
     except Exception:
@@ -1802,7 +1805,7 @@ async def works_risk(
     if cached is not None:
         _with_cache_headers(response, ttl)
         return cached
-    db1 = await get_pool()
+    db2 = await get_db2_pool()
 
     conds = ["1=1"]
     args = []
@@ -1830,8 +1833,8 @@ async def works_risk(
     """
 
     offset = (page - 1) * page_size
-    total = int(await db1.fetchval(f"SELECT COUNT(*) FROM ({union}) t", *args) or 0)
-    rows = await db1.fetch(f"""
+    total = int(await db2.fetchval(f"SELECT COUNT(*) FROM ({union}) t", *args) or 0)
+    rows = await db2.fetch(f"""
         SELECT * FROM ({union}) t
         ORDER BY COALESCE(delay_probability, 0) DESC, COALESCE(isolation_score, 0) DESC
         LIMIT ${idx} OFFSET ${idx + 1}
