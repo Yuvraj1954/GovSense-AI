@@ -148,9 +148,10 @@ async def build_state_intelligence() -> int:
                 rank = ranks[i]
                 pct = _percentile_from_rank(rank, n)
 
+                cluster_label = r.get("cluster_label") or f"Cluster {r['cluster_id']}"
                 records.append((
                     r["state_id"], score, label, conf, rank, pct,
-                    r["cluster_id"], f"Cluster {r['cluster_id']}",
+                    r["cluster_id"], cluster_label,
                     _safe_float(r["risk_score"]), r["risk_level"], r["risk_confidence"], r["risk_evidence"],
                     sample, datetime.datetime.now(datetime.timezone.utc)
                 ))

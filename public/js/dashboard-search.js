@@ -13,7 +13,8 @@
   }
 
   function memberDetailHref(m) {
-    return 'mpdetail.html?member_id=' + encodeURIComponent(m.member_id) + '&from=dashboard';
+    var mt = m.member_type || m.member_type_field || 'MP';
+    return 'mpdetail.html?member_id=' + encodeURIComponent(m.member_id) + '&member_type=' + encodeURIComponent(mt) + '&from=dashboard';
   }
   function stateDetailHref(id, name) {
     return 'statedetail.html?state_id=' + encodeURIComponent(id) + '&state=' + encodeURIComponent(name) + '&from=dashboard';

@@ -89,7 +89,12 @@ REQUIRED_DERIVED_TABLES = [
     "state_metrics",
     "member_intelligence",
     "state_intelligence",
-    "statistics",
+    "national_statistics",
+    "overall_metrics",
+    "trends",
+    "category_metrics",
+    "fy_metrics",
+    "model_registry",
 ]
 
 

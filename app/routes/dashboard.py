@@ -500,9 +500,16 @@ async def _fetch_mixed_page_filtered(pool, member_type: str, page_size: int, off
 
 
 @router.get("/members/detail/{member_id}")
-async def get_member_detail(response: Response, member_id: int):
-    """Comprehensive member profile: metrics, AI analysis, evidence, benchmarks and works."""
-    cache_key, ttl = _cacheable("member_detail", "member_detail", member_id)
+async def get_member_detail(
+    response: Response,
+    member_id: int,
+    member_type: str = Query(None, pattern="^(MP|MLA)$"),
+):
+    """Comprehensive member profile: metrics, AI analysis, evidence, benchmarks and works.
+
+    Use member_type query param when IDs may collide between MP and MLA spaces.
+    """
+    cache_key, ttl = _cacheable("member_detail", "member_detail", member_id, member_type or "ANY")
     cached = _cache_get(cache_key)
     if cached is not None:
         _with_cache_headers(response, ttl)
@@ -511,7 +518,13 @@ async def get_member_detail(response: Response, member_id: int):
     db1 = await get_pool()
 
     # 1. Core member metrics (must be first to get member_type)
-    member = await db2.fetchrow("""
+    where_type = ""
+    args = [member_id]
+    if member_type:
+        where_type = " AND member_type = $2"
+        args.append(member_type)
+
+    member = await db2.fetchrow(f"""
         SELECT member_id, member_type, member_name, state_id, state_name, constituency_id,
                house_name, tenure, total_works, recommended_works, sanctioned_works,
                completed_works, ongoing_works, pending_works, completion_rate_pct,
@@ -527,16 +540,22 @@ async def get_member_detail(response: Response, member_id: int):
                duration_anomaly_works, anomaly_score, anomaly_level,
                confidence_level, performance_classification, rank, performance_score
         FROM public.member_metrics
-        WHERE member_id = $1
-    """, member_id)
-    intel = await db2.fetchrow("""
+        WHERE member_id = $1 {where_type}
+    """, *args)
+
+    intel_args = [member_id]
+    intel_where = ""
+    if member_type:
+        intel_where = " AND member_type = $2"
+        intel_args.append(member_type)
+    intel = await db2.fetchrow(f"""
         SELECT performance_score_100, performance_label, performance_confidence,
                national_rank, national_percentile, peer_rank, peer_percentile,
                cluster_id, cluster_label, risk_score, risk_level, risk_confidence,
                risk_evidence, sample_size
         FROM public.member_intelligence
-        WHERE member_id = $1
-    """, member_id)
+        WHERE member_id = $1 {intel_where}
+    """, *intel_args)
 
     if member is None:
         raise HTTPException(status_code=404, detail="Member not found")
@@ -546,6 +565,9 @@ async def get_member_detail(response: Response, member_id: int):
         member_dict["performance_score_100"] = intel["performance_score_100"]
         member_dict["performance_label"] = intel["performance_label"]
         member_dict["performance_confidence"] = intel["performance_confidence"]
+        member_dict["national_rank"] = intel["national_rank"]
+        # Fallback to national_rank for the generic rank field used by the header.
+        member_dict["rank"] = member_dict.get("rank") or intel["national_rank"]
         member_dict["national_percentile"] = intel["national_percentile"]
         member_dict["peer_rank"] = intel["peer_rank"]
         member_dict["peer_percentile"] = intel["peer_percentile"]
@@ -635,9 +657,13 @@ async def get_member_works_paginated(
     category: str = Query("all", pattern="^(all|completed|ongoing|recommended)$"),
     page: int = Query(1, ge=1),
     page_size: int = Query(6, ge=1, le=50),
+    member_type: str = Query(None, pattern="^(MP|MLA)$"),
 ):
-    """Server-side category-filtered, paginated works for a member."""
-    cache_key, ttl = _cacheable("member_works", "member_works", member_id, category, page, page_size)
+    """Server-side category-filtered, paginated works for a member.
+
+    Pass member_type when MP/MLA ids may collide.
+    """
+    cache_key, ttl = _cacheable("member_works", "member_works", member_id, category, page, page_size, member_type or "ANY")
     cached = _cache_get(cache_key)
     if cached is not None:
         _with_cache_headers(response, ttl)
@@ -645,12 +671,18 @@ async def get_member_works_paginated(
     db2 = await get_db2_pool()
     db1 = await get_pool()
 
+    if member_type:
+        mt_args = [member_id, member_type]
+        mt_where = "WHERE member_id = $1 AND member_type = $2"
+    else:
+        mt_args = [member_id]
+        mt_where = "WHERE member_id = $1"
     member = await db2.fetchrow(
-        "SELECT member_type FROM public.member_metrics WHERE member_id = $1", member_id
+        f"SELECT member_type FROM public.member_metrics {mt_where}", *mt_args
     )
     if member is None:
         raise HTTPException(status_code=404, detail="Member not found")
-    member_type = member["member_type"] or "MP"
+    member_type = member_type or member["member_type"] or "MP"
 
     if category == "completed":
         status_clause = " AND LOWER(status) = 'completed'"
@@ -757,7 +789,7 @@ async def get_state_detail(response: Response, state_id: int):
 
     state_intel = await db2.fetchrow("""
         SELECT performance_score_100, performance_label, performance_confidence,
-               national_percentile, cluster_id, cluster_label,
+               rank, national_percentile, cluster_id, cluster_label,
                risk_score, risk_level, risk_confidence, risk_evidence,
                sample_size
         FROM public.state_intelligence
@@ -769,6 +801,7 @@ async def get_state_detail(response: Response, state_id: int):
         state_dict["performance_score_100"] = state_intel["performance_score_100"]
         state_dict["performance_label"] = state_intel["performance_label"]
         state_dict["performance_confidence"] = state_intel["performance_confidence"]
+        state_dict["rank"] = state_intel["rank"]
         state_dict["national_percentile"] = state_intel["national_percentile"]
         state_dict["cluster_id"] = state_intel["cluster_id"]
         state_dict["cluster_label"] = state_intel["cluster_label"]
@@ -1343,12 +1376,14 @@ async def risk_overview(response: Response):
 
     # All 5 reads were sequential in the original code. Fan them out.
     async def q_member_levels():
+        # Use risk_level (composite risk) instead of anomaly_level (ML isolation forest only)
+        # so the overview reflects actionable high/medium/low risk entities.
         return await db2.fetch(
-            "SELECT anomaly_level, COUNT(*) AS cnt FROM public.member_metrics GROUP BY anomaly_level"
+            "SELECT risk_level, COUNT(*) AS cnt FROM public.member_metrics GROUP BY risk_level"
         )
     async def q_high_states():
         return await db2.fetchrow(
-            "SELECT COUNT(*) FILTER (WHERE UPPER(anomaly_level)='HIGH') AS h FROM public.state_metrics"
+            "SELECT COUNT(*) FILTER (WHERE UPPER(risk_level) IN ('HIGH','CRITICAL')) AS h FROM public.state_metrics"
         )
     async def q_overall():
         return await db2.fetchrow(
@@ -1389,10 +1424,10 @@ async def risk_overview(response: Response):
     )
 
     if not isinstance(member_levels, Exception):
-        levels = {(r["anomaly_level"] or "NORMAL").upper(): int(r["cnt"]) for r in member_levels}
-        out["high_reps"] = levels.get("HIGH", 0)
-        out["medium_reps"] = levels.get("MEDIUM", 0)
-        out["normal_reps"] = levels.get("NORMAL", 0)
+        levels = {(r["risk_level"] or "LOW").upper(): int(r["cnt"]) for r in member_levels}
+        out["high_reps"] = levels.get("HIGH", 0) + levels.get("CRITICAL", 0)
+        out["medium_reps"] = levels.get("MODERATE", 0)
+        out["normal_reps"] = levels.get("LOW", 0)
         out["total_members"] = sum(levels.values())
         out["rep_distribution"] = [
             {"level": "Normal", "count": out["normal_reps"]},
@@ -1455,26 +1490,34 @@ async def risk_entities(
             x = x.strip().upper()
             if not x:
                 continue
-            lv.append("NORMAL" if x == "LOW" else x)
+            # Frontend risk filters use low/medium/high; map to backend risk_level values.
+            if x == "LOW":
+                lv.append("LOW")
+            elif x == "MEDIUM":
+                lv.append("MODERATE")
+            elif x == "HIGH":
+                lv.extend(["HIGH", "CRITICAL"])
+            else:
+                lv.append(x)
         return lv or None
 
     if entity == "state":
         order = {
-            "score": "anomaly_score DESC NULLS LAST",
+            "score": "risk_score DESC NULLS LAST",
             "flagged": "flagged_works DESC NULLS LAST",
             "utilization": "fund_utilization_pct DESC NULLS LAST",
             "alpha": "state_name ASC",
-        }.get(sort, "anomaly_score DESC NULLS LAST")
+        }.get(sort, "risk_score DESC NULLS LAST")
         where = ""
         args = []
         lv = _levels(level)
         if lv:
-            where = "WHERE UPPER(anomaly_level) = ANY($1)"
+            where = "WHERE UPPER(risk_level) = ANY($1)"
             args = [lv]
         total = int(await db2.fetchval(f"SELECT COUNT(*) FROM public.state_metrics {where}", *args) or 0)
         rows = await db2.fetch(f"""
             SELECT state_id AS id, state_name AS name, 'State'::text AS member_type, state_name AS state_name,
-                   anomaly_score, anomaly_level, confidence_level, flagged_works, high_risk_works,
+                   anomaly_score, anomaly_level, risk_score, risk_level, confidence_level, flagged_works, high_risk_works,
                    cost_anomaly_works, duration_anomaly_works, risk_rate_pct AS flagged_rate_pct,
                    fund_utilization_pct, completion_rate_pct, performance_classification, rank
             FROM public.state_metrics {where}
@@ -1488,18 +1531,18 @@ async def risk_entities(
             conds.append(f"state_id = ${len(args) + 1}"); args.append(state_id)
         lv = _levels(level)
         if lv:
-            conds.append(f"UPPER(anomaly_level) = ANY(${len(args) + 1})"); args.append(lv)
+            conds.append(f"UPPER(risk_level) = ANY(${len(args) + 1})"); args.append(lv)
         where = "WHERE " + " AND ".join(conds)
         order = {
-            "score": "anomaly_score DESC NULLS LAST",
+            "score": "risk_score DESC NULLS LAST",
             "flagged": "flagged_works DESC NULLS LAST",
             "utilization": "fund_utilization_pct DESC NULLS LAST",
             "alpha": "member_name ASC",
-        }.get(sort, "anomaly_score DESC NULLS LAST")
+        }.get(sort, "risk_score DESC NULLS LAST")
         total = int(await db2.fetchval(f"SELECT COUNT(*) FROM public.member_metrics {where}", *args) or 0)
         rows = await db2.fetch(f"""
             SELECT member_id AS id, member_name AS name, member_type, state_name,
-                   anomaly_score, anomaly_level, confidence_level, flagged_works, high_risk_works,
+                   anomaly_score, anomaly_level, risk_score, risk_level, confidence_level, flagged_works, high_risk_works,
                    cost_anomaly_works, duration_anomaly_works, flagged_rate_pct,
                    fund_utilization_pct, completion_rate_pct, performance_classification, rank
             FROM public.member_metrics {where}
@@ -1609,9 +1652,10 @@ async def risk_alerts(response: Response, limit: int = Query(6, ge=1, le=50), en
             w = "WHERE member_type IN ('MP','MLA')"
         return await db2.fetch(f"""
             SELECT member_id AS id, member_name AS name, member_type, state_name,
-                   anomaly_score, anomaly_level, confidence_level, flagged_works, high_risk_works, flagged_rate_pct
+                   anomaly_score, anomaly_level, risk_score, risk_level, confidence_level,
+                   flagged_works, high_risk_works, flagged_rate_pct
             FROM public.member_metrics {w}
-            ORDER BY anomaly_score DESC NULLS LAST LIMIT {limit}
+            ORDER BY risk_score DESC NULLS LAST LIMIT {limit}
         """)
 
     async def fetch_states():
@@ -1619,10 +1663,10 @@ async def risk_alerts(response: Response, limit: int = Query(6, ge=1, le=50), en
             return []
         return await db2.fetch(f"""
             SELECT state_id AS id, state_name AS name, 'State'::text AS member_type, state_name,
-                   anomaly_score, anomaly_level, confidence_level, flagged_works, high_risk_works,
-                   risk_rate_pct AS flagged_rate_pct
+                   anomaly_score, anomaly_level, risk_score, risk_level, confidence_level,
+                   flagged_works, high_risk_works, risk_rate_pct AS flagged_rate_pct
             FROM public.state_metrics
-            ORDER BY anomaly_score DESC NULLS LAST LIMIT {limit}
+            ORDER BY risk_score DESC NULLS LAST LIMIT {limit}
         """)
 
     member_rows, state_rows = await asyncio.gather(fetch_members(), fetch_states(), return_exceptions=True)
@@ -1632,7 +1676,7 @@ async def risk_alerts(response: Response, limit: int = Query(6, ge=1, le=50), en
     if not isinstance(state_rows, Exception):
         for r in state_rows:
             d = dict(r); d["entity_type"] = "state"; out.append(d)
-    out.sort(key=lambda x: -(x.get("anomaly_score") or 0))
+    out.sort(key=lambda x: -(x.get("risk_score") or 0))
     value = {"items": out[:limit]}
     _with_cache_headers(response, ttl)
     return _cache_set(cache_key, value, ttl=ttl)

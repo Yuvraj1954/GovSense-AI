@@ -63,6 +63,16 @@
     return params.get('member_id') || params.get('id');
   }
 
+  function getMemberType() {
+    var params = new URLSearchParams(window.location.search);
+    return params.get('member_type') || params.get('type');
+  }
+
+  function memberQuerySuffix() {
+    var mt = getMemberType();
+    return mt ? '&member_type=' + encodeURIComponent(mt) : '';
+  }
+
   function setText(id, text) {
     var el = document.getElementById(id);
     if (el) el.textContent = text;
@@ -664,7 +674,7 @@
       '</div>';
     setText('worksShowingText', 'Loading…');
     setHTML('worksPageButtons', '');
-    fetch(API_BASE + '/api/members/detail/' + currentMemberId + '/works?category=' + category + '&page=' + page + '&page_size=' + pageSize)
+    fetch(API_BASE + '/api/members/detail/' + currentMemberId + '/works?category=' + category + '&page=' + page + '&page_size=' + pageSize + memberQuerySuffix())
       .then(function(r) { if (!r.ok) throw new Error('works error'); return r.json(); })
       .then(function(data) {
         worksCache[key] = data;
@@ -867,14 +877,14 @@
       processData(cached);
       showState('main');
       // Refresh in background
-      fetch(API_BASE + '/api/members/detail/' + memberId)
+      fetch(API_BASE + '/api/members/detail/' + memberId + '?' + memberQuerySuffix().replace(/^&/, ''))
         .then(function(r) { if (!r.ok) return null; return r.json(); })
         .then(function(data) { if (data) { setCache(memberId, data); processData(data); } })
         .catch(function() {});
       return;
     }
 
-    fetch(API_BASE + '/api/members/detail/' + memberId)
+    fetch(API_BASE + '/api/members/detail/' + memberId + '?' + memberQuerySuffix().replace(/^&/, ''))
       .then(function(r) {
         if (!r.ok) throw new Error(r.status === 404 ? 'Member not found' : 'API error');
         return r.json();

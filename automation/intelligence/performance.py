@@ -92,14 +92,19 @@ async def compute_member_performance() -> int:
                     "member_type": r["member_type"],
                     "performance_score": score,
                     "performance_score_weighted": weighted,
+                    "total_works": r["total_works"],
                 })
 
             await conn.executemany("""
                 UPDATE member_metrics
                 SET performance_score = $3,
-                    performance_score_weighted = $4
+                    performance_score_weighted = $4,
+                    performance_classification = $5
                 WHERE member_id = $1 AND member_type = $2
-            """, [(u["member_id"], u["member_type"], u["performance_score"], u["performance_score_weighted"]) for u in updates])
+            """, [(
+                u["member_id"], u["member_type"], u["performance_score"], u["performance_score_weighted"],
+                performance_label(u["performance_score"], u["total_works"], zero_work=(u["total_works"] == 0))
+            ) for u in updates])
             return len(updates)
     finally:
         await p2.close()
@@ -141,14 +146,19 @@ async def compute_state_performance() -> int:
                     "state_id": r["state_id"],
                     "performance_score": score,
                     "performance_score_weighted": weighted,
+                    "total_works": r["total_works"],
                 })
 
             await conn.executemany("""
                 UPDATE state_metrics
                 SET performance_score = $2,
-                    performance_score_weighted = $3
+                    performance_score_weighted = $3,
+                    performance_classification = $4
                 WHERE state_id = $1
-            """, [(u["state_id"], u["performance_score"], u["performance_score_weighted"]) for u in updates])
+            """, [(
+                u["state_id"], u["performance_score"], u["performance_score_weighted"],
+                performance_label(u["performance_score"], u["total_works"], zero_work=(u["total_works"] == 0))
+            ) for u in updates])
             return len(updates)
     finally:
         await p2.close()

@@ -238,16 +238,17 @@
   }
 
   function alertCard(e) {
-    var lvl = (e.anomaly_level || '').toUpperCase();
-    var lc = lvl === 'HIGH' ? 'rose' : lvl === 'MEDIUM' ? 'amber' : 'emerald';
+    // Prefer composite risk_level over ML-only anomaly_level for actionable triage.
+    var lvl = (e.risk_level || e.anomaly_level || '').toUpperCase();
+    var lc = lvl === 'HIGH' || lvl === 'CRITICAL' ? 'rose' : lvl === 'MODERATE' || lvl === 'MEDIUM' ? 'amber' : 'emerald';
     var type = e.entity_type || (e.member_type || '').toLowerCase();
     var isState = type === 'state';
     var typeLabel = isState ? 'State / UT' : (e.member_type || '').toUpperCase();
     var href = isState
       ? 'statedetail.html?state_id=' + encodeURIComponent(e.id || '') + '&state=' + encodeURIComponent(e.name || '') + '&from=airiskcentre'
-      : 'mpdetail.html?member_id=' + e.id + '&from=airiskcentre';
-    var score = e.anomaly_score != null ? Number(e.anomaly_score) : 0;
-    var scorePct = Math.min((score / 2) * 100, 100);
+      : 'mpdetail.html?member_id=' + e.id + '&member_type=' + encodeURIComponent((e.member_type || 'MP').toUpperCase()) + '&from=airiskcentre';
+    var score = e.risk_score != null ? Number(e.risk_score) : (e.anomaly_score != null ? Number(e.anomaly_score) : 0);
+    var scorePct = Math.min(score, 100);
     var conf = e.confidence_level || 'MEDIUM';
     return '<article class="alert-item bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:shadow-md hover:border-' + lc + '-400 transition-all duration-200 flex flex-col justify-between" data-type="' + type + '">' +
       '<div>' +
@@ -263,8 +264,8 @@
       '<span class="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded">' + typeLabel + '</span>' +
       '<span class="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded flex items-center gap-1"><span class="w-1 h-1 rounded-full bg-' + lc + '-500"></span> ' + conf + ' Confidence</span></div>' +
       '<div class="mt-3.5"><div class="flex justify-between items-center text-xs mb-1">' +
-      '<span class="text-[11px] font-semibold text-slate-600">Anomaly Score</span>' +
-      '<span class="font-bold text-' + lc + '-700 text-xs">' + score.toFixed(2) + ' / 2.00</span></div>' +
+      '<span class="text-[11px] font-semibold text-slate-600">Risk Score</span>' +
+      '<span class="font-bold text-' + lc + '-700 text-xs">' + score.toFixed(1) + ' / 100</span></div>' +
       '<div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-' + lc + '-500 rounded-full transition-all duration-700" style="width:' + scorePct + '%"></div></div></div>' +
       '<div class="grid grid-cols-2 gap-2 mt-3">' +
       '<div class="p-2 border border-slate-100 rounded-lg"><span class="text-[10px] text-slate-400">Flagged Works</span><div class="font-bold text-slate-800 text-sm mt-0.5">' + fmtNum(e.flagged_works || 0) + '</div></div>' +
@@ -364,14 +365,15 @@
   }
 
   function entityCard(e) {
-    var lvl = (e.anomaly_level || '').toUpperCase();
-    var lc = lvl === 'HIGH' ? 'rose' : lvl === 'MEDIUM' ? 'amber' : 'emerald';
+    // Prefer composite risk_level over ML-only anomaly_level for actionable triage.
+    var lvl = (e.risk_level || e.anomaly_level || '').toUpperCase();
+    var lc = lvl === 'HIGH' || lvl === 'CRITICAL' ? 'rose' : lvl === 'MODERATE' || lvl === 'MEDIUM' ? 'amber' : 'emerald';
     var isState = (e.member_type || '') === 'State';
     var href = isState
       ? 'statedetail.html?state_id=' + encodeURIComponent(e.id || '') + '&state=' + encodeURIComponent(e.name || '') + '&from=airiskcentre'
-      : 'mpdetail.html?member_id=' + e.id + '&from=airiskcentre';
-    var score = e.anomaly_score != null ? Number(e.anomaly_score) : 0;
-    var scorePct = Math.min((score / 2) * 100, 100);
+      : 'mpdetail.html?member_id=' + e.id + '&member_type=' + encodeURIComponent((e.member_type || 'MP').toUpperCase()) + '&from=airiskcentre';
+    var score = e.risk_score != null ? Number(e.risk_score) : (e.anomaly_score != null ? Number(e.anomaly_score) : 0);
+    var scorePct = Math.min(score, 100);
     var conf = e.confidence_level || 'MEDIUM';
     return '<article class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:shadow-md hover:border-' + lc + '-400 transition-all duration-200 flex flex-col justify-between">' +
       '<div>' +
@@ -387,8 +389,8 @@
       '<span class="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded">' + (isState ? 'State / UT' : (e.member_type || 'MP')) + '</span>' +
       '<span class="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded flex items-center gap-1"><span class="w-1 h-1 rounded-full bg-' + lc + '-500"></span> ' + conf + ' Confidence</span></div>' +
       '<div class="mt-3.5"><div class="flex justify-between items-center text-xs mb-1">' +
-      '<span class="text-[11px] font-semibold text-slate-600">Anomaly Score</span>' +
-      '<span class="font-bold text-' + lc + '-700 text-xs">' + score.toFixed(2) + ' / 2.00</span></div>' +
+      '<span class="text-[11px] font-semibold text-slate-600">Risk Score</span>' +
+      '<span class="font-bold text-' + lc + '-700 text-xs">' + score.toFixed(1) + ' / 100</span></div>' +
       '<div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-' + lc + '-500 rounded-full transition-all duration-700" style="width:' + scorePct + '%"></div></div></div>' +
       '<div class="grid grid-cols-3 gap-2 mt-3">' +
       '<div class="p-2 border border-slate-100 rounded-lg"><span class="text-[10px] text-slate-400">Flagged</span><div class="font-bold text-slate-800 text-sm mt-0.5">' + fmtNum(e.flagged_works || 0) + '</div></div>' +

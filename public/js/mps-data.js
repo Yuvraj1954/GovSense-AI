@@ -465,7 +465,7 @@
             if (li >= 0) {
               nameHtml = name.substring(0, li) + '<strong class="text-blue-600">' + name.substring(li, li + query.length) + '</strong>' + name.substring(li + query.length);
             }
-            var detailUrl = 'mpdetail.html?member_id=' + (m.member_id || '');
+    var detailUrl = 'mpdetail.html?member_id=' + (m.member_id || '') + '&member_type=' + encodeURIComponent(m.member_type_field || m.member_type || 'MP');
             html += '<a href="' + detailUrl + '" class="flex items-center justify-between px-2.5 py-2 hover:bg-slate-50 rounded cursor-pointer transition no-underline">';
             html += '<div><span class="font-medium text-slate-800 text-xs">' + nameHtml + '</span>';
             html += '<span class="text-[10px] text-slate-400 ml-2">' + (m.state_name || '') + '</span></div>';
