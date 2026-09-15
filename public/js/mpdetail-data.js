@@ -115,17 +115,7 @@
     setText('mpHouse', m.house_name || (m.member_type === 'MLA' ? 'Rajya Sabha' : 'Lok Sabha'));
     setText('mpTenure', m.tenure || 'Current Term');
     setText('headerMpName', (m.member_name || '') + ' — ' + (m.state_name || ''));
-    var rank = m.rank;
-    var rankLabel = rank ? ('National Rank #' + rank) : 'Rank: N/A';
-    var pct = m.national_percentile;
-    if (pct !== null && pct !== undefined) {
-      rankLabel += '  ·  ' + Number(pct).toFixed(1) + ' %ile';
-    }
-    var cluster = m.cluster_label;
-    if (cluster && cluster !== 'insufficient') {
-      rankLabel += '  ·  ' + cluster;
-    }
-    setText('mpRank', rankLabel);
+    setText('mpRank', rank ? ('National Rank #' + rank) : 'Rank: N/A');
     var cls = m.performance_classification || 'N/A';
     var c = getClsColor(cls);
     var clsEl = document.getElementById('mpClassification');
@@ -542,8 +532,12 @@
     if (riskEl) {
       var rl = (m.risk_level || 'N/A').toUpperCase();
       var rc = rl === 'CRITICAL' || rl === 'HIGH' ? 'rose' : rl === 'MODERATE' || rl === 'MEDIUM' ? 'amber' : 'emerald';
-      riskEl.textContent = rl.replace(/_/g, ' ') + (m.risk_confidence ? ' (' + m.risk_confidence + ' confidence)' : '');
+      riskEl.textContent = rl.replace(/_/g, ' ');
       riskEl.className = 'text-xs font-semibold text-' + rc + '-700';
+    }
+    var confEl = document.getElementById('aiRiskConfidence');
+    if (confEl) {
+      confEl.textContent = m.risk_confidence ? m.risk_confidence.toUpperCase() : '—';
     }
 
     // Append "/100" suffix next to the score when using the new scale

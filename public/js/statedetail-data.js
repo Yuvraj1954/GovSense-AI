@@ -364,8 +364,12 @@
     if (riskEl) {
       var rl = (s.risk_level || 'N/A').toUpperCase();
       var rc = rl === 'CRITICAL' || rl === 'HIGH' ? 'rose' : rl === 'MODERATE' || rl === 'MEDIUM' ? 'amber' : 'emerald';
-      riskEl.textContent = rl.replace(/_/g, ' ') + (s.risk_confidence ? ' (' + s.risk_confidence + ' confidence)' : '');
+      riskEl.textContent = rl.replace(/_/g, ' ');
       riskEl.className = 'text-xs font-semibold text-' + rc + '-700';
+    }
+    var confEl = document.getElementById('stateAiRiskConfidence');
+    if (confEl) {
+      confEl.textContent = s.risk_confidence ? s.risk_confidence.toUpperCase() : '—';
     }
 
     var breakdown = document.getElementById('stateAiScoreBreakdown');
