@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+r"""
 GovSense daily production pipeline.
 
 Entry point: python automation/daily_pipeline.py
@@ -15,11 +15,17 @@ Steps:
   5. Update data_updated timestamp
 
 Incremental mode:
-  - Compares source DB1 table row counts against the previous pipeline run.
-  - If counts are unchanged, intelligence generation is skipped.
+  - Compares source DB1 table row counts + max primary keys against the previous
+    successful pipeline run stored in DB2.public.pipeline_metadata.
+  - If no change is detected, intelligence generation is skipped.
   - Use --full to force a complete rebuild (e.g., after code/schema changes).
+  - Use --dry-run to print the execution plan without modifying any data.
 
-Use --skip-intelligence to skip intelligence regardless of changes.
+Nightly cron usage:
+    0 2 * * * cd /path/to/repo && back\ end/.venv/bin/python automation/daily_pipeline.py
+
+The pipeline saves metadata only after ALL steps succeed, so a failed run does
+not mark the data as up-to-date.
 """
 
 import argparse
@@ -57,18 +63,53 @@ SOURCE_COUNT_TABLES = [
 ]
 
 
-async def _get_source_counts(db1):
-    counts = {}
+async def _ensure_metadata_table(db2):
+    await db2.execute("""
+        CREATE TABLE IF NOT EXISTS public.pipeline_metadata (
+            key TEXT PRIMARY KEY,
+            metadata_value JSONB NOT NULL,
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
+
+
+async def _get_source_fingerprint(db1):
+    """Build a lightweight fingerprint of source DB1 tables.
+
+    Uses row count + max id column where available. This is safe for the
+    append-only government data ingestion pattern.
+    """
+    fingerprint = {}
     for tbl in SOURCE_COUNT_TABLES:
         row = await db1.fetchrow(f"SELECT COUNT(*) AS c FROM public.{tbl}")
-        counts[tbl] = row["c"]
-    return counts
+        fingerprint[tbl] = {"count": row["c"]}
+        # Add max primary key where we can guess it
+        id_col = None
+        if "works" in tbl and not tbl.endswith("_works"):
+            id_col = "work_id"
+        elif tbl == "mla_works":
+            id_col = "work_id"
+        elif "recommendations" in tbl:
+            id_col = "recommendation_id"
+        elif "sanctions" in tbl:
+            id_col = "sanction_id"
+        elif "expenditures" in tbl:
+            id_col = "expenditure_id"
+        elif "completions" in tbl:
+            id_col = "completion_id"
+        if id_col:
+            try:
+                mrow = await db1.fetchrow(f"SELECT MAX({id_col}) AS m FROM public.{tbl}")
+                fingerprint[tbl]["max_id"] = mrow["m"]
+            except Exception:
+                pass
+    return fingerprint
 
 
-async def _get_last_source_counts(db2):
+async def _get_last_fingerprint(db2):
     try:
         row = await db2.fetchrow(
-            "SELECT metadata_value FROM public.pipeline_metadata WHERE key = 'source_counts'"
+            "SELECT metadata_value FROM public.pipeline_metadata WHERE key = 'source_fingerprint'"
         )
         if row and row["metadata_value"]:
             return row["metadata_value"]
@@ -77,55 +118,73 @@ async def _get_last_source_counts(db2):
     return None
 
 
-async def _save_source_counts(db2, counts):
-    import json
-    await db2.execute("""
-        CREATE TABLE IF NOT EXISTS public.pipeline_metadata (
-            key TEXT PRIMARY KEY,
-            metadata_value JSONB NOT NULL,
-            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        )
-    """)
-    await db2.execute("""
-        INSERT INTO public.pipeline_metadata (key, metadata_value, updated_at)
-        VALUES ('source_counts', $1, $2)
-        ON CONFLICT (key) DO UPDATE SET
-            metadata_value = EXCLUDED.metadata_value,
-            updated_at = EXCLUDED.updated_at
-    """, json.dumps(counts), datetime.now(timezone.utc))
-
-
-async def _source_counts_changed(db1, db2) -> bool:
-    current = await _get_source_counts(db1)
-    last = await _get_last_source_counts(db2)
+async def _source_changed(db1, db2):
+    current = await _get_source_fingerprint(db1)
+    last = await _get_last_fingerprint(db2)
     if last is None:
-        P("  no previous source counts found; will rebuild intelligence")
-        return True
+        P("  no previous fingerprint found; will rebuild intelligence")
+        return True, current
+
+    # Also force rebuild if DB2 work_analysis is empty (first deploy / truncated)
+    wa_count = await db2.fetchval("SELECT COUNT(*) FROM public.work_analysis")
+    mwa_count = await db2.fetchval("SELECT COUNT(*) FROM public.mla_work_analysis")
+    if (wa_count or 0) == 0 and (mwa_count or 0) == 0:
+        P("  DB2 work_analysis tables are empty; will rebuild intelligence")
+        return True, current
+
     if current != last:
-        P("  source counts changed; will rebuild intelligence")
+        P("  source fingerprint changed; will rebuild intelligence")
         for tbl in SOURCE_COUNT_TABLES:
             if current.get(tbl) != last.get(tbl):
                 P(f"    {tbl}: {last.get(tbl)} -> {current.get(tbl)}")
-        return True
-    P("  source counts unchanged; intelligence rebuild can be skipped")
-    return False
+        return True, current
+
+    P("  source fingerprint unchanged; intelligence rebuild can be skipped")
+    return False, current
 
 
-async def step_intelligence(results, skip: bool = False, full: bool = False, db1=None, db2=None):
+async def _save_pipeline_success(db2, fingerprint):
+    import json
+    now = datetime.now(timezone.utc)
+    await _ensure_metadata_table(db2)
+    await db2.execute("""
+        INSERT INTO public.pipeline_metadata (key, metadata_value, updated_at)
+        VALUES ('source_fingerprint', $1, $2)
+        ON CONFLICT (key) DO UPDATE SET
+            metadata_value = EXCLUDED.metadata_value,
+            updated_at = EXCLUDED.updated_at
+    """, json.dumps(fingerprint), now)
+    await db2.execute("""
+        INSERT INTO public.pipeline_metadata (key, metadata_value, updated_at)
+        VALUES ('last_run_at', $1::jsonb, $2)
+        ON CONFLICT (key) DO UPDATE SET
+            metadata_value = EXCLUDED.metadata_value,
+            updated_at = EXCLUDED.updated_at
+    """, json.dumps(now.isoformat()), now)
+
+
+async def step_intelligence(results, skip: bool = False, full: bool = False, dry_run: bool = False, db1=None, db2=None):
     P("\n[Step 1] DB2 intelligence generation")
     if skip:
         P("  skipped (--skip-intelligence)")
         results["intelligence"] = {"skipped": True}
-        return
+        return None
 
     from automation.intelligence.backfill import backfill_all
 
     if not full and db1 and db2:
-        changed = await _source_counts_changed(db1, db2)
+        changed, fingerprint = await _source_changed(db1, db2)
         if not changed:
             P("  skipping intelligence rebuild (use --full to force)")
-            results["intelligence"] = {"skipped": True, "reason": "source_counts_unchanged"}
-            return
+            results["intelligence"] = {"skipped": True, "reason": "source_fingerprint_unchanged"}
+            return None
+    else:
+        fingerprint = await _get_source_fingerprint(db1) if db1 else None
+
+    if dry_run:
+        P("  DRY RUN: would execute full intelligence backfill")
+        results["intelligence"] = {"dry_run": True, "would_run": True}
+        return fingerprint
 
     result = await backfill_all(intelligence=True)
     results["intelligence"] = result
@@ -134,16 +193,15 @@ async def step_intelligence(results, skip: bool = False, full: bool = False, db1
     P(f"  state_metrics: {result.get('state_metrics', 0)}")
     P(f"  model statuses: isolation_forest={result.get('anomaly', {}).get('isolation_forest', {}).get('status')}, project_delay_xgb={result.get('delay_xgb', {}).get('status')}")
     P(f"  duration: {result.get('duration_seconds', 0):.1f}s")
-
-    # Save counts only after successful rebuild
-    if db1 and db2:
-        counts = await _get_source_counts(db1)
-        await _save_source_counts(db2, counts)
-        P("  source counts saved for next incremental run")
+    return fingerprint
 
 
-async def step_classification(db2, results):
+async def step_classification(db2, results, dry_run: bool = False):
     P("\n[Step 2] Entity classification (200-point)")
+    if dry_run:
+        P("  DRY RUN: would run classification")
+        results["classification"] = {"dry_run": True}
+        return
     result = await run_classification(Conn(db2))
     results["classification"] = result
     P(f"  MPs:    {result['mp_classified']}/{result['total_mp']}")
@@ -151,8 +209,12 @@ async def step_classification(db2, results):
     P(f"  States: {result['state_classified']}/{result['total_states']}")
 
 
-async def step_allocations(results):
+async def step_allocations(results, dry_run: bool = False):
     P("\n[Step 3] Allocation matching reconciliation")
+    if dry_run:
+        P("  DRY RUN: would run allocation reconciliation")
+        results["allocations"] = {"dry_run": True}
+        return
     from scripts.fix_allocations import main as run_alloc_fix
     import io
     old_stdout = sys.stdout
@@ -167,8 +229,12 @@ async def step_allocations(results):
         P(f"  {line}")
 
 
-async def step_ranks(results):
+async def step_ranks(results, dry_run: bool = False):
     P("\n[Step 4] Intelligence rank / label reconciliation")
+    if dry_run:
+        P("  DRY RUN: would run rank/label reconciliation")
+        results["ranks"] = {"dry_run": True}
+        return
     from scripts.fix_ranks import main as run_rank_fix
     import io
     old_stdout = sys.stdout
@@ -183,8 +249,12 @@ async def step_ranks(results):
         P(f"  {line}")
 
 
-async def step_data_updated(db1, results):
+async def step_data_updated(db1, results, dry_run: bool = False):
     P("\n[Step 5] Update data_updated timestamp")
+    if dry_run:
+        P("  DRY RUN: would update data_updated")
+        results["data_updated"] = {"dry_run": True}
+        return
     now = datetime.now(timezone.utc)
     await db1.execute(
         """INSERT INTO public.data_updated (id, completed_at, status, updated_at)
@@ -199,28 +269,36 @@ async def step_data_updated(db1, results):
     P(f"  data_updated set to {now.isoformat()}")
 
 
-async def run_pipeline(skip_intelligence: bool = False, full: bool = False):
+async def run_pipeline(skip_intelligence: bool = False, full: bool = False, dry_run: bool = False):
     start = time.time()
     P("=" * 70)
     P("GOVSENSE DAILY PIPELINE")
     P("=" * 70)
     P(f"Started: {datetime.now(timezone.utc).isoformat()}")
-    P(f"skip_intelligence={skip_intelligence}, full={full}")
+    P(f"skip_intelligence={skip_intelligence}, full={full}, dry_run={dry_run}")
 
     db1 = await asyncpg.connect(dsn=settings.DATABASE_URL, timeout=30, command_timeout=600)
     db2 = await asyncpg.connect(dsn=settings.DB2_DATABASE_URL, timeout=30, command_timeout=600)
     await db1.execute("SET statement_timeout = '600000'")
     await db2.execute("SET statement_timeout = '600000'")
+    if not dry_run:
+        await _ensure_metadata_table(db2)
     P("Databases connected.")
 
-    results = {"start_time": datetime.now(timezone.utc).isoformat()}
+    results = {"start_time": datetime.now(timezone.utc).isoformat(), "dry_run": dry_run}
+    fingerprint = None
 
     try:
-        await step_intelligence(results, skip=skip_intelligence, full=full, db1=db1, db2=db2)
-        await step_classification(db2, results)
-        await step_allocations(results)
-        await step_ranks(results)
-        await step_data_updated(db1, results)
+        fingerprint = await step_intelligence(results, skip=skip_intelligence, full=full, dry_run=dry_run, db1=db1, db2=db2)
+        await step_classification(db2, results, dry_run=dry_run)
+        await step_allocations(results, dry_run=dry_run)
+        await step_ranks(results, dry_run=dry_run)
+        await step_data_updated(db1, results, dry_run=dry_run)
+
+        if not dry_run and fingerprint is not None:
+            await _save_pipeline_success(db2, fingerprint)
+            P("\nPipeline metadata saved (source fingerprint + last_run_at).")
+
     except Exception as e:
         P(f"\nPIPELINE ERROR: {e}")
         traceback.print_exc()
@@ -243,10 +321,12 @@ async def main():
     parser.add_argument("--skip-intelligence", action="store_true",
                         help="Skip DB2 intelligence regeneration")
     parser.add_argument("--full", action="store_true",
-                        help="Force full intelligence rebuild regardless of source count changes")
+                        help="Force full intelligence rebuild regardless of source fingerprint")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Print execution plan without modifying any data")
     args = parser.parse_args()
 
-    await run_pipeline(skip_intelligence=args.skip_intelligence, full=args.full)
+    await run_pipeline(skip_intelligence=args.skip_intelligence, full=args.full, dry_run=args.dry_run)
 
 
 if __name__ == "__main__":
