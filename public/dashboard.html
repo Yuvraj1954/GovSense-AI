@@ -30,9 +30,7 @@
     display:none!important;
   }
 }
-/* Dashboard header is the only one with gap-4 on <header>.
-   On mobile, the wide House filter steals space from the search bar,
-   so hide it in the header (still available on desktop). */
+/* Dashboard header: hide the House filter dropdown on mobile to save space */
 @media(max-width:767px){
   header.h-16.gap-4 > div:last-child{
     display:none !important;
@@ -194,15 +192,15 @@
 <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
 </button>
-<div class="hidden sm:block flex-shrink-0">
-<div class="flex items-center gap-2.5">
-<h1 class="text-base md:text-lg font-bold text-slate-900 tracking-tight leading-none">Dashboard</h1>
-<span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
+<div class="flex-shrink-0 min-w-0">
+<div class="flex items-center gap-2 md:gap-2.5">
+<h1 class="text-[15px] md:text-lg font-bold text-slate-900 tracking-tight leading-none whitespace-nowrap">Dashboard</h1>
+<span class="hidden md:inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
         Data update unavailable
       </span>
 </div>
-<p class="text-xs text-slate-500 mt-1 leading-none font-normal">National overview of MPLADS funds, works and implementation</p>
+<p class="hidden md:block text-xs text-slate-500 mt-1 leading-none font-normal">National overview of MPLADS funds, works and implementation</p>
 </div>
 </div>
 <!-- Center Section: Compact Application Search Bar (approx 360-400px width) -->
@@ -956,7 +954,7 @@
 </section>
 <!-- END: QuickActionsBar -->
 <!-- System Metadata Footer -->
-<footer class="pt-4 border-t border-slate-200 text-[11px] text-slate-400 pb-4 flex flex-wrap md:flex-nowrap md:justify-between items-center gap-x-4 gap-y-1">
+<footer class="pt-4 border-t border-slate-200 text-[11px] text-slate-400 pb-4 md:pb-4 flex flex-wrap md:flex-nowrap md:justify-between items-center gap-x-4 gap-y-1" style="padding-bottom:max(1rem, env(safe-area-inset-bottom, 0px));">
 <div class="flex-shrink-0 w-full md:w-auto">Govsense AI · Official data aggregated from MoSPI MPLADS Portal (NIC) · Performance Metrics System</div>
 <div class="flex flex-nowrap items-center gap-x-4 gap-y-1">
 <a class="hover:text-slate-600 transition" href="methodology.html">Methodology &amp; Audit</a>
