@@ -238,7 +238,7 @@
     var utilColor = util >= 50 ? 'text-emerald-600' : util >= 30 ? 'text-amber-600' : 'text-rose-600';
     var compColor = comp >= 50 ? 'text-emerald-600' : comp >= 30 ? 'text-blue-600' : 'text-rose-600';
     var houseLabel = (m.member_type_field || m.member_type) === 'MLA' ? 'Rajya Sabha' : 'Lok Sabha';
-    var detailUrl = 'mpdetail.html?member_id=' + (m.member_id || '');
+    var detailUrl = 'mpdetail.html?member_id=' + (m.member_id || '') + '&member_type=' + encodeURIComponent(m.member_type_field || m.member_type || 'MP');
 
     return '<article class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:shadow-md hover:border-blue-400 transition-all duration-200 flex flex-col justify-between">' +
       '<div>' +

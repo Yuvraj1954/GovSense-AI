@@ -248,7 +248,14 @@ async def get_members_list(
         count_row = await db2.fetchrow("""
             SELECT total_members FROM public.overall_metrics WHERE scope = $1 LIMIT 1
         """, scope)
-        total = count_row["total_members"] if count_row else 0
+        if count_row:
+            total = count_row["total_members"]
+        else:
+            count_row = await db2.fetchrow("""
+                SELECT COUNT(*) as cnt FROM public.member_metrics
+                WHERE total_works >= 5 AND member_type = $1
+            """, member_type)
+            total = count_row["cnt"] if count_row else 0
     else:
         count_row = await db2.fetchrow(f"""
             SELECT COUNT(*) as cnt FROM public.member_metrics
@@ -402,6 +409,8 @@ async def _fetch_mixed_page(pool, member_type: str, page_size: int, offset: int)
 
     mixed = []
     cls_order = ["PERFORMER", "AVERAGE", "NEEDS_ATTENTION", "UNDERPERFORMER", "NO_DATA", "INSUFFICIENT_DATA"]
+    extra_buckets = [c for c in buckets if c not in cls_order]
+    cls_order.extend(extra_buckets)
     round_num = 0
     while len(mixed) < page_size:
         added = False
@@ -481,6 +490,8 @@ async def _fetch_mixed_page_filtered(pool, member_type: str, page_size: int, off
 
     mixed = []
     cls_order = ["PERFORMER", "AVERAGE", "NEEDS_ATTENTION", "UNDERPERFORMER", "NO_DATA", "INSUFFICIENT_DATA"]
+    extra_buckets = [c for c in buckets if c not in cls_order]
+    cls_order.extend(extra_buckets)
     round_num = 0
     while len(mixed) < page_size:
         added = False
