@@ -368,6 +368,131 @@
       '  .desktop-only{',
       '    display:none!important;',
       '  }',
+      '',
+      '  /* ---- P0: Touch targets ≥44px ---- */',
+      '  #mobileMenuBtn{',
+      '    min-width:44px!important;min-height:44px!important;',
+      '    display:inline-flex!important;align-items:center;justify-content:center;',
+      '  }',
+      '  #clearSearchBtn:not(.hidden){',
+      '    padding:10px 4px!important;',
+      '    display:inline-flex!important;align-items:center;justify-content:center;',
+      '    flex-shrink:0;',
+      '  }',
+      '  #searchContainer>div:first-child,',
+      '  #searchWrapper>div:first-child{',
+      '    flex-wrap:nowrap!important;',
+      '  }',
+      '  header{',
+      '    flex-wrap:nowrap!important;',
+      '    overflow-x:hidden;',
+      '  }',
+      '  .info-btn{',
+      '    min-width:44px!important;min-height:44px!important;',
+      '    display:inline-flex!important;align-items:center;justify-content:center;',
+      '  }',
+      '',
+      '  /* ---- P1: Tab padding restored ---- */',
+      '  [role="tablist"] button,',
+      '  [data-purpose="profile-section-nav"] button{',
+      '    padding-left:8px!important;',
+      '    padding-right:8px!important;',
+      '    white-space:nowrap;',
+      '  }',
+      '',
+      '  /* ---- P1: Tab scroll indicator (right-edge fade) ---- */',
+      '  [role="tablist"]{',
+      '    position:relative;',
+      '    -webkit-mask-image:linear-gradient(to right,black 85%,transparent 100%);',
+      '    mask-image:linear-gradient(to right,black 85%,transparent 100%);',
+      '  }',
+      '',
+      '  /* ---- P2: Search placeholder visible ---- */',
+      '  #searchContainer input::placeholder{',
+      '    color:#94a3b8!important;',
+      '  }',
+      '',
+      '  /* ---- P2: Trend buttons larger touch area ---- */',
+      '  .trend-btn{',
+      '    padding-top:8px!important;padding-bottom:8px!important;',
+      '    min-height:32px!important;',
+      '  }',
+      '',
+      '  /* ---- P2: Risk Centre pagination larger ---- */',
+      '  #btnPrevPage,#btnNextPage{',
+      '    padding-top:8px!important;padding-bottom:8px!important;',
+      '    min-height:32px!important;',
+      '  }',
+      '',
+      '  /* ---- P1: Scatter chart — hide SVG, show mobile summary ---- */',
+      '  [data-purpose="scatter-plot-section"] .overflow-x-auto,',
+      '  [data-purpose="scatter-plot-section"] svg,',
+      '  [data-purpose="scatter-plot-section"] svg.min-w-\\[640px\\],',
+      '  #scatterPlotWrapper .overflow-x-auto,',
+      '  #scatterPlotWrapper svg,',
+      '  #mpsScatterWrapper .w-full.overflow-x-auto,',
+      '  #mpsScatterWrapper svg,',
+      '  #stateScatterWrapper .overflow-x-auto,',
+      '  #stateScatterWrapper svg{',
+      '    display:none!important;',
+      '  }',
+      '  .scatter-mobile-summary{',
+      '    display:block!important;',
+      '  }',
+      '',
+      '  /* ---- P1: Representatives table → cards on mobile ---- */',
+      '  #tab-representatives table{',
+      '    display:none!important;',
+      '  }',
+      '  .reps-mobile-cards{',
+      '    display:block!important;',
+      '  }',
+      '',
+      '  /* ---- Mobile header metadata pill ---- */',
+      '  header>div:first-child{',
+      '    min-width:0!important;',
+      '    overflow:hidden;',
+      '  }',
+      '  .mobile-header-meta{',
+      '    display:flex!important;align-items:center;',
+      '    font-size:11px;font-weight:500;color:#94a3b8;',
+      '    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;',
+      '    max-width:100px;flex-shrink:0;',
+      '    margin-left:auto;',
+      '  }',
+      '  @media(max-width:359px){',
+      '    .mobile-header-meta{display:none!important;}',
+      '  }',
+      '  /* ---- Circular logo in mobile header ---- */',
+      '  .mobile-header-logo{',
+      '    display:none!important;',
+      '  }',
+      '  #mobileMenuBtn~.mobile-header-logo{',
+      '    display:inline-flex!important;',
+      '    width:32px;height:32px;',
+      '    border-radius:50%;',
+      '    overflow:hidden;',
+      '    flex-shrink:0;',
+      '    border:1px solid #e2e8f0;',
+      '    background:#fff;',
+      '    box-shadow:0 1px 3px rgba(0,0,0,.08);',
+      '  }',
+      '  .mobile-header-logo img{',
+      '    width:100%;height:100%;',
+      '    object-fit:contain;',
+      '    padding:3px;',
+      '  }',
+      '  /* ---- Back button below header on mobile (3 new pages) ---- */',
+      '  .mobile-back-bar{',
+      '    display:flex!important;',
+      '  }',
+      '}',
+      '',
+      '/* Desktop: hide mobile header meta, logo, back bar */',
+      '@media(min-width:768px){',
+      '  .mobile-header-meta{display:none!important;}',
+      '  .mobile-header-logo{display:none!important;}',
+      '  .mobile-back-bar{display:none!important;}',
       '}',
       '',
       '/* Print styles */',
@@ -532,6 +657,34 @@
         if (menuBtn) menuBtn.style.setProperty('display', 'inline-flex', 'important');
       }
     });
+
+    // ---- Inject circular logo in header (CSS hides on desktop) ----
+    if (menuBtn && !document.querySelector('.mobile-header-logo')) {
+      var logo = document.createElement('a');
+      logo.href = 'dashboard.html';
+      logo.className = 'mobile-header-logo';
+      logo.title = 'Govsense AI';
+      logo.innerHTML = '<img src="logo.png" alt="Govsense AI">';
+      menuBtn.parentNode.insertBefore(logo, menuBtn.nextSibling);
+    }
+
+    // ---- Inject back button bar inside <main> on 3 new pages (mobile only) ----
+    var backPages = ['methodology.html', 'privacy.html', 'api-docs.html'];
+    var currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+    if (backPages.indexOf(currentPage) !== -1) {
+      var mainEl = document.querySelector('main');
+      if (mainEl && !document.querySelector('.mobile-back-bar')) {
+        var backBar = document.createElement('div');
+        backBar.className = 'mobile-back-bar';
+        backBar.style.cssText = 'padding:0 0 2px 0;';
+        var backBtn = document.getElementById('pageBackBtn');
+        var backHref = backBtn ? backBtn.getAttribute('href') : 'dashboard.html';
+        backBar.innerHTML = '<a href="' + backHref + '" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#475569;text-decoration:none;min-height:36px;">' +
+          '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>' +
+          'Back</a>';
+        mainEl.insertBefore(backBar, mainEl.firstChild);
+      }
+    }
   }
 
   if (document.readyState === 'loading') {

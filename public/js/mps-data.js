@@ -56,6 +56,8 @@
     var el;
     el = document.getElementById('kpi-total-members');
     if (el) el.textContent = fmtNum(d.total_members);
+    el = document.getElementById('headerMeta');
+    if (el) el.textContent = fmtNum(d.total_members) + ' Members';
     el = document.getElementById('kpi-total-allocated');
     if (el) el.textContent = fmtCr(d.recommended_amount);
     el = document.getElementById('kpi-total-expenditure');
@@ -158,6 +160,37 @@
         window.ChartAnim.popIn(container.querySelectorAll('circle'), { fade: false, stagger: 5, duration: 500 });
       });
     }
+    buildScatterMobileSummary(members);
+  }
+
+  function buildScatterMobileSummary(members) {
+    var el = document.getElementById('scatterQuadrantCards');
+    if (!el) return;
+    var quadrants = { leaders: [], efficient: [], lagging: [], highSpend: [] };
+    members.forEach(function(m) {
+      var util = Number(m.fund_utilization_pct) || 0;
+      var comp = Number(m.completion_rate_pct) || 0;
+      var name = m.member_name || 'Unknown';
+      if (comp >= 50 && util >= 50) quadrants.leaders.push(name);
+      else if (comp >= 50 && util < 50) quadrants.efficient.push(name);
+      else if (comp < 50 && util < 50) quadrants.lagging.push(name);
+      else quadrants.highSpend.push(name);
+    });
+    var cards = [
+      { label: 'High Delivery / High Spend', count: quadrants.leaders.length, color: 'emerald', items: quadrants.leaders },
+      { label: 'High Delivery / Low Spend', count: quadrants.efficient.length, color: 'blue', items: quadrants.efficient },
+      { label: 'Low Delivery / Low Spend', count: quadrants.lagging.length, color: 'amber', items: quadrants.lagging },
+      { label: 'Low Delivery / High Spend', count: quadrants.highSpend.length, color: 'rose', items: quadrants.highSpend },
+    ];
+    var h = '';
+    cards.forEach(function(c) {
+      h += '<div class="p-3 bg-white border border-slate-200 rounded-lg">' +
+        '<div class="flex items-center justify-between mb-1">' +
+        '<span class="text-[10px] font-bold uppercase tracking-wider text-' + c.color + '-700">' + c.label + '</span>' +
+        '<span class="text-lg font-black text-' + c.color + '-600">' + c.count + '</span></div>' +
+        '<div class="text-[10px] text-slate-500">' + (c.items.length > 0 ? c.items.slice(0, 3).join(', ') + (c.items.length > 3 ? ' +' + (c.items.length - 3) : '') : 'None') + '</div></div>';
+    });
+    el.innerHTML = h;
   }
 
   function showScatterTooltip(e, m) {

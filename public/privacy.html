@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style data-purpose="mobile-overrides">
+@media(max-width:767px){
+  #appSidebar{
+    position:fixed!important;
+    left:-264px!important;
+    top:0!important;
+    width:264px!important;
+    height:100vh!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    z-index:60;
+    transform:none!important;
+    transition:left .25s ease-out;
+    border-right:1px solid #e2e8f0;
+    box-shadow:none;
+  }
+  #appSidebar.mobile-drawer-active{
+    left:0!important;
+    box-shadow:4px 0 24px rgba(15,23,42,.18);
+  }
+  #appSidebar.mobile-drawer-active .sidebar-text-content{
+    display:flex!important;
+  }
+  #appSidebar.mobile-drawer-active.w-16{
+    width:264px!important;
+  }
+  #sidebarToggleBtn{
+    display:none!important;
+  }
+}
+</style>
+<title>Privacy Policy — Govsense AI</title>
+<link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+<link rel="manifest" href="favicon/site.webmanifest">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>#appSidebar.w-16 .sidebar-text-content{display:none !important}</style>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              teal: '#0d9488',
+              orange: '#ea580c',
+              blue: '#0284c7',
+              navy: '#0f172a'
+            }
+          }
+        }
+      }
+    }
+</script>
+<style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>
+</head>
+<body class="h-full bg-[#f8fafc] text-slate-800 font-sans antialiased overflow-hidden flex flex-col">
+<div class="flex h-screen w-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="flex-shrink-0 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out flex flex-col z-30 w-16" id="appSidebar">
+<div class="h-16 border-b border-slate-100 flex items-center justify-center overflow-hidden px-3">
+<a href="dashboard.html" class="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm hover:bg-slate-50 transition-colors overflow-hidden">
+  <img src="logo.png" alt="Govsense AI" class="w-full h-full object-contain p-0.5">
+</a>
+<div class="sidebar-text-content hidden flex-col leading-tight whitespace-nowrap overflow-hidden transition-opacity duration-200 ml-3">
+<span class="font-bold text-slate-900 tracking-tight text-sm">Govsense AI</span>
+<span class="text-xs font-medium text-slate-400">MPLADS Portal</span>
+</div>
+</div>
+<nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="dashboard.html" title="Home">
+<svg class="w-5 h-5 text-slate-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">Home</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="airiskcentre.html" title="AI Risk Center">
+<svg class="w-5 h-5 text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">AI Risk Center</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="project.html" title="Projects">
+<svg class="w-5 h-5 text-slate-500 flex-shrink-0 group-hover:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">Projects</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="state.html" title="Explore States">
+<svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">Explore States</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="mps.html" title="MPs">
+<svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">MPs</span>
+</a>
+</nav>
+<div class="p-3 border-t border-slate-100 bg-slate-50/50">
+<div class="hidden flex justify-center py-2" id="sidebarCollapsedStatus">
+<span class="relative flex h-3 w-3" title="Data update unavailable">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+</span>
+</div>
+<div class="sidebar-text-content hidden rounded-lg bg-white p-2.5 border border-slate-200 text-xs shadow-xs" id="sidebarExpandedStatus">
+<div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">DATA STATUS</div>
+<div class="flex items-center gap-2 font-semibold text-slate-800">
+<span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
+<span class="text-xs">Database synced</span>
+</div>
+<p class="text-[10px] text-slate-400 mt-1 leading-snug">Last updated: unavailable <span class="text-emerald-600 font-medium">(backend ready)</span></p>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f8fafc] h-screen">
+<header class="h-16 px-6 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0 z-20">
+<div class="flex items-center gap-3 md:gap-4">
+<button aria-label="Open navigation" aria-expanded="false" aria-controls="appSidebar" class="md:hidden w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 flex-shrink-0" id="mobileMenuBtn" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button aria-label="Toggle Navigation Sidebar" class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 flex-shrink-0" id="sidebarToggleBtn" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div>
+<div class="flex items-center gap-2.5">
+<h1 class="text-base md:text-lg font-bold text-slate-900 tracking-tight leading-none">Privacy Policy</h1>
+</div>
+<p class="text-xs text-slate-500 mt-1 leading-none font-normal">Data handling, user rights, and transparency commitments.</p>
+</div>
+</div>
+<div class="mobile-header-meta" id="headerMeta">Policy</div>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto px-4 pt-1 pb-3 md:px-6 md:pt-2 md:pb-4">
+<!-- Back Button -->
+<a href="dashboard.html" id="pageBackBtn" class="hidden md:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition mb-1">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+Back to Dashboard
+</a>
+<!-- Page Title Card -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-10 h-10 rounded-xl bg-brand-blue/10 text-brand-blue flex items-center justify-center">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<h2 class="text-sm font-bold text-slate-900">Govsense AI — Privacy Policy</h2>
+<p class="text-xs text-slate-500 mt-0.5">Effective Date: September 2026 &middot; Last Updated: September 16, 2026</p>
+</div>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed">This Privacy Policy describes how Govsense AI collects, uses, stores, and protects information. By accessing or using Govsense AI, you acknowledge and agree to the practices described herein.</p>
+</div>
+
+<!-- Section 1 -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">1</div>
+<h3 class="text-sm font-bold text-slate-900">Data Sources &amp; Collection</h3>
+</div>
+<div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+<p>Govsense AI is a <strong>public data analytics platform</strong>. All data displayed on this portal is sourced exclusively from publicly available government records.</p>
+<div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+<div class="font-bold text-slate-800 mb-1">Primary Data Source</div>
+<p>All work records, member profiles, fund allocations, and expenditure data are sourced from the <strong>Members of Parliament Local Area Development Scheme (MPLADS)</strong> portal operated by the <strong>National Informatics Centre (NIC)</strong> under the Ministry of Statistics and Programme Implementation (MoSPI), Government of India.</p>
+</div>
+<p><strong>What we collect:</strong></p>
+<ul class="space-y-1 ml-4 list-disc">
+<li>Publicly available MPLADS work records (work name, location, cost, status, dates)</li>
+<li>Publicly available member profiles (name, party, constituency, house type)</li>
+<li>Aggregated fund allocation and expenditure summaries</li>
+<li>State and constituency-level administrative boundaries</li>
+</ul>
+<p><strong>What we do NOT collect:</strong></p>
+<ul class="space-y-1 ml-4 list-disc">
+<li>Personal identifiable information (PII) beyond public representative profiles</li>
+<li>Private financial data of any individual</li>
+<li>Login credentials or authentication tokens (the platform is publicly accessible)</li>
+<li>Browser cookies for tracking or advertising purposes</li>
+<li>Location data from users</li>
+</ul>
+</div>
+</div>
+
+<!-- Section 2 -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">2</div>
+<h3 class="text-sm font-bold text-slate-900">How We Use Data</h3>
+</div>
+<div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+<p>Data is used solely for the purpose of <strong>public interest analytics and transparency reporting</strong>. Specifically:</p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+<div class="font-bold text-emerald-800 text-[11px]">Performance Analytics</div>
+<p class="text-[11px] text-emerald-700 mt-1">Computing performance scores, completion rates, and fund utilization metrics for MPs, MLAs, and States.</p>
+</div>
+<div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+<div class="font-bold text-blue-800 text-[11px]">Risk Assessment</div>
+<p class="text-[11px] text-blue-700 mt-1">Identifying statistical anomalies in cost, duration, and execution patterns to flag potential irregularities.</p>
+</div>
+<div class="p-3 bg-violet-50 border border-violet-200 rounded-lg">
+<div class="font-bold text-violet-800 text-[11px]">Peer Benchmarking</div>
+<p class="text-[11px] text-violet-700 mt-1">Enabling meaningful comparisons between comparable entities through cluster-based peer analysis.</p>
+</div>
+<div class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+<div class="font-bold text-amber-800 text-[11px]">Public Accountability</div>
+<p class="text-[11px] text-amber-700 mt-1">Supporting informed public discourse about MPLADS fund utilization and governance outcomes.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Section 3 -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold text-sm">3</div>
+<h3 class="text-sm font-bold text-slate-900">Data Storage &amp; Security</h3>
+</div>
+<div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+<ul class="space-y-2">
+<li class="flex items-start gap-2"><span class="text-cyan-600 font-bold flex-shrink-0">Hosting:</span>All data is stored on secure cloud infrastructure with industry-standard encryption at rest and in transit (TLS 1.2+).</li>
+<li class="flex items-start gap-2"><span class="text-cyan-600 font-bold flex-shrink-0">Access:</span>The platform is publicly accessible. No user accounts or authentication is required. No session data is stored.</li>
+<li class="flex items-start gap-2"><span class="text-cyan-600 font-bold flex-shrink-0">Retention:</span>Historical data is retained to enable trend analysis. Data is refreshed when new records become available from the NIC portal.</li>
+<li class="flex items-start gap-2"><span class="text-cyan-600 font-bold flex-shrink-0">Integrity:</span>All data transformations are logged with timestamps. Fingerprint-based change detection ensures data provenance.</li>
+</ul>
+</div>
+</div>
+
+<!-- Section 4 -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center font-bold text-sm">4</div>
+<h3 class="text-sm font-bold text-slate-900">Third-Party Sharing</h3>
+</div>
+<div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+<p>Govsense AI does <strong>not</strong> sell, trade, or share any data with third parties for commercial purposes.</p>
+<p>Data may be shared only in the following circumstances:</p>
+<ul class="space-y-1 ml-4 list-disc">
+<li><strong>Public API:</strong> Aggregated, anonymized data is available through our public API for research and non-commercial use (see <a href="api-docs.html" class="text-blue-600 hover:underline">API Documentation</a>).</li>
+<li><strong>Legal Requirement:</strong> If required by law, regulation, or legal process.</li>
+<li><strong>Academic Research:</strong> Data may be shared with academic institutions for governance research, subject to data use agreements.</li>
+</ul>
+</div>
+</div>
+
+<!-- Section 5 -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">5</div>
+<h3 class="text-sm font-bold text-slate-900">Cookies &amp; Tracking</h3>
+</div>
+<div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+<p>Govsense AI uses <strong>minimal cookies</strong> strictly necessary for platform functionality:</p>
+<div class="overflow-x-auto -mx-5 md:-mx-6 px-5 md:px-6">
+<table class="w-full text-xs border-collapse">
+<thead>
+<tr class="bg-slate-50 border-b border-slate-200">
+<th class="text-left py-2.5 px-3 font-bold text-slate-700">Cookie</th>
+<th class="text-left py-2.5 px-3 font-bold text-slate-700">Purpose</th>
+<th class="text-left py-2.5 px-3 font-bold text-slate-700">Duration</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">sidebar_state</td><td class="py-2.5 px-3 text-slate-600">Remembers sidebar expanded/collapsed state</td><td class="py-2.5 px-3 text-slate-600">Session</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">scatter_cache</td><td class="py-2.5 px-3 text-slate-600">Caches scatter chart data to reduce API calls</td><td class="py-2.5 px-3 text-slate-600">24 hours</td></tr>
+</tbody>
+</table>
+</div>
+<p class="mt-2">We do <strong>not</strong> use analytics cookies, advertising cookies, or any third-party tracking scripts (e.g., Google Analytics, Facebook Pixel).</p>
+</div>
+</div>
+
+<!-- Section 6 -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-sm">6</div>
+<h3 class="text-sm font-bold text-slate-900">Your Rights</h3>
+</div>
+<div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+<p>Since Govsense AI processes only publicly available government data and does not collect personal user data, traditional data rights (access, deletion, portability) do not apply in the conventional sense. However, we are committed to:</p>
+<ul class="space-y-2 ml-4">
+<li class="flex items-start gap-2"><span class="text-rose-500 font-bold">&bull;</span><strong>Transparency:</strong> All scoring methodologies and data sources are documented in our <a href="methodology.html" class="text-blue-600 hover:underline">Methodology &amp; Audit</a> page.</li>
+<li class="flex items-start gap-2"><span class="text-rose-500 font-bold">&bull;</span><strong>Corrections:</strong> If you believe any data derived from public records is inaccurate, please contact us with the specific record and source of corrected information.</li>
+<li class="flex items-start gap-2"><span class="text-rose-500 font-bold">&bull;</span><strong>API Access:</strong> All data available on the platform is also accessible through our <a href="api-docs.html" class="text-blue-600 hover:underline">public API</a>.</li>
+</ul>
+</div>
+</div>
+
+<!-- Section 7 -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">7</div>
+<h3 class="text-sm font-bold text-slate-900">Contact</h3>
+</div>
+<div class="text-xs text-slate-600 leading-relaxed">
+<p>For questions about this Privacy Policy or data practices, contact the Govsense AI team:</p>
+<div class="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg inline-block">
+<p class="font-medium text-slate-800">Govsense AI — Smart India Hackathon Team</p>
+<p class="text-slate-500 mt-1">Email: <span class="text-blue-600">governance@govsense.ai</span></p>
+<p class="text-slate-500">GitHub: <a href="https://github.com/Yuvraj1954/Smart-India-Hackathon" class="text-blue-600 hover:underline" target="_blank" rel="noopener">Yuvraj1954/Smart-India-Hackathon</a></p>
+</div>
+</div>
+</div>
+
+<!-- Footer -->
+<footer class="pt-4 border-t border-slate-200 text-[11px] text-slate-400 pb-4">
+<div class="mb-2">Govsense AI &middot; Aggregated MoSPI MPLADS Portal (NIC) &middot; Privacy Policy</div>
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+<a class="hover:text-slate-600 transition" href="methodology.html?from=privacy">Methodology &amp; Audit</a>
+<a class="hover:text-slate-600 transition" href="privacy.html">Privacy Policy</a>
+<a class="hover:text-slate-600 transition" href="api-docs.html?from=privacy">API Documentation</a>
+</div>
+</footer>
+</main>
+</div>
+</div>
+<script src="js/config.js?v=4"></script>
+<script src="js/mobile-shell.js?v=5"></script>
+<script src="js/data-updated.js?v=4"></script>
+<script>
+(function(){
+  var btn = document.getElementById('pageBackBtn');
+  if (!btn) return;
+  var params = new URLSearchParams(window.location.search);
+  var from = params.get('from');
+  if (from) {
+    var pageMap = {
+      'dashboard': 'dashboard.html',
+      'methodology': 'methodology.html',
+      'privacy': 'privacy.html',
+      'api-docs': 'api-docs.html',
+      'mps': 'mps.html',
+      'mpdetail': 'mpdetail.html',
+      'state': 'state.html',
+      'statedetail': 'statedetail.html',
+      'project': 'project.html',
+      'workdetail': 'workdetail.html',
+      'airiskcentre': 'airiskcentre.html'
+    };
+    btn.href = pageMap[from] || 'dashboard.html';
+  } else {
+    var ref = document.referrer || '';
+    if (ref && ref.indexOf(location.hostname) !== -1) {
+      btn.href = ref;
+    } else {
+      btn.href = 'dashboard.html';
+    }
+  }
+})();
+</script>
+</body></html>

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style data-purpose="mobile-overrides">
+@media(max-width:767px){
+  #appSidebar{
+    position:fixed!important;
+    left:-264px!important;
+    top:0!important;
+    width:264px!important;
+    height:100vh!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    z-index:60;
+    transform:none!important;
+    transition:left .25s ease-out;
+    border-right:1px solid #e2e8f0;
+    box-shadow:none;
+  }
+  #appSidebar.mobile-drawer-active{
+    left:0!important;
+    box-shadow:4px 0 24px rgba(15,23,42,.18);
+  }
+  #appSidebar.mobile-drawer-active .sidebar-text-content{
+    display:flex!important;
+  }
+  #appSidebar.mobile-drawer-active.w-16{
+    width:264px!important;
+  }
+  #sidebarToggleBtn{
+    display:none!important;
+  }
+}
+</style>
+<title>Methodology &amp; Audit — Govsense AI</title>
+<link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+<link rel="manifest" href="favicon/site.webmanifest">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>#appSidebar.w-16 .sidebar-text-content{display:none !important}</style>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              teal: '#0d9488',
+              orange: '#ea580c',
+              blue: '#0284c7',
+              navy: '#0f172a'
+            }
+          }
+        }
+      }
+    }
+</script>
+<style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>
+</head>
+<body class="h-full bg-[#f8fafc] text-slate-800 font-sans antialiased overflow-hidden flex flex-col">
+<div class="flex h-screen w-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="flex-shrink-0 bg-white border-r border-slate-200 transition-all duration-300 ease-in-out flex flex-col z-30 w-16" id="appSidebar">
+<div class="h-16 border-b border-slate-100 flex items-center justify-center overflow-hidden px-3">
+<a href="dashboard.html" class="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm hover:bg-slate-50 transition-colors overflow-hidden">
+  <img src="logo.png" alt="Govsense AI" class="w-full h-full object-contain p-0.5">
+</a>
+<div class="sidebar-text-content hidden flex-col leading-tight whitespace-nowrap overflow-hidden transition-opacity duration-200 ml-3">
+<span class="font-bold text-slate-900 tracking-tight text-sm">Govsense AI</span>
+<span class="text-xs font-medium text-slate-400">MPLADS Portal</span>
+</div>
+</div>
+<nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="dashboard.html" title="Home">
+<svg class="w-5 h-5 text-slate-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">Home</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="airiskcentre.html" title="AI Risk Center">
+<svg class="w-5 h-5 text-cyan-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">AI Risk Center</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="project.html" title="Projects">
+<svg class="w-5 h-5 text-slate-500 flex-shrink-0 group-hover:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">Projects</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="state.html" title="Explore States">
+<svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">Explore States</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="mps.html" title="MPs">
+<svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">MPs</span>
+</a>
+</nav>
+<div class="p-3 border-t border-slate-100 bg-slate-50/50">
+<div class="hidden flex justify-center py-2" id="sidebarCollapsedStatus">
+<span class="relative flex h-3 w-3" title="Data update unavailable">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+</span>
+</div>
+<div class="sidebar-text-content hidden rounded-lg bg-white p-2.5 border border-slate-200 text-xs shadow-xs" id="sidebarExpandedStatus">
+<div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">DATA STATUS</div>
+<div class="flex items-center gap-2 font-semibold text-slate-800">
+<span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
+<span class="text-xs">Database synced</span>
+</div>
+<p class="text-[10px] text-slate-400 mt-1 leading-snug">Last updated: unavailable <span class="text-emerald-600 font-medium">(backend ready)</span></p>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f8fafc] h-screen">
+<header class="h-16 px-6 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0 z-20">
+<div class="flex items-center gap-3 md:gap-4">
+<button aria-label="Open navigation" aria-expanded="false" aria-controls="appSidebar" class="md:hidden w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 flex-shrink-0" id="mobileMenuBtn" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button aria-label="Toggle Navigation Sidebar" class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 flex-shrink-0" id="sidebarToggleBtn" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div>
+<div class="flex items-center gap-2.5">
+<h1 class="text-base md:text-lg font-bold text-slate-900 tracking-tight leading-none">Methodology &amp; Audit</h1>
+</div>
+<p class="text-xs text-slate-500 mt-1 leading-none font-normal">Scoring, risk assessment, and data pipeline documentation.</p>
+</div>
+</div>
+<div class="mobile-header-meta" id="headerMeta">Overview</div>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto px-4 pt-1 pb-3 md:px-6 md:pt-2 md:pb-4">
+<!-- Back Button -->
+<a href="dashboard.html" id="pageBackBtn" class="hidden md:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition mb-1">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+Back to Dashboard
+</a>
+<!-- Page Title Card -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-xl bg-brand-teal/10 text-brand-teal flex items-center justify-center">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<h2 class="text-sm font-bold text-slate-900">Govsense AI — Methodology &amp; Audit Documentation</h2>
+<p class="text-xs text-slate-500 mt-0.5">Transparent disclosure of scoring algorithms, risk models, data pipeline architecture, and governance audit trail.</p>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+<div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+<div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Version</div>
+<div class="font-bold text-slate-800 mt-0.5">2.1.0</div>
+</div>
+<div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+<div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Audit</div>
+<div class="font-bold text-slate-800 mt-0.5">September 2026</div>
+</div>
+<div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+<div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Data Source</div>
+<div class="font-bold text-slate-800 mt-0.5">MoSPI / NIC MPLADS</div>
+</div>
+</div>
+</div>
+
+<!-- Section 1: Performance Scoring -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">1</div>
+<h3 class="text-sm font-bold text-slate-900">Performance Scoring Methodology</h3>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4">Every Member of Parliament (MP), Member of Legislative Assembly (MLA), and State/UT is assigned a composite performance score on a <strong>0–100 scale</strong>. The score aggregates multiple weighted indicators to produce a single comparable metric.</p>
+
+<div class="overflow-x-auto -mx-5 md:-mx-6 px-5 md:px-6">
+<table class="w-full text-xs border-collapse">
+<thead>
+<tr class="bg-slate-50 border-b border-slate-200">
+<th class="text-left py-2.5 px-3 font-bold text-slate-700">Indicator</th>
+<th class="text-left py-2.5 px-3 font-bold text-slate-700">Weight</th>
+<th class="text-left py-2.5 px-3 font-bold text-slate-700">Description</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">Fund Utilization</td><td class="py-2.5 px-3 text-slate-600">30%</td><td class="py-2.5 px-3 text-slate-600">Ratio of actual expenditure to sanctioned allocation</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">Completion Rate</td><td class="py-2.5 px-3 text-slate-600">30%</td><td class="py-2.5 px-3 text-slate-600">Percentage of works completed vs total recommended</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">Sanction Conversion</td><td class="py-2.5 px-3 text-slate-600">15%</td><td class="py-2.5 px-3 text-slate-600">Speed and rate of converting recommendations to sanctioned works</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">Execution Speed</td><td class="py-2.5 px-3 text-slate-600">15%</td><td class="py-2.5 px-3 text-slate-600">Average duration from sanction to completion (lower is better)</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">Anomaly Resistance</td><td class="py-2.5 px-3 text-slate-600">10%</td><td class="py-2.5 px-3 text-slate-600">Inverse of detected cost/duration anomalies</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="mt-4 space-y-2">
+<h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Performance Classifications</h4>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+<div class="flex items-center gap-2 p-2 bg-emerald-50 border border-emerald-200 rounded-lg"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><div><div class="text-[10px] font-bold text-emerald-800">EXCEPTIONAL</div><div class="text-[10px] text-emerald-600">Score ≥ 85</div></div></div>
+<div class="flex items-center gap-2 p-2 bg-emerald-50 border border-emerald-200 rounded-lg"><span class="w-2 h-2 rounded-full bg-emerald-400"></span><div><div class="text-[10px] font-bold text-emerald-800">PERFORMER</div><div class="text-[10px] text-emerald-600">Score ≥ 70</div></div></div>
+<div class="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200 rounded-lg"><span class="w-2 h-2 rounded-full bg-blue-500"></span><div><div class="text-[10px] font-bold text-blue-800">STABLE</div><div class="text-[10px] text-blue-600">Score ≥ 50</div></div></div>
+<div class="flex items-center gap-2 p-2 bg-amber-50 border border-amber-200 rounded-lg"><span class="w-2 h-2 rounded-full bg-amber-500"></span><div><div class="text-[10px] font-bold text-amber-800">NEEDS ATTENTION</div><div class="text-[10px] text-amber-600">Score ≥ 35</div></div></div>
+<div class="flex items-center gap-2 p-2 bg-rose-50 border border-rose-200 rounded-lg"><span class="w-2 h-2 rounded-full bg-rose-500"></span><div><div class="text-[10px] font-bold text-rose-800">UNDERPERFORMER</div><div class="text-[10px] text-rose-600">Score &lt; 35</div></div></div>
+<div class="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg"><span class="w-2 h-2 rounded-full bg-slate-400"></span><div><div class="text-[10px] font-bold text-slate-800">NO DATA</div><div class="text-[10px] text-slate-600">Insufficient records</div></div></div>
+</div>
+</div>
+</div>
+
+<!-- Section 2: Risk Assessment -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold text-sm">2</div>
+<h3 class="text-sm font-bold text-slate-900">Risk Assessment Model</h3>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4">The AI Risk Centre employs a multi-signal risk classification system that flags entities (MPs, MLAs, States) and individual works based on anomaly detection, historical patterns, and threshold analysis.</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-3">
+<h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Risk Levels</h4>
+<div class="space-y-2">
+<div class="flex items-start gap-2.5 p-2.5 bg-rose-50 border border-rose-200 rounded-lg">
+<span class="w-2 h-2 rounded-full bg-rose-500 mt-1 flex-shrink-0"></span>
+<div><div class="text-xs font-bold text-rose-800">CRITICAL</div><div class="text-[11px] text-rose-700">Multiple severe anomalies across cost, duration, and completion metrics. Immediate attention required.</div></div>
+</div>
+<div class="flex items-start gap-2.5 p-2.5 bg-orange-50 border border-orange-200 rounded-lg">
+<span class="w-2 h-2 rounded-full bg-orange-500 mt-1 flex-shrink-0"></span>
+<div><div class="text-xs font-bold text-orange-800">HIGH</div><div class="text-[11px] text-orange-700">Significant anomalies detected in 2+ dimensions. Pattern suggests systematic issues.</div></div>
+</div>
+<div class="flex items-start gap-2.5 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+<span class="w-2 h-2 rounded-full bg-amber-500 mt-1 flex-shrink-0"></span>
+<div><div class="text-xs font-bold text-amber-800">MODERATE</div><div class="text-[11px] text-amber-700">Isolated anomalies within acceptable variance. Monitoring recommended.</div></div>
+</div>
+<div class="flex items-start gap-2.5 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg">
+<span class="w-2 h-2 rounded-full bg-emerald-500 mt-1 flex-shrink-0"></span>
+<div><div class="text-xs font-bold text-emerald-800">LOW</div><div class="text-[11px] text-emerald-700">No significant anomalies. Within expected performance parameters.</div></div>
+</div>
+</div>
+</div>
+<div class="space-y-3">
+<h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Anomaly Detection Signals</h4>
+<div class="space-y-2 text-xs text-slate-600">
+<div class="flex items-start gap-2"><span class="text-cyan-600 font-bold">Cost Anomaly</span> — Works with sanctioned cost exceeding 3× the category median, or expenditure significantly deviating from sanctioned amount.</div>
+<div class="flex items-start gap-2"><span class="text-cyan-600 font-bold">Duration Anomaly</span> — Works exceeding 24 months without completion, or completed in under 30 days (potential rush completion).</div>
+<div class="flex items-start gap-2"><span class="text-cyan-600 font-bold">Overdue Works</span> — Works with status "ongoing" whose elapsed time exceeds the category's 90th percentile duration.</div>
+<div class="flex items-start gap-2"><span class="text-cyan-600 font-bold">Flagged Works</span> — Works matching any of the above anomaly criteria, aggregated for entity-level risk scoring.</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Section 3: Clustering -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center font-bold text-sm">3</div>
+<h3 class="text-sm font-bold text-slate-900">Peer Cluster Classification</h3>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4">Entities are grouped into peer clusters to enable meaningful performance comparisons. Clustering uses k-means on standardized metrics (fund utilization, completion rate, total works) to create comparable cohorts.</p>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+<div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+<div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">High Performer — Strong Completion</div>
+<p class="text-[11px] text-emerald-600 mt-1">Above-average completion rates and fund utilization. Consistent execution track record.</p>
+</div>
+<div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+<div class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">Large Scale — High Activity</div>
+<p class="text-[11px] text-blue-600 mt-1">High volume of works with moderate completion. Scale compensates for partial underperformance.</p>
+</div>
+<div class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+<div class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Moderate Growth — Emerging</div>
+<p class="text-[11px] text-amber-600 mt-1">Mid-range performance with improving trends. Room for acceleration in execution.</p>
+</div>
+<div class="p-3 bg-rose-50 border border-rose-200 rounded-lg">
+<div class="text-[10px] font-bold text-rose-700 uppercase tracking-wider">Needs Improvement — Low Activity</div>
+<p class="text-[11px] text-rose-600 mt-1">Below-average metrics across multiple dimensions. Priority for intervention and support.</p>
+</div>
+</div>
+</div>
+
+<!-- Section 4: ML Algorithms & Statistical Methods -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center font-bold text-sm">4</div>
+<h3 class="text-sm font-bold text-slate-900">ML Algorithms &amp; Statistical Methods</h3>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4">Govsense AI applies machine learning and statistical techniques across the analytics pipeline. Every model is chosen for interpretability and reproducibility — black-box models are avoided in favour of explainable methods.</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+<h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Clustering &amp; Classification</h4>
+<ul class="space-y-2.5 text-[11px] text-slate-600">
+<li>
+<div class="font-bold text-slate-700">K-Means Clustering</div>
+<p>Groups MPs/MLAs into performance cohorts based on fund utilization, completion rate, sanction conversion, execution speed, and anomaly resistance. Optimal <em>k</em> selected via elbow method + silhouette score. Produces 4 readable cluster labels (High Performer, Large Scale, Moderate Growth, Needs Improvement).</p>
+</li>
+<li>
+<div class="font-bold text-slate-700">Weighted Composite Scoring</div>
+<p>Multi-indicator performance index using domain-expert weights (Fund Utilization 30%, Completion Rate 30%, Sanction Conversion 15%, Execution Speed 15%, Anomaly Resistance 10%). Min-max normalized per indicator before aggregation.</p>
+</li>
+<li>
+<div class="font-bold text-slate-700">Threshold-Based Classification</div>
+<p>Discretizes continuous scores into 5 ordinal classes (EXCEPTIONAL → UNDERPERFORMER) using fixed thresholds. NO_DATA class assigned when fewer than 3 works exist for the entity.</p>
+</li>
+</ul>
+</div>
+<div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+<h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Anomaly Detection</h4>
+<ul class="space-y-2.5 text-[11px] text-slate-600">
+<li>
+<div class="font-bold text-slate-700">Z-Score Outlier Detection</div>
+<p>Computes mean and standard deviation of cost-per-work and duration-per-work across the national dataset. Works with z-score &gt; 3.0 flagged as cost or duration anomalies. Per-member anomaly rate computed as <code>anomalous / total works</code>.</p>
+</li>
+<li>
+<div class="font-bold text-slate-700">IQR (Interquartile Range) Method</div>
+<p>Used as a secondary check for skewed distributions. Values below Q1 − 1.5×IQR or above Q3 + 1.5×IQR flagged. Particularly effective for detecting extreme fund allocation outliers in small-sample MP/MLA groups.</p>
+</li>
+<li>
+<div class="font-bold text-slate-700">Statistical Process Control (SPC)</div>
+<p>Control charts track monthly expenditure and completion rates against rolling 12-month baselines. Points beyond ±2σ trigger early-warning alerts in the AI Risk Centre before full anomaly classification.</p>
+</li>
+</ul>
+</div>
+</div>
+
+<div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+<h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Trend &amp; Time-Series Analysis</h4>
+<ul class="space-y-2.5 text-[11px] text-slate-600">
+<li>
+<div class="font-bold text-slate-700">Rolling Window Aggregation</div>
+<p>3-month and 6-month rolling averages smooth short-term volatility in fund flow and completion metrics. Enables meaningful quarter-over-quarter comparison without seasonal noise.</p>
+</li>
+<li>
+<div class="font-bold text-slate-700">Linear Regression Trend Lines</div>
+<p>Ordinary Least Squares (OLS) fitted to monthly expenditure time series. Slope magnitude and direction classify each member as Accelerating, Stable, or Decelerating. R² reported for trend confidence.</p>
+</li>
+<li>
+<div class="font-bold text-slate-700">Moving Average Convergence</div>
+<p>Short-term (3-month) vs long-term (6-month) moving average crossovers detect inflection points in fund disbursement velocity. Crossover events surface in the performance timeline visualizations.</p>
+</li>
+</ul>
+</div>
+<div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+<h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Risk Scoring Model</h4>
+<ul class="space-y-2.5 text-[11px] text-slate-600">
+<li>
+<div class="font-bold text-slate-700">Multi-Factor Risk Index</div>
+<p>Combines 4 risk signals into a single 0–100 risk score: anomaly_rate (35% weight), low_utilization flag (25%), zero_completion flag (25%), high_pipeline_ratio (15%). Each factor min-max normalized before weighted sum.</p>
+</li>
+<li>
+<div class="font-bold text-slate-700">Severity Classification</div>
+<p>Risk index mapped to 4 severity levels: CRITICAL (≥75), HIGH (≥50), MODERATE (≥25), LOW (&lt;25). Thresholds calibrated against historical intervention data to minimize false positives.</p>
+</li>
+<li>
+<div class="font-bold text-slate-700">Confidence Intervals</div>
+<p>Every risk score includes a confidence metric based on sample size (number of works). Entities with &lt;5 works receive lower confidence flags. Bootstrap resampling (1000 iterations) used for small-sample confidence estimation.</p>
+</li>
+</ul>
+</div>
+</div>
+
+<div class="mt-4 p-4 bg-violet-50 border border-violet-200 rounded-xl">
+<h4 class="text-xs font-bold text-violet-800 uppercase tracking-wider mb-2">Key Statistical Principles</h4>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[11px] text-violet-700">
+<div><strong>Reproducibility:</strong> All computations are deterministic given the same DB1 snapshot. No random seeds, no stochastic elements in production scoring.</div>
+<div><strong>Explainability:</strong> Every score and classification can be traced back to its input indicators and weights. No black-box neural networks or ensemble methods.</div>
+<div><strong>Conservatism:</strong> When data is insufficient (&lt;5 works), the system defaults to NO_DATA or LOW confidence rather than producing potentially misleading scores.</div>
+</div>
+</div>
+</div>
+
+<!-- Section 5: Data Pipeline -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-brand-orange/10 text-brand-orange flex items-center justify-center font-bold text-sm">5</div>
+<h3 class="text-sm font-bold text-slate-900">Data Pipeline Architecture</h3>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4">Govsense AI operates a two-database architecture with a change-triggered full rebuild pipeline. This ensures data integrity while enabling rapid analytical updates.</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+<h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">DB1 — Raw Operational Store</h4>
+<ul class="space-y-1.5 text-[11px] text-slate-600">
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">1.</span>Direct ingestion from MoSPI / NIC MPLADS portal</li>
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">2.</span>Raw work records, member profiles, fund allocations</li>
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">3.</span>Fingerprint-based change detection (SHA-256)</li>
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">4.</span>Preserves original data integrity — no transformations</li>
+</ul>
+</div>
+<div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+<h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">DB2 — Analytical Intelligence Store</h4>
+<ul class="space-y-1.5 text-[11px] text-slate-600">
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">1.</span>All derived tables, ML scores, and intelligence layer</li>
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">2.</span>Performance scores, risk classifications, peer benchmarks</li>
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">3.</span>AI-generated analysis narratives per entity</li>
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">4.</span>Cluster labels, anomaly flags, trend indicators</li>
+</ul>
+</div>
+</div>
+
+<div class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+<h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Pipeline Flow</h4>
+<div class="flex items-center gap-2 text-[11px] text-slate-600 overflow-x-auto pb-1">
+<div class="flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 rounded-lg font-medium">NIC Portal</div>
+<span class="text-slate-400 flex-shrink-0">&rarr;</span>
+<div class="flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 rounded-lg font-medium">Ingestion</div>
+<span class="text-slate-400 flex-shrink-0">&rarr;</span>
+<div class="flex-shrink-0 px-3 py-1.5 bg-white border border-slate-200 rounded-lg font-medium">Fingerprint Check</div>
+<span class="text-slate-400 flex-shrink-0">&rarr;</span>
+<div class="flex-shrink-0 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg font-medium text-blue-700">Full Rebuild</div>
+<span class="text-slate-400 flex-shrink-0">&rarr;</span>
+<div class="flex-shrink-0 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg font-medium text-emerald-700">DB2 Updated</div>
+</div>
+</div>
+</div>
+
+<!-- Section 5: Audit Trail -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">6</div>
+<h3 class="text-sm font-bold text-slate-900">Governance &amp; Audit Trail</h3>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4">Every data transformation, scoring run, and AI analysis generation is logged with timestamps for reproducibility and accountability.</p>
+
+<div class="overflow-x-auto -mx-5 md:-mx-6 px-5 md:px-6">
+<table class="w-full text-xs border-collapse">
+<thead>
+<tr class="bg-slate-50 border-b border-slate-200">
+<th class="text-left py-2.5 px-3 font-bold text-slate-700">Audit Event</th>
+<th class="text-left py-2.5 px-3 font-bold text-slate-700">Frequency</th>
+<th class="text-left py-2.5 px-3 font-bold text-slate-700">Trigger</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">Data Ingestion</td><td class="py-2.5 px-3 text-slate-600">On change detected</td><td class="py-2.5 px-3 text-slate-600">Fingerprint mismatch from NIC portal</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">Performance Scoring</td><td class="py-2.5 px-3 text-slate-600">Per pipeline run</td><td class="py-2.5 px-3 text-slate-600">Full rebuild triggered by data change</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">Risk Classification</td><td class="py-2.5 px-3 text-slate-600">Per pipeline run</td><td class="py-2.5 px-3 text-slate-600">Anomaly thresholds re-evaluated</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">AI Analysis Generation</td><td class="py-2.5 px-3 text-slate-600">Per entity, per run</td><td class="py-2.5 px-3 text-slate-600">New analysis generated when scores change</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">Cluster Reassignment</td><td class="py-2.5 px-3 text-slate-600">Per pipeline run</td><td class="py-2.5 px-3 text-slate-600">K-means recalculated on updated metrics</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- Section 6: Limitations -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">6</div>
+<h3 class="text-sm font-bold text-slate-900">Known Limitations &amp; Disclaimers</h3>
+</div>
+<ul class="space-y-2 text-xs text-slate-600 leading-relaxed">
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span>Data reflects publicly available MPLADS records from the NIC portal. Govsense AI does not have access to internal government systems.</li>
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span>Performance scores are derived indicators, not official government rankings. They should be interpreted as analytical insights, not verdicts.</li>
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span>Risk flags are probabilistic assessments based on statistical anomaly detection. They do not imply misconduct or wrongdoing.</li>
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span>Data freshness depends on the NIC portal update cycle. There may be a lag between ground reality and available records.</li>
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span>MLA data coverage varies by state. Some states may have incomplete records.</li>
+</ul>
+</div>
+
+<!-- Footer -->
+<footer class="pt-4 border-t border-slate-200 text-[11px] text-slate-400 pb-4">
+<div class="mb-2">Govsense AI &middot; Aggregated MoSPI MPLADS Portal (NIC) &middot; Methodology &amp; Audit</div>
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+<a class="hover:text-slate-600 transition" href="methodology.html">Methodology &amp; Audit</a>
+<a class="hover:text-slate-600 transition" href="privacy.html?from=methodology">Privacy Policy</a>
+<a class="hover:text-slate-600 transition" href="api-docs.html?from=methodology">API Documentation</a>
+</div>
+</footer>
+</main>
+</div>
+</div>
+<script src="js/config.js?v=4"></script>
+<script src="js/mobile-shell.js?v=5"></script>
+<script src="js/data-updated.js?v=4"></script>
+<script>
+(function(){
+  var btn = document.getElementById('pageBackBtn');
+  if (!btn) return;
+  var params = new URLSearchParams(window.location.search);
+  var from = params.get('from');
+  if (from) {
+    var pageMap = {
+      'dashboard': 'dashboard.html',
+      'methodology': 'methodology.html',
+      'privacy': 'privacy.html',
+      'api-docs': 'api-docs.html',
+      'mps': 'mps.html',
+      'mpdetail': 'mpdetail.html',
+      'state': 'state.html',
+      'statedetail': 'statedetail.html',
+      'project': 'project.html',
+      'workdetail': 'workdetail.html',
+      'airiskcentre': 'airiskcentre.html'
+    };
+    btn.href = pageMap[from] || 'dashboard.html';
+  } else {
+    var ref = document.referrer || '';
+    if (ref && ref.indexOf(location.hostname) !== -1) {
+      btn.href = ref;
+    } else {
+      btn.href = 'dashboard.html';
+    }
+  }
+})();
+</script>
+</body></html>

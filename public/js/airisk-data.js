@@ -3,7 +3,7 @@
   var CACHE_KEY = 'riskOverviewCache';
   var CACHE_TTL = 30 * 60 * 1000;
 
-  var explore = { entity: 'mp', levels: ['high', 'medium', 'low'], state_id: '', sort: 'score', page: 1, pageSize: 9 };
+  var explore = { entity: 'mp', levels: ['high', 'medium', 'low'], state_id: '', sort: 'flagged', page: 1, pageSize: 9 };
 
   function fmtNum(n) { if (n == null || isNaN(n)) return '—'; return Number(n).toLocaleString('en-IN'); }
   function fmtPct(n) { if (n == null || isNaN(n)) return '—'; return Number(n).toFixed(1) + '%'; }
@@ -71,6 +71,7 @@
     setText('kpiOverdueWorks', fmtNum(d.overdue_works));
     var sub = document.getElementById('riskSubtitle');
     if (sub) sub.textContent = fmtNum(d.total_members) + ' Total Synthesized Entities · ' + fmtNum(d.total_works) + ' Monitored Works';
+    setText('headerMeta', fmtNum(d.total_members) + ' Entities');
 
     // AI Intelligence numbers
     setText('aiHighRiskPct', fmtPct(d.total_members ? (d.high_reps / d.total_members * 100) : 0));
@@ -444,10 +445,10 @@
     if (analyze) analyze.addEventListener('click', function () { explore.page = 1; loadExplore(); });
     var reset = document.getElementById('filterResetBtn');
     if (reset) reset.addEventListener('click', function () {
-      explore = { entity: 'mp', levels: ['high', 'medium', 'low'], state_id: '', sort: 'score', page: 1, pageSize: 9 };
+      explore = { entity: 'mp', levels: ['high', 'medium', 'low'], state_id: '', sort: 'flagged', page: 1, pageSize: 9 };
       document.querySelectorAll('.risk-level-cb').forEach(function (cb) { cb.checked = true; });
       if (ss) ss.value = '';
-      if (sort) sort.value = 'score';
+      if (sort) sort.value = 'flagged';
       document.querySelectorAll('.filter-entity-btn').forEach(function (b) { b.classList.remove('bg-blue-600', 'text-white'); b.classList.add('bg-white', 'text-slate-600'); });
       var mp = document.getElementById('entityBtnMP'); if (mp) { mp.classList.add('bg-blue-600', 'text-white'); mp.classList.remove('bg-white', 'text-slate-600'); }
       loadExplore();

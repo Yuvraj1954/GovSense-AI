@@ -311,6 +311,7 @@
 
   function renderSummary(s) {
     setText('kpiTotalWorks', fmtNum(s.total_works));
+    setText('headerMeta', fmtNum(s.total_works) + ' Works');
     setText('kpiRecommended', fmtNum(s.recommended_works));
     setText('kpiSanctioned', fmtNum(s.sanctioned_works));
     setText('kpiCompleted', fmtNum(s.completed_works));
@@ -452,11 +453,11 @@
       var pct = x.count / t * 100;
       var height = (x.count / max) * 100;
       var c = colors[i] || 'slate';
-      html += '<div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">' +
+      html += '<div class="flex flex-col items-center gap-1 h-full justify-end min-w-0">' +
         '<span class="text-[11px] font-bold text-' + c + '-700">' + fmtPct(pct) + '</span>' +
-        '<span class="text-[10px] text-slate-500">' + fmtNum(x.count) + '</span>' +
-        '<div class="w-full max-w-[48px] bg-' + c + '-500 rounded-t-lg transition-all duration-500" style="height:' + Math.max(height, 2) + '%"></div>' +
-        '<span class="text-[10px] font-bold text-slate-700 text-center whitespace-nowrap">' + x.label + '</span></div>';
+        '<span class="text-[10px] text-slate-500 leading-tight">' + fmtNum(x.count) + '</span>' +
+        '<div class="w-full bg-' + c + '-500 rounded-t-lg transition-all duration-500" style="height:' + Math.max(height, 2) + '%"></div>' +
+        '<span class="text-[9px] font-bold text-slate-700 text-center leading-tight break-words">' + x.label + '</span></div>';
     });
     el.innerHTML = html;
     if (window.ChartAnim) {

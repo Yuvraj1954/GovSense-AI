@@ -116,6 +116,7 @@
     setText('mpTenure', m.tenure || 'Current Term');
     setText('headerMpName', (m.member_name || '') + ' — ' + (m.state_name || ''));
     setText('mpRank', m.rank ? ('National Rank #' + m.rank) : 'Rank: N/A');
+    setText('headerMeta', m.rank ? '#' + m.rank : 'Analysis');
     var cls = m.performance_classification || 'N/A';
     var c = getClsColor(cls);
     var clsEl = document.getElementById('mpClassification');
@@ -467,24 +468,24 @@
     var tableBody = document.getElementById('finTableBody');
     if (tableBody) {
       var rows = [
-        { label: 'Allocated Amount', value: fmtCr(m.allocated_amount), median: fmtCr(benchmarksData.allocated_amount), delta: (Number(m.allocated_amount) || 0) - (benchmarksData.allocated_amount || 0) },
-        { label: 'Sanctioned Amount', value: fmtCr(m.sanctioned_amount), median: fmtCr(benchmarksData.sanctioned_amount), delta: (Number(m.sanctioned_amount) || 0) - (benchmarksData.sanctioned_amount || 0) },
-        { label: 'Expenditure Amount', value: fmtCr(m.expenditure_amount), median: fmtCr(benchmarksData.expenditure_amount), delta: (Number(m.expenditure_amount) || 0) - (benchmarksData.expenditure_amount || 0) },
-        { label: 'Fund Utilization', value: fmtPct(m.fund_utilization_pct), median: fmtPct(benchmarksData.fund_utilization_pct), delta: (Number(m.fund_utilization_pct) || 0) - (benchmarksData.fund_utilization_pct || 0) },
-        { label: 'Completion Rate', value: fmtPct(m.completion_rate_pct), median: fmtPct(benchmarksData.completion_rate_pct), delta: (Number(m.completion_rate_pct) || 0) - (benchmarksData.completion_rate_pct || 0) },
-        { label: 'Sanction Rate', value: fmtPct(m.sanction_rate_pct), median: fmtPct(benchmarksData.sanction_rate_pct), delta: (Number(m.sanction_rate_pct) || 0) - (benchmarksData.sanction_rate_pct || 0) },
+        { label: 'Allocated Amount', value: fmtCr(m.allocated_amount), median: fmtCr(benchmarksData.allocated_amount || null), delta: benchmarksData.allocated_amount ? (Number(m.allocated_amount) || 0) - benchmarksData.allocated_amount : null },
+        { label: 'Sanctioned Amount', value: fmtCr(m.sanctioned_amount), median: fmtCr(benchmarksData.sanctioned_amount || null), delta: benchmarksData.sanctioned_amount ? (Number(m.sanctioned_amount) || 0) - benchmarksData.sanctioned_amount : null },
+        { label: 'Expenditure Amount', value: fmtCr(m.expenditure_amount), median: fmtCr(benchmarksData.expenditure_amount || null), delta: benchmarksData.expenditure_amount ? (Number(m.expenditure_amount) || 0) - benchmarksData.expenditure_amount : null },
+        { label: 'Fund Utilization', value: fmtPct(m.fund_utilization_pct), median: fmtPct(benchmarksData.fund_utilization_pct || null), delta: benchmarksData.fund_utilization_pct != null ? (Number(m.fund_utilization_pct) || 0) - benchmarksData.fund_utilization_pct : null },
+        { label: 'Completion Rate', value: fmtPct(m.completion_rate_pct), median: fmtPct(benchmarksData.completion_rate_pct || null), delta: benchmarksData.completion_rate_pct != null ? (Number(m.completion_rate_pct) || 0) - benchmarksData.completion_rate_pct : null },
+        { label: 'Sanction Rate', value: fmtPct(m.sanction_rate_pct), median: fmtPct(benchmarksData.sanction_rate_pct || null), delta: benchmarksData.sanction_rate_pct != null ? (Number(m.sanction_rate_pct) || 0) - benchmarksData.sanction_rate_pct : null },
       ];
       var thtml = '';
       rows.forEach(function(row) {
-        var dc = row.delta >= 0 ? 'emerald' : 'rose';
-        var sign = row.delta >= 0 ? '+' : '';
+        var dc = row.delta != null ? (row.delta >= 0 ? 'emerald' : 'rose') : 'slate';
+        var sign = row.delta != null ? (row.delta >= 0 ? '+' : '') : '';
         var isMoney = row.label.indexOf('Amount') > -1;
-        var deltaFmt = isMoney ? fmtCr(Math.abs(row.delta)) : fmtPct(Math.abs(row.delta));
+        var deltaFmt = row.delta != null ? (isMoney ? fmtCr(Math.abs(row.delta)) : fmtPct(Math.abs(row.delta))) : '—';
         thtml += '<tr class="border-b border-slate-100 hover:bg-slate-50">' +
           '<td class="py-2.5 px-3 font-medium text-slate-700">' + row.label + '</td>' +
           '<td class="py-2.5 px-3 text-right font-bold text-slate-900">' + row.value + '</td>' +
           '<td class="py-2.5 px-3 text-right text-slate-500">' + row.median + '</td>' +
-          '<td class="py-2.5 px-3 text-right font-semibold text-' + dc + '-700">' + sign + deltaFmt + '</td></tr>';
+          '<td class="py-2.5 px-3 text-right font-semibold text-' + dc + '-700">' + (row.delta != null ? sign + deltaFmt : '—') + '</td></tr>';
       });
       tableBody.innerHTML = thtml;
     }
@@ -540,77 +541,24 @@
       confEl.textContent = m.risk_confidence ? m.risk_confidence.toUpperCase() : '—';
     }
 
-    // Append "/100" suffix next to the score when using the new scale
-    var ringContainer = ring ? ring.parentElement && ring.parentElement.parentElement : null;
-    var suffix = document.getElementById('aiScoreMaxSuffix');
-    if (!suffix) {
-      // Create a one-time suffix node next to the aiScoreValue (does not
-      // redesign the layout; just appends a label).
-      var valEl = document.getElementById('aiScoreValue');
-      if (valEl) {
-        suffix = document.createElement('span');
-        suffix.id = 'aiScoreMaxSuffix';
-        suffix.className = 'text-[10px] font-bold text-slate-500 ml-1';
-        suffix.textContent = '/ ' + displayMax;
-        valEl.parentNode && valEl.parentNode.appendChild(suffix);
-      }
-    } else {
-      suffix.textContent = '/ ' + displayMax;
-    }
-
-    // Score breakdown
-    var breakdown = document.getElementById('aiScoreBreakdown');
-    if (breakdown) {
-      var comp = Number(m.completion_rate_pct) || 0;
-      var util = Number(m.fund_utilization_pct) || 0;
-      var sanction = Number(m.sanction_rate_pct) || 0;
-      var flagged = Number(m.flagged_rate_pct) || 0;
-      var metrics = [
-        { label: 'Completion Rate', value: comp, color: getColor(comp) },
-        { label: 'Fund Utilization', value: util, color: getColor(util) },
-        { label: 'Sanction Rate', value: sanction, color: getColor(sanction) },
-        // Phase 5: show the authoritative flagged rate; do not invent an
-        // inverted "risk score".
-        { label: 'Flagged Rate', value: flagged, color: flagged > 20 ? 'rose' : 'emerald' },
-      ];
-      var html = '<div class="flex items-center justify-between mb-3"><h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Score Components</h4>' +
-        '<span class="text-xs font-bold text-slate-500">' + Math.round(displayScore) + ' / ' + displayMax + ' points</span></div>';
-      metrics.forEach(function(metric) {
-        html += '<div class="space-y-1.5">' +
-          '<div class="flex justify-between items-center text-xs">' +
-          '<span class="font-medium text-slate-600">' + metric.label + '</span>' +
-          '<span class="font-bold text-' + metric.color + '-700">' + fmtPct(metric.value) + '</span></div>' +
-          '<div class="w-full h-4 bg-slate-100 rounded-full overflow-hidden">' +
-          '<div class="h-full bg-' + metric.color + '-500 rounded-full transition-all duration-1000" style="width:' + Math.min(metric.value, 100) + '%"></div></div></div>';
-      });
-      breakdown.innerHTML = html;
-    }
-
-    // Summary - handle if analysis is a string (not parsed JSON)
+    // Summary
     var summaryContent = document.getElementById('aiSummaryContent');
     if (summaryContent) {
       var summaryText = '';
       if (analysis) {
-        if (typeof analysis === 'string') {
-          summaryText = analysis;
-        } else if (analysis.summary) {
-          summaryText = analysis.summary;
-        }
+        if (typeof analysis === 'string') summaryText = analysis;
+        else if (analysis.summary) summaryText = analysis.summary;
       }
-      if (summaryText) {
-        summaryContent.innerHTML = '<p class="text-[14px] text-slate-700 leading-relaxed">' + summaryText + '</p>';
-      } else {
-        summaryContent.innerHTML = '<p class="text-sm text-slate-500 italic">No AI summary available.</p>';
-      }
+      summaryContent.innerHTML = summaryText
+        ? '<p class="text-[14px] text-slate-700 leading-relaxed">' + summaryText + '</p>'
+        : '<p class="text-sm text-slate-500 italic">No AI summary available.</p>';
     }
 
     // Highlights
     var highlightsContent = document.getElementById('aiHighlightsContent');
     if (highlightsContent) {
       var highlights = [];
-      if (analysis && typeof analysis === 'object' && analysis.highlights) {
-        highlights = analysis.highlights;
-      }
+      if (analysis && typeof analysis === 'object' && analysis.highlights) highlights = analysis.highlights;
       if (highlights.length > 0) {
         var hhtml = '<ul class="space-y-2">';
         highlights.forEach(function(h) {
@@ -618,26 +566,81 @@
             '<svg class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>' +
             '<span>' + h + '</span></li>';
         });
-        hhtml += '</ul>';
-        highlightsContent.innerHTML = hhtml;
+        highlightsContent.innerHTML = hhtml + '</ul>';
       } else {
         highlightsContent.innerHTML = '<p class="text-sm text-slate-500 italic">No highlights available.</p>';
       }
     }
 
-    // Performance Chart - all metrics in one
+    // Peer Benchmark — fetch cluster/national averages from API
+    var benchEl = document.getElementById('aiPeerBenchmarkChart');
+    if (benchEl) {
+      var memberType = (m.member_type || 'MP').toUpperCase();
+      var memberId = m.member_id || memberData.member_id;
+      var apiUrl = API_BASE + '/api/peer-benchmark?member_type=' + encodeURIComponent(memberType) + '&entity_id=' + memberId;
+      benchEl.innerHTML = '<div class="text-sm text-slate-400 text-center py-8">Loading...</div>';
+      fetch(apiUrl).then(function(r) { return r.json(); }).then(function(bench) {
+        var memberMetrics = [
+          { label: 'Completion Rate', value: Number(m.completion_rate_pct) || 0, cluster: bench.cluster_avg ? bench.cluster_avg.completion_rate_pct : null, national: bench.national_avg ? bench.national_avg.completion_rate_pct : null },
+          { label: 'Fund Utilization', value: Number(m.fund_utilization_pct) || 0, cluster: bench.cluster_avg ? bench.cluster_avg.fund_utilization_pct : null, national: bench.national_avg ? bench.national_avg.fund_utilization_pct : null },
+          { label: 'Sanction Rate', value: Number(m.sanction_rate_pct) || 0, cluster: bench.cluster_avg ? bench.cluster_avg.sanction_rate_pct : null, national: bench.national_avg ? bench.national_avg.sanction_rate_pct : null },
+        ];
+        var hasAvgs = memberMetrics.some(function(p) { return p.cluster !== null || p.national !== null; });
+        var bhtml = '<div class="space-y-5">';
+        memberMetrics.forEach(function(p) {
+          bhtml += '<div class="space-y-2">';
+          bhtml += '<div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-700">' + p.label + '</span><span class="text-sm font-black text-' + getColor(p.value) + '-700">' + fmtPct(p.value) + '</span></div>';
+          // Entity bar
+          bhtml += '<div class="space-y-1">';
+          bhtml += '<div class="flex items-center gap-2"><span class="text-[10px] font-semibold text-slate-500 w-14 flex-shrink-0">You</span>';
+          bhtml += '<div class="flex-1 h-5 bg-slate-100 rounded-full overflow-hidden relative">';
+          bhtml += '<div class="h-full bg-' + getColor(p.value) + '-500 rounded-full transition-all duration-1000" style="width:' + Math.min(p.value, 100) + '%"></div>';
+          bhtml += '</div><span class="text-[10px] font-bold text-slate-700 w-12 text-right">' + fmtPct(p.value) + '</span></div>';
+          // Cluster bar
+          if (p.cluster !== null) {
+            bhtml += '<div class="flex items-center gap-2"><span class="text-[10px] font-semibold text-violet-500 w-14 flex-shrink-0">Cluster</span>';
+            bhtml += '<div class="flex-1 h-3 bg-slate-50 rounded-full overflow-hidden relative">';
+            bhtml += '<div class="h-full bg-violet-400 rounded-full transition-all duration-1000 opacity-70" style="width:' + Math.min(p.cluster, 100) + '%"></div>';
+            bhtml += '</div><span class="text-[10px] font-semibold text-violet-600 w-12 text-right">' + fmtPct(p.cluster) + '</span></div>';
+          }
+          // National bar
+          if (p.national !== null) {
+            bhtml += '<div class="flex items-center gap-2"><span class="text-[10px] font-semibold text-slate-400 w-14 flex-shrink-0">National</span>';
+            bhtml += '<div class="flex-1 h-3 bg-slate-50 rounded-full overflow-hidden relative">';
+            bhtml += '<div class="h-full bg-slate-400 rounded-full transition-all duration-1000 opacity-60" style="width:' + Math.min(p.national, 100) + '%"></div>';
+            bhtml += '</div><span class="text-[10px] font-semibold text-slate-500 w-12 text-right">' + fmtPct(p.national) + '</span></div>';
+          }
+          bhtml += '</div></div>';
+        });
+        if (hasAvgs) {
+          bhtml += '<div class="flex items-center gap-5 text-[10px] text-slate-500 pt-2 border-t border-slate-100">' +
+            '<span class="flex items-center gap-1.5"><span class="w-3 h-2 bg-emerald-500 rounded inline-block"></span> You</span>' +
+            '<span class="flex items-center gap-1.5"><span class="w-3 h-1.5 bg-violet-400 rounded inline-block opacity-70"></span> Cluster Avg</span>' +
+            '<span class="flex items-center gap-1.5"><span class="w-3 h-1.5 bg-slate-400 rounded inline-block opacity-60"></span> National Avg</span></div>';
+        }
+        bhtml += '</div>';
+        benchEl.innerHTML = bhtml;
+      }).catch(function() {
+        benchEl.innerHTML = '<p class="text-[11px] text-slate-400 italic text-center py-4">Peer averages unavailable.</p>';
+      });
+    }
+
+    // Performance Metrics — score components
     var chartContainer = document.getElementById('aiPerformanceChart');
     if (chartContainer) {
+      var comp = Number(m.completion_rate_pct) || 0;
+      var util = Number(m.fund_utilization_pct) || 0;
+      var sanction = Number(m.sanction_rate_pct) || 0;
+      var flagged = Number(m.flagged_rate_pct) || 0;
       var anomalyScore = Number(m.anomaly_score) || 0;
       var anomalyLevel = m.anomaly_level || 'N/A';
       var ac = anomalyLevel === 'high' ? 'rose' : anomalyLevel === 'medium' ? 'amber' : 'emerald';
       var chartMetrics = [
-        { label: 'Fund Utilization', value: Number(m.fund_utilization_pct) || 0 },
-        { label: 'Completion Rate', value: Number(m.completion_rate_pct) || 0 },
-        { label: 'Sanction Rate', value: Number(m.sanction_rate_pct) || 0 },
-        { label: 'Performance Score', value: (Number(m.performance_score) || 0) / 2 },
+        { label: 'Completion Rate', value: comp, color: getColor(comp) },
+        { label: 'Fund Utilization', value: util, color: getColor(util) },
+        { label: 'Sanction Rate', value: sanction, color: getColor(sanction) },
         { label: 'Anomaly Score', value: anomalyScore, color: ac },
-        { label: 'Flagged Rate', value: Number(m.flagged_rate_pct) || 0, color: (Number(m.flagged_rate_pct) || 0) > 10 ? 'rose' : 'emerald' },
+        { label: 'Flagged Rate', value: flagged, color: flagged > 20 ? 'rose' : 'emerald' },
       ];
       var chtml = '';
       chartMetrics.forEach(function(metric) {

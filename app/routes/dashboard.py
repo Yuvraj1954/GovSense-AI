@@ -269,32 +269,6 @@ async def get_members_list(
             rows = await _fetch_mixed_page_filtered(db2, member_type, page_size, offset, extra, extra_args, next_idx)
         else:
             rows = await _fetch_mixed_page(db2, member_type, page_size, offset)
-        value = {
-            "items": [dict(r) for r in rows],
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-            "total_pages": max(1, (total + page_size - 1) // page_size),
-        }
-        _with_cache_headers(response, ttl)
-        return _cache_set(cache_key, value, ttl=ttl)
-
-    allowed = {"completion_rate_pct", "fund_utilization_pct", "total_works", "expenditure_amount", "member_name", "performance_score"}
-    col = sort_by if sort_by in allowed else "completion_rate_pct"
-    direction = "DESC" if sort_dir == "desc" else "ASC"
-
-    offset = (page - 1) * page_size
-    all_args = base_args + extra_args + [page_size, offset]
-    rows = await db2.fetch(f"""
-        SELECT member_id, member_name, member_type as member_type_field, state_name, completion_rate_pct, fund_utilization_pct,
-               total_works, completed_works, sanctioned_works, performance_score, performance_classification,
-               sanctioned_amount, expenditure_amount
-        FROM public.member_metrics
-        WHERE {base_where} {extra}
-        ORDER BY {col} {direction} NULLS LAST
-        LIMIT ${len(all_args) - 1} OFFSET ${len(all_args)}
-    """, *all_args)
-
     value = {
         "items": [dict(r) for r in rows],
         "total": total,
@@ -304,6 +278,69 @@ async def get_members_list(
     }
     _with_cache_headers(response, ttl)
     return _cache_set(cache_key, value, ttl=ttl)
+
+
+# ── Peer Benchmark Averages ──
+@router.get("/peer-benchmark")
+async def get_peer_benchmark(
+    response: Response,
+    member_type: str = Query("MP", pattern="^(MP|MLA)$"),
+    entity_id: int = Query(..., description="Member or state ID"),
+):
+    cache_key = f"peer_benchmark:{member_type}:{entity_id}"
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, 300)
+        return cached
+
+    db2 = await get_db2_pool()
+    table = "member_metrics" if member_type == "MP" else "state_metrics"
+    id_col = "member_id" if member_type == "MP" else "state_id"
+
+    entity = await db2.fetchrow(f"""
+        SELECT {id_col} as eid, cluster_label,
+               completion_rate_pct, fund_utilization_pct, sanction_rate_pct
+        FROM {table} WHERE {id_col} = $1
+    """, entity_id)
+    if not entity:
+        _with_cache_headers(response, 300)
+        return {"cluster_avg": None, "national_avg": None}
+
+    cluster = entity["cluster_label"]
+
+    nat = await db2.fetchrow(f"""
+        SELECT AVG(completion_rate_pct)::float as avg_comp,
+               AVG(fund_utilization_pct)::float as avg_util,
+               AVG(sanction_rate_pct)::float as avg_sanc
+        FROM {table}
+        WHERE completion_rate_pct IS NOT NULL AND completion_rate_pct > 0
+    """)
+
+    clust = None
+    if cluster and cluster != "insufficient":
+        clust = await db2.fetchrow(f"""
+            SELECT AVG(completion_rate_pct)::float as avg_comp,
+                   AVG(fund_utilization_pct)::float as avg_util,
+                   AVG(sanction_rate_pct)::float as avg_sanc
+            FROM {table}
+            WHERE cluster_label = $1 AND {id_col} != $2
+              AND completion_rate_pct IS NOT NULL AND completion_rate_pct > 0
+        """, cluster, entity_id)
+
+    result = {
+        "cluster_avg": {
+            "completion_rate_pct": round(clust["avg_comp"], 1) if clust and clust["avg_comp"] else None,
+            "fund_utilization_pct": round(clust["avg_util"], 1) if clust and clust["avg_util"] else None,
+            "sanction_rate_pct": round(clust["avg_sanc"], 1) if clust and clust["avg_sanc"] else None,
+        } if clust else None,
+        "national_avg": {
+            "completion_rate_pct": round(nat["avg_comp"], 1) if nat and nat["avg_comp"] else None,
+            "fund_utilization_pct": round(nat["avg_util"], 1) if nat and nat["avg_util"] else None,
+            "sanction_rate_pct": round(nat["avg_sanc"], 1) if nat and nat["avg_sanc"] else None,
+        } if nat else None,
+    }
+    _with_cache_headers(response, 300)
+    return _cache_set(cache_key, result, ttl=300)
 
 
 @router.get("/members/search")

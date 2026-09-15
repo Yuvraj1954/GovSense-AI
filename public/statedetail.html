@@ -260,10 +260,7 @@ main{padding-top:12px!important;}
 
 </div>
 </div>
-<div class="flex items-center gap-3 text-xs">
-<!-- Global Performance Legend -->
-
-</div>
+<div class="mobile-header-meta" id="headerMeta">Overview</div>
 </header>
 <!-- END: GlobalTopHeader -->
 <!-- BEGIN: MainContentScrollArea -->
@@ -702,6 +699,11 @@ main{padding-top:12px!important;}
 </div>
 </div>
 <!-- Scatter Plot Canvas Container -->
+<!-- Mobile Scatter Summary (hidden on desktop) -->
+<div class="scatter-mobile-summary hidden bg-slate-50/70 border border-slate-200 rounded-xl p-4 space-y-3" id="scatterMobileSummary">
+<div class="text-xs font-bold text-slate-800 uppercase tracking-wider">Operational Profile</div>
+<div class="grid grid-cols-2 gap-3" id="scatterQuadrantCards"></div>
+</div>
 <div class="relative w-full overflow-x-auto select-none pt-2" id="scatterPlotWrapper">
 <!-- Floating Hover Tooltip -->
 <div class="hidden bg-slate-900 text-white rounded-lg p-3 shadow-2xl text-xs border border-slate-700 leading-tight" id="scatterTooltip">
@@ -894,19 +896,208 @@ main{padding-top:12px!important;}
 </div>
 </div>
 </div>
-<!-- TAB 4: FINANCIAL ANALYSIS (Includes Moved Financial Position & Progression Flow) -->
-<div class="tab-panel space-y-6 hidden" id="tab-financial" role="tabpanel"><div class="space-y-6"><section class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm space-y-4"><div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2"><div><h3 class="text-sm font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span>Capital Flow Progression &amp; Allocation Funnel</h3><p class="text-xs text-slate-500 mt-0.5">End-to-end central allocation disbursed to on-ground administrative liquidation.</p></div><span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">Capital Flow</span></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"><div class="p-4 bg-slate-50/80 rounded-xl border border-slate-200 relative"><div class="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wide"><span class="">1. ALLOCATED</span><span class="text-slate-500 font-semibold">100%</span></div><div class="text-2xl font-bold text-slate-900 mt-1.5" id="finAllocated">—</div><p class="text-xs text-slate-500 mt-1">Central allocation</p><div class="mt-3 pt-2 border-t border-slate-200 text-[11px] text-slate-600">—</div></div><div class="p-4 bg-slate-50/80 rounded-xl border border-slate-200 relative"><div class="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wide"><span class="">2. RECOMMENDED</span><span class="text-blue-600 font-bold">—</span></div><div class="text-2xl font-bold text-slate-900 mt-1.5" id="finRecommended">—</div><p class="text-xs text-slate-500 mt-1">—</p><div class="mt-3 pt-2 border-t border-slate-200 text-[11px] text-slate-600">uncommitted: —</div></div><div class="p-4 bg-blue-50/70 rounded-xl border border-blue-200 relative"><div class="flex items-center justify-between text-[11px] font-bold text-blue-700 uppercase tracking-wide"><span class="">3. SANCTIONED</span><span class="text-blue-700 font-bold">—</span></div><div class="text-2xl font-bold text-blue-950 mt-1.5" id="finSanctioned">—</div><p class="text-xs text-blue-700 mt-1">Approved by Collectors</p><div class="mt-3 pt-2 border-t border-blue-200 text-[11px] text-blue-800 font-semibold">—</div></div><div class="p-4 bg-emerald-50/70 rounded-xl border border-emerald-200 relative"><div class="flex items-center justify-between text-[11px] font-bold text-emerald-800 uppercase tracking-wide"><span class="">4. EXPENDITURE</span><span class="text-[#10b981] font-bold">—</span></div><div class="text-2xl font-bold text-emerald-950 mt-1.5" id="finExpenditure">—</div><p class="text-xs text-emerald-700 mt-1">Disbursed on-ground capital</p><div class="mt-3 pt-2 border-t border-emerald-200 text-[11px] text-emerald-800 font-semibold">Liquidated civil accounts</div></div></div><div class="p-4 bg-slate-50/80 rounded-xl border border-slate-200 space-y-3" id="finDistributionBar"></div></section><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm space-y-4 lg:col-span-2"><div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2"><div><h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Expenditure Distribution Breakdown</h4><p class="text-[11px] text-slate-500">Capital distribution across sectors and jurisdiction cohorts</p></div><div class="inline-flex p-1 bg-slate-100 rounded-lg text-xs font-semibold" id="finDistControls"><button class="px-2.5 py-1 rounded bg-white text-blue-700 shadow-xs" id="distViewCategory" type="button">Categories</button><button class="px-2.5 py-1 rounded text-slate-600 hover:text-slate-900" id="distViewRep" type="button">MPs vs MLAs</button></div></div><div class="space-y-3 pt-1"><div class="space-y-1"><div class="flex justify-between text-xs"><span class="font-semibold text-slate-800">Rural Infrastructure &amp; Connectivity</span><span class="font-bold text-slate-900">—</span></div><div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden"><div class="bg-blue-600 h-full rounded-full" style="width: 40.1%;"></div></div></div><div class="space-y-1"><div class="flex justify-between text-xs"><span class="font-semibold text-slate-800">Education &amp; Skill Development</span><span class="font-bold text-slate-900">—</span></div><div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden"><div class="bg-indigo-600 h-full rounded-full" style="width: 25.9%;"></div></div></div><div class="space-y-1"><div class="flex justify-between text-xs"><span class="font-semibold text-slate-800">Public Health &amp; Medical Units</span><span class="font-bold text-slate-900">—</span></div><div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden"><div class="bg-emerald-500 h-full rounded-full" style="width: 17.2%;"></div></div></div><div class="space-y-1"><div class="flex justify-between text-xs"><span class="font-semibold text-slate-800">Water Resource &amp; Public Sanitation</span><span class="font-bold text-slate-900">—</span></div><div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden"><div class="bg-cyan-500 h-full rounded-full" style="width: 16.8%;"></div></div></div></div></div><div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm space-y-4"><div class="flex items-center justify-between border-b border-slate-100 pb-3"><h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Financial Health Index</h4><span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Grade: —</span></div><div class="space-y-3 pt-1 text-xs"><div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center"><div><span class="font-bold text-slate-800 block">Fund Utilization Rate</span><span class="text-[11px] text-slate-500">Disbursed / Sanctioned</span></div><span class="font-extrabold text-[#10b981] text-sm" id="finUtil">—</span></div><div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center"><div><span class="font-bold text-slate-800 block">Expenditure to Allocation</span><span class="text-[11px] text-slate-500">Disbursed / Total Entitlement</span></div><span class="font-extrabold text-[#3b82f6] text-sm" id="finExpToAlloc">—</span></div><div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center"><div><span class="font-bold text-slate-800 block">Sanction Conversion</span><span class="text-[11px] text-slate-500">Sanctioned / Recommended</span></div><span class="font-extrabold text-[#10b981] text-sm" id="finSanctionRate">—</span></div></div></div></div><div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm space-y-4"><div class="flex items-center justify-between border-b border-slate-100 pb-3"><div><h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Longitudinal Expenditure Trend (Quarterly Velocity)</h4><p class="text-[11px] text-slate-500">Cumulative capital progression over recent fiscal quarters</p></div><span class="text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">—</span></div><div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1"><div class="p-3 bg-slate-50 rounded-lg border border-slate-200"><span class="text-slate-400 text-[10px] uppercase font-bold block">Q1 FY25-26</span><span class="text-base font-bold text-slate-800 block mt-0.5">—</span><span class="text-[10px] text-slate-500">—</span></div><div class="p-3 bg-slate-50 rounded-lg border border-slate-200"><span class="text-slate-400 text-[10px] uppercase font-bold block">Q2 FY25-26</span><span class="text-base font-bold text-slate-800 block mt-0.5">—</span><span class="text-[10px] text-blue-600 font-semibold">—</span></div><div class="p-3 bg-slate-50 rounded-lg border border-slate-200"><span class="text-slate-400 text-[10px] uppercase font-bold block">Q3 FY25-26</span><span class="text-base font-bold text-slate-800 block mt-0.5">—</span><span class="text-[10px] text-slate-500">—</span></div><div class="p-3 bg-emerald-50/70 rounded-lg border border-emerald-200"><span class="text-emerald-700 text-[10px] uppercase font-bold block">Q4 Current</span><span class="text-base font-bold text-emerald-950 block mt-0.5">Peak: —</span><span class="text-[10px] text-emerald-700 font-semibold">Peak: 88.4%</span></div></div></div></div></div>
+<!-- TAB 4: FINANCIAL ANALYSIS -->
+<div class="tab-panel space-y-6 hidden" id="tab-financial" role="tabpanel">
+<div class="space-y-6">
+<!-- Capital Flow -->
+<section class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm space-y-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+<div>
+<h3 class="text-sm font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span>Capital Flow Progression &amp; Allocation Funnel
+</h3>
+<p class="text-xs text-slate-500 mt-0.5">End-to-end central allocation disbursed to on-ground administrative liquidation.</p>
+</div>
+<span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">Capital Flow</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="p-4 bg-slate-50/80 rounded-xl border border-slate-200 relative">
+<div class="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wide">
+<span>1. ALLOCATED</span><span class="text-slate-500 font-semibold">100%</span>
+</div>
+<div class="text-2xl font-bold text-slate-900 mt-1.5" id="finAllocated">—</div>
+<p class="text-xs text-slate-500 mt-1">Central allocation</p>
+</div>
+<div class="p-4 bg-slate-50/80 rounded-xl border border-slate-200 relative">
+<div class="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wide">
+<span>2. RECOMMENDED</span><span class="text-blue-600 font-bold" id="finRecPct">—</span>
+</div>
+<div class="text-2xl font-bold text-slate-900 mt-1.5" id="finRecommended">—</div>
+<p class="text-xs text-slate-500 mt-1">Total recommended</p>
+</div>
+<div class="p-4 bg-blue-50/70 rounded-xl border border-blue-200 relative">
+<div class="flex items-center justify-between text-[11px] font-bold text-blue-600 uppercase tracking-wide">
+<span>3. SANCTIONED</span><span class="text-blue-600 font-bold" id="finSancPct">—</span>
+</div>
+<div class="text-2xl font-bold text-slate-900 mt-1.5" id="finSanctioned">—</div>
+<p class="text-xs text-slate-500 mt-1">Administratively approved</p>
+</div>
+<div class="p-4 bg-emerald-50/70 rounded-xl border border-emerald-200 relative">
+<div class="flex items-center justify-between text-[11px] font-bold text-emerald-600 uppercase tracking-wide">
+<span>4. EXPENDITURE</span><span class="text-emerald-600 font-bold" id="finExpPct">—</span>
+</div>
+<div class="text-2xl font-bold text-slate-900 mt-1.5" id="finExpenditure">—</div>
+<p class="text-xs text-slate-500 mt-1">Actual liquidation</p>
+</div>
+</div>
+</section>
+<!-- Distribution Bar -->
+<section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+<div id="finDistributionBar"><div class="text-sm text-slate-400 text-center py-4">Loading...</div></div>
+</section>
+<!-- Fund Flow Progression -->
+<section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+<div>
+<h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Fund Flow Progression</h3>
+<p class="text-[11px] text-slate-500 mt-0.5">Capital transition across execution stages</p>
+</div>
+</div>
+<div class="space-y-3" id="finFundFlowBars">
+<div class="text-sm text-slate-400 text-center py-4">Loading...</div>
+</div>
+</section>
+<!-- Expenditure + Ratios -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+<div>
+<h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Expenditure vs Allocation</h3>
+<p class="text-[11px] text-slate-500 mt-0.5">Visual comparison of utilized vs remaining funds</p>
+</div>
+</div>
+<div id="finExpStackedBar" class="space-y-4">
+<div class="text-sm text-slate-400 text-center py-4">Loading...</div>
+</div>
+</div>
+<div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+<div>
+<h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Key Financial Ratios</h3>
+<p class="text-[11px] text-slate-500 mt-0.5">Critical performance indicators</p>
+</div>
+</div>
+<div id="finRatioBars" class="space-y-4">
+<div class="text-sm text-slate-400 text-center py-4">Loading...</div>
+</div>
+</div>
+</section>
+<!-- Timeline Metrics -->
+<section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+<div>
+<h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Execution Timeline</h3>
+<p class="text-[11px] text-slate-500 mt-0.5">Average time across project lifecycle stages</p>
+</div>
+</div>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="finTimelineMetrics">
+<div class="text-sm text-slate-400 text-center py-4 col-span-full">Loading...</div>
+</div>
+</section>
+<!-- Detailed Financial Table -->
+<section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+<div>
+<h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Detailed Financial Breakdown</h3>
+<p class="text-[11px] text-slate-500 mt-0.5">Complete financial metrics for this state</p>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-xs" id="finDetailTable">
+<thead><tr class="border-b border-slate-200">
+<th class="text-left py-2 px-3 font-bold text-slate-500 uppercase tracking-wider">Metric</th>
+<th class="text-right py-2 px-3 font-bold text-slate-500 uppercase tracking-wider">Value</th>
+<th class="text-right py-2 px-3 font-bold text-slate-500 uppercase tracking-wider">National Median</th>
+<th class="text-right py-2 px-3 font-bold text-slate-500 uppercase tracking-wider">Delta</th>
+</tr></thead>
+<tbody id="finTableBody">
+<tr><td colspan="4" class="text-center py-4 text-slate-400">Loading...</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</div>
 <!-- TAB 5: RISK -->
-<div class="tab-panel space-y-6 hidden" id="tab-risk" role="tabpanel"><div class="space-y-6"><div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div><div><h3 class="text-base font-bold text-slate-900 tracking-tight">Performance &amp; Risk Intelligence</h3><p class="text-xs text-slate-500 mt-0.5">Automated anomaly detection scans, cost deviation flags, and liquidity velocity risks.</p></div></div><div class="flex items-center gap-2"><span class="text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md" id="riskScoreBadge">—</span></div></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-4"><div class="p-4 bg-emerald-50/70 border border-emerald-200 rounded-xl"><span class="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">Low Risk Tier</span><div class="text-2xl font-black text-emerald-950 mt-1" id="riskLow">—</div><span class="text-xs text-emerald-700 mt-0.5 block">—</span></div><div class="p-4 bg-amber-50/70 border border-amber-200 rounded-xl"><span class="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">Moderate Risk (Monitored)</span><div class="text-2xl font-black text-amber-950 mt-1" id="riskMedium">—</div><span class="text-xs text-amber-700 mt-0.5 block">—</span></div><div class="p-4 bg-red-50/70 border border-red-200 rounded-xl"><span class="text-[10px] font-bold uppercase tracking-wider text-red-800 block">Critical Flagged</span><div class="text-2xl font-black text-red-950 mt-1" id="riskHigh">—</div><span class="text-xs text-red-700 mt-0.5 block">—</span></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm space-y-4"><div class="flex items-center justify-between border-b border-slate-100 pb-3"><h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Anomaly Categories Breakdown</h4><span class="text-[11px] font-semibold text-slate-500">—</span></div><div class="space-y-3 pt-1"><div class="space-y-1"><div class="flex justify-between text-xs"><span class="font-medium text-slate-700">District Collector Sanction Lag (&gt;60 days)</span><span class="font-bold text-amber-700">—</span></div><div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden"><div class="bg-amber-500 h-full rounded-full" style="width: 44.4%;"></div></div></div><div class="space-y-1"><div class="flex justify-between text-xs"><span class="font-medium text-slate-700">Contractor Milestone Delay (&gt;90 days)</span><span class="font-bold text-red-700">—</span></div><div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden"><div class="bg-red-500 h-full rounded-full" style="width: 27.8%;"></div></div></div><div class="space-y-1"><div class="flex justify-between text-xs"><span class="font-medium text-slate-700">Unliquidated Advance Balance Disparity</span><span class="font-bold text-blue-700">—</span></div><div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden"><div class="bg-blue-500 h-full rounded-full" style="width: 16.7%;"></div></div></div><div class="space-y-1"><div class="flex justify-between text-xs"><span class="font-medium text-slate-700">Missing Mandatory Documentation</span><span class="font-bold text-slate-600">—</span></div><div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden"><div class="bg-slate-400 h-full rounded-full" style="width: 11.1%;"></div></div></div></div></div><div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm space-y-4"><div class="flex items-center justify-between border-b border-slate-100 pb-3"><h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-600"></span>Risk Telemetry Matrix vs National Averages</h4><span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">—</span></div><div class="space-y-3 pt-1 text-xs"><div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center"><div><span class="font-bold text-slate-800 block">State Anomaly Frequency</span><span class="text-[11px] text-slate-500">National Average: —</span></div><span class="font-extrabold text-[#10b981] text-sm">—</span></div><div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center"><div><span class="font-bold text-slate-800 block">Sanction Stalled Rate (&gt;45 days)</span><span class="text-[11px] text-slate-500">National Average: —</span></div><span class="font-extrabold text-[#10b981] text-sm">—</span></div><div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center"><div><span class="font-bold text-slate-800 block">Unspent Balance Depreciation Risk</span><span class="text-[11px] text-slate-500">National Average: —</span></div><span class="font-extrabold text-blue-600 text-sm">—</span></div></div></div></div><div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm space-y-4"><div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2"><div><h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-[#ef4444]"></span>Priority Scheme Risk Watchlist</h4><p class="text-xs text-slate-500 mt-0.5">Identified flagged works with active intervention triggers</p></div><span class="text-xs font-bold text-red-800 bg-red-100 border border-red-200 px-2 py-0.5 rounded-full">Immediate Review</span></div><div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold border-y border-slate-200"><tr><th class="py-2.5 px-3">Scheme Title</th><th class="py-2.5 px-3">Constituency</th><th class="py-2.5 px-3">Outlay</th><th class="py-2.5 px-3">Flag Type</th><th class="py-2.5 px-3">Lag Days</th><th class="py-2.5 px-3">Action State</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50/80 transition-colors"><td class="py-3 px-3"><div class="font-bold text-slate-900">Cold-Chain Solar Center Installation</div><div class="text-[11px] text-slate-400">Health Category</div></td><td class="py-3 px-3 font-medium text-slate-700">Gambegre</td><td class="py-3 px-3 font-bold text-slate-900">—</td><td class="py-3 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">DC Clearance Lag</span></td><td class="py-3 px-3 font-extrabold text-amber-700">—</td><td class="py-3 px-3 text-blue-600 font-semibold">—</td></tr><tr class="hover:bg-slate-50/80 transition-colors"><td class="py-3 px-3"><div class="font-bold text-slate-900">Paddy Drain Embankment &amp; Culvert</div><div class="text-[11px] text-slate-400">Agriculture Category</div></td><td class="py-3 px-3 font-medium text-slate-700">Mawkynrew</td><td class="py-3 px-3 font-bold text-slate-900">—</td><td class="py-3 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800 border border-red-200">Contractor Default</span></td><td class="py-3 px-3 font-extrabold text-red-700">—</td><td class="py-3 px-3 text-red-600 font-semibold">—</td></tr><tr class="hover:bg-slate-50/80 transition-colors"><td class="py-3 px-3"><div class="font-bold text-slate-900">Community Hall Extension Ward 4</div><div class="text-[11px] text-slate-400">Civic Building</div></td><td class="py-3 px-3 font-medium text-slate-700">Resubelpara</td><td class="py-3 px-3 font-bold text-slate-900">—</td><td class="py-3 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">Advance Disparity</span></td><td class="py-3 px-3 font-extrabold text-amber-700">—</td><td class="py-3 px-3 text-slate-600 font-semibold">—</td></tr></tbody></table></div></div></div></div>
+<div class="tab-panel space-y-6 hidden" id="tab-risk" role="tabpanel">
+<div class="space-y-6">
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<h3 class="text-base font-bold text-slate-900 tracking-tight">Performance &amp; Risk Intelligence</h3>
+<p class="text-xs text-slate-500 mt-0.5">Automated anomaly detection scans, cost deviation flags, and liquidity velocity risks.</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md" id="riskScoreBadge">—</span>
+</div>
+</div>
+<!-- Risk Tiers -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div class="p-4 bg-emerald-50/70 border border-emerald-200 rounded-xl">
+<span class="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">Low Risk Tier</span>
+<div class="text-2xl font-black text-emerald-950 mt-1" id="riskLow">—</div>
+<span class="text-xs text-emerald-700 mt-0.5 block">Normal operations</span>
+</div>
+<div class="p-4 bg-amber-50/70 border border-amber-200 rounded-xl">
+<span class="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">Moderate Risk (Monitored)</span>
+<div class="text-2xl font-black text-amber-950 mt-1" id="riskMedium">—</div>
+<span class="text-xs text-amber-700 mt-0.5 block">Flagged for review</span>
+</div>
+<div class="p-4 bg-red-50/70 border border-red-200 rounded-xl">
+<span class="text-[10px] font-bold uppercase tracking-wider text-red-800 block">Critical Flagged</span>
+<div class="text-2xl font-black text-red-950 mt-1" id="riskHigh">—</div>
+<span class="text-xs text-red-700 mt-0.5 block">Requires intervention</span>
+</div>
+</div>
+<!-- Risk Distribution Visual -->
+<section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+<div>
+<h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Risk Distribution</h3>
+<p class="text-[11px] text-slate-500 mt-0.5">Work classification by risk level</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-3" id="perfRiskDistribution">
+<div class="text-sm text-slate-400 text-center py-4 col-span-full">Loading...</div>
+</div>
+</section>
+<!-- Work Status -->
+<section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+<div>
+<h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Work Status Overview</h3>
+<p class="text-[11px] text-slate-500 mt-0.5">Distribution across completion stages</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-3" id="perfWorkStatusCounts">
+<div class="text-sm text-slate-400 text-center py-4 col-span-full">Loading...</div>
+</div>
+</section>
+<!-- Timeline & Execution Metrics -->
+<section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+<div>
+<h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Execution Timeline</h3>
+<p class="text-[11px] text-slate-500 mt-0.5">Average time across project lifecycle stages</p>
+</div>
+</div>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="stateTimelineMetrics">
+<div class="text-sm text-slate-400 text-center py-4 col-span-full">Loading...</div>
+</div>
+</section>
+</div>
+</div>
 <!-- TAB 6: TRENDS -->
 <!-- TAB 7: CONSTITUENCIES -->
 <!-- TAB 8: AI ANALYSIS -->
-<div class="tab-panel space-y-6 hidden" id="tab-ai" role="tabpanel">
-
-<!-- AI Score Overview -->
-<section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-<div class="lg:col-span-4 flex flex-col items-center justify-center p-4 bg-slate-50/70 border border-slate-200 rounded-xl">
+<div class="tab-panel hidden" id="tab-ai" role="tabpanel">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+<!-- Row 1, Col 2: AI Summary + Key Points -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col items-center justify-center">
 <div class="relative w-36 h-36">
 <svg class="w-36 h-36 -rotate-90" viewBox="0 0 140 140">
 <circle cx="70" cy="70" fill="none" r="58" stroke="#e2e8f0" stroke-width="12"></circle>
@@ -914,42 +1105,30 @@ main{padding-top:12px!important;}
 </svg>
 <div class="absolute inset-0 flex flex-col items-center justify-center">
 <span class="text-3xl font-extrabold text-slate-900" id="stateAiScoreValue">—</span>
-<span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">/ 200</span>
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">/ 100</span>
 </div>
 </div>
 <span class="mt-3 px-3 py-1 rounded-full text-xs font-bold border" id="stateAiScoreBadge">—</span>
-<!-- Intelligence meta: rank, percentile, cluster, risk -->
 <div class="w-full grid grid-cols-2 gap-2 mt-4 text-center">
-  <div class="p-2 bg-white border border-slate-200 rounded-lg">
-    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">National Rank</div>
-    <div class="text-sm font-bold text-slate-800" id="stateAiNationalRank">—</div>
-  </div>
-  <div class="p-2 bg-white border border-slate-200 rounded-lg">
-    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Percentile</div>
-    <div class="text-sm font-bold text-slate-800" id="stateAiNationalPercentile">—</div>
-  </div>
-  <div class="col-span-2 p-2 bg-white border border-slate-200 rounded-lg">
-    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cluster</div>
-    <div class="text-xs font-semibold text-slate-700" id="stateAiClusterLabel">—</div>
-  </div>
-  <div class="p-2 bg-white border border-slate-200 rounded-lg">
-    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Level</div>
-    <div class="text-xs font-semibold" id="stateAiRiskLevel">—</div>
-  </div>
-  <div class="p-2 bg-white border border-slate-200 rounded-lg">
-    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Confidence</div>
-    <div class="text-xs font-semibold text-slate-700" id="stateAiRiskConfidence">—</div>
-  </div>
+<div class="p-2 bg-white border border-slate-200 rounded-lg">
+<div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">National Rank</div>
+<div class="text-sm font-bold text-slate-800" id="stateAiNationalRank">—</div>
+</div>
+<div class="p-2 bg-white border border-slate-200 rounded-lg">
+<div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Percentile</div>
+<div class="text-sm font-bold text-slate-800" id="stateAiNationalPercentile">—</div>
+</div>
+<div class="p-2 bg-white border border-slate-200 rounded-lg">
+<div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cluster</div>
+<div class="text-xs font-semibold text-slate-700" id="stateAiClusterLabel">—</div>
+</div>
+<div class="p-2 bg-white border border-slate-200 rounded-lg">
+<div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Risk Level</div>
+<div class="text-xs font-semibold" id="stateAiRiskLevel">—</div>
 </div>
 </div>
-<div class="lg:col-span-8 space-y-3" id="stateAiScoreBreakdown">
-<div class="text-sm text-slate-400 text-center py-4">Loading...</div>
 </div>
-</div>
-</section>
-
-<!-- Summary + Highlights + Performance -->
-<section class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+<!-- Row 1, Col 1: AI Score Ring + Risk & Confidence -->
 <div class="flex flex-col gap-4">
 <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex-1">
 <h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider mb-3 flex items-center gap-2">
@@ -966,25 +1145,36 @@ Key Highlights
 <div id="stateAiHighlightsContent" class="text-[13px] text-slate-700">Loading...</div>
 </div>
 </div>
+<!-- Row 2, Col 1: ML Analysis — Peer Benchmark Comparison -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col">
+<h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider mb-4 flex items-center gap-2">
+<svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+Peer Benchmark
+</h4>
+<div class="space-y-3 flex-1" id="stateAiPeerBenchmarkChart">
+<div class="text-sm text-slate-400 text-center py-8">Loading...</div>
+</div>
+</div>
+<!-- Row 2, Col 2: Performance Metrics -->
 <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col">
 <h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider mb-4 flex items-center gap-2">
 <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 Performance Metrics
 </h4>
-<div class="space-y-4 flex-1" id="stateAiPerformanceChart">
+<div class="space-y-3 flex-1" id="stateAiPerformanceChart">
 <div class="text-sm text-slate-400 text-center py-8">Loading...</div>
 </div>
 </div>
-</section>
+</div>
 </div>
 
 <!-- System Metadata Footer -->
-<footer class="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2 pb-6">
+<footer class="pt-4 border-t border-slate-200 text-[11px] text-slate-400 pb-6">
 <div class="">Govsense AI · State intelligence aggregated from MoSPI MPLADS Portal</div>
-<div class="flex items-center gap-4">
-<a class="hover:text-slate-600 transition" href="#">Methodology &amp; Data Notes</a>
-<a class="hover:text-slate-600 transition" href="#">Privacy Policy</a>
-<a class="hover:text-slate-600 transition" href="#">API Documentation</a>
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+<a class="hover:text-slate-600 transition" href="methodology.html">Methodology &amp; Audit</a>
+<a class="hover:text-slate-600 transition" href="privacy.html?from=statedetail">Privacy Policy</a>
+<a class="hover:text-slate-600 transition" href="api-docs.html?from=statedetail">API Documentation</a>
 </div>
 </footer>
 </div>

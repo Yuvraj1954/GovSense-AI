@@ -54,6 +54,11 @@
     return Number(n).toFixed(1) + '%';
   }
 
+  function fmtDays(n) {
+    if (n == null || isNaN(n)) return '—';
+    return Math.round(Number(n)) + ' days';
+  }
+
   function getColor(pct) {
     if (pct >= 70) return 'emerald';
     if (pct >= 50) return 'blue';
@@ -128,6 +133,7 @@
     setText('stateMpCount', fmtNum(s.mp_count || 0) + ' MPs');
     setText('stateMlaCount', fmtNum(s.mla_count || 0) + ' MLAs');
     setText('stateRank', s.rank ? ('National Rank #' + s.rank) : 'Rank: N/A');
+    setText('headerMeta', s.rank ? '#' + s.rank : 'Overview');
     setText('tabProjectsCount', fmtNum(s.total_works || 0));
     setText('repDescMp', fmtNum(s.mp_count || 0));
     setText('repDescMla', fmtNum(s.mla_count || 0));
@@ -382,7 +388,6 @@
         { label: 'Completion Rate', value: comp, color: getColor(comp) },
         { label: 'Fund Utilization', value: util, color: getColor(util) },
         { label: 'Sanction Rate', value: sanction, color: getColor(sanction) },
-        // Phase 5: authoritative risk rate, not an invented inverted score.
         { label: 'Risk / Anomaly Rate', value: riskRate, color: riskRate > 20 ? 'rose' : 'emerald' },
       ];
       var html = '<div class="flex items-center justify-between mb-3"><h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Score Components</h4>' +
@@ -426,7 +431,56 @@
       }
     }
 
-    // Performance chart
+    // Peer Benchmark — fetch cluster/national averages from API
+    var benchEl = document.getElementById('stateAiPeerBenchmarkChart');
+    if (benchEl) {
+      var stateId = s.state_id || stateData.state_id;
+      var apiUrl = API_BASE + '/api/peer-benchmark?member_type=MLA&entity_id=' + stateId;
+      benchEl.innerHTML = '<div class="text-sm text-slate-400 text-center py-8">Loading...</div>';
+      fetch(apiUrl).then(function(r) { return r.json(); }).then(function(bench) {
+        var stateMetrics = [
+          { label: 'Completion Rate', value: Number(s.completion_rate_pct) || 0, cluster: bench.cluster_avg ? bench.cluster_avg.completion_rate_pct : null, national: bench.national_avg ? bench.national_avg.completion_rate_pct : null },
+          { label: 'Fund Utilization', value: Number(s.fund_utilization_pct) || 0, cluster: bench.cluster_avg ? bench.cluster_avg.fund_utilization_pct : null, national: bench.national_avg ? bench.national_avg.fund_utilization_pct : null },
+          { label: 'Sanction Rate', value: Number(s.sanction_rate_pct) || 0, cluster: bench.cluster_avg ? bench.cluster_avg.sanction_rate_pct : null, national: bench.national_avg ? bench.national_avg.sanction_rate_pct : null },
+        ];
+        var hasAvgs = stateMetrics.some(function(p) { return p.cluster !== null || p.national !== null; });
+        var bhtml = '<div class="space-y-5">';
+        stateMetrics.forEach(function(p) {
+          bhtml += '<div class="space-y-2">';
+          bhtml += '<div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-700">' + p.label + '</span><span class="text-sm font-black text-' + getColor(p.value) + '-700">' + fmtPct(p.value) + '</span></div>';
+          bhtml += '<div class="space-y-1">';
+          bhtml += '<div class="flex items-center gap-2"><span class="text-[10px] font-semibold text-slate-500 w-14 flex-shrink-0">State</span>';
+          bhtml += '<div class="flex-1 h-5 bg-slate-100 rounded-full overflow-hidden relative">';
+          bhtml += '<div class="h-full bg-' + getColor(p.value) + '-500 rounded-full transition-all duration-1000" style="width:' + Math.min(p.value, 100) + '%"></div>';
+          bhtml += '</div><span class="text-[10px] font-bold text-slate-700 w-12 text-right">' + fmtPct(p.value) + '</span></div>';
+          if (p.cluster !== null) {
+            bhtml += '<div class="flex items-center gap-2"><span class="text-[10px] font-semibold text-violet-500 w-14 flex-shrink-0">Cluster</span>';
+            bhtml += '<div class="flex-1 h-3 bg-slate-50 rounded-full overflow-hidden relative">';
+            bhtml += '<div class="h-full bg-violet-400 rounded-full transition-all duration-1000 opacity-70" style="width:' + Math.min(p.cluster, 100) + '%"></div>';
+            bhtml += '</div><span class="text-[10px] font-semibold text-violet-600 w-12 text-right">' + fmtPct(p.cluster) + '</span></div>';
+          }
+          if (p.national !== null) {
+            bhtml += '<div class="flex items-center gap-2"><span class="text-[10px] font-semibold text-slate-400 w-14 flex-shrink-0">National</span>';
+            bhtml += '<div class="flex-1 h-3 bg-slate-50 rounded-full overflow-hidden relative">';
+            bhtml += '<div class="h-full bg-slate-400 rounded-full transition-all duration-1000 opacity-60" style="width:' + Math.min(p.national, 100) + '%"></div>';
+            bhtml += '</div><span class="text-[10px] font-semibold text-slate-500 w-12 text-right">' + fmtPct(p.national) + '</span></div>';
+          }
+          bhtml += '</div></div>';
+        });
+        if (hasAvgs) {
+          bhtml += '<div class="flex items-center gap-5 text-[10px] text-slate-500 pt-2 border-t border-slate-100">' +
+            '<span class="flex items-center gap-1.5"><span class="w-3 h-2 bg-emerald-500 rounded inline-block"></span> State</span>' +
+            '<span class="flex items-center gap-1.5"><span class="w-3 h-1.5 bg-violet-400 rounded inline-block opacity-70"></span> Cluster Avg</span>' +
+            '<span class="flex items-center gap-1.5"><span class="w-3 h-1.5 bg-slate-400 rounded inline-block opacity-60"></span> National Avg</span></div>';
+        }
+        bhtml += '</div>';
+        benchEl.innerHTML = bhtml;
+      }).catch(function() {
+        benchEl.innerHTML = '<p class="text-[11px] text-slate-400 italic text-center py-4">Peer averages unavailable.</p>';
+      });
+    }
+
+    // Performance Metrics
     var chartEl = document.getElementById('stateAiPerformanceChart');
     if (chartEl) {
       var anomalyLevel = s.anomaly_level || 'N/A';
@@ -435,7 +489,6 @@
         { label: 'Fund Utilization', value: Number(s.fund_utilization_pct) || 0 },
         { label: 'Completion Rate', value: Number(s.completion_rate_pct) || 0 },
         { label: 'Sanction Rate', value: Number(s.sanction_rate_pct) || 0 },
-        { label: 'Performance Score', value: (Number(s.performance_score) || 0) / 2 },
         { label: 'Anomaly Score', value: Number(s.anomaly_score) || 0, color: ac },
         { label: 'Flagged Rate', value: Number(s.risk_rate_pct) || 0, color: (Number(s.risk_rate_pct) || 0) > 10 ? 'rose' : 'emerald' },
       ];
@@ -620,6 +673,61 @@
         '<div class="text-[11px] text-indigo-700 mt-0.5">' + fmtNum(mla.works) + ' Works · ' + fmtNum(mla.done) + ' Completed</div></div></div>';
       repBars.innerHTML = h;
     }
+
+    // Build mobile card view for representatives table
+    var cardsContainer = document.getElementById('repsMobileCards');
+    if (!cardsContainer) {
+      var tableEl = document.querySelector('#tab-representatives table');
+      if (tableEl) {
+        cardsContainer = document.createElement('div');
+        cardsContainer.id = 'repsMobileCards';
+        cardsContainer.className = 'reps-mobile-cards hidden space-y-3';
+        tableEl.parentElement.insertBefore(cardsContainer, tableEl.nextSibling);
+      }
+    }
+    if (cardsContainer) {
+      var rows = [];
+      var tbody = document.getElementById('topRepresentativesBody');
+      if (tbody) {
+        var trs = tbody.querySelectorAll('tr');
+        trs.forEach(function(tr) {
+          var tds = tr.querySelectorAll('td');
+          if (tds.length >= 7) {
+            rows.push({
+              rank: tds[0].textContent.trim(),
+              name: tds[1].textContent.trim(),
+              constituency: tds[2].textContent.trim(),
+              util: tds[3].textContent.trim(),
+              comp: tds[4].textContent.trim(),
+              works: tds[5].textContent.trim(),
+              classification: tds[6].textContent.trim()
+            });
+          }
+        });
+      }
+      if (rows.length > 0) {
+        var chtml = '<div class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">Top Performing Representatives</div>';
+        rows.forEach(function(r) {
+          var uc = 'slate';
+          if (r.classification.indexOf('PERFORMER') > -1 || r.classification.indexOf('EXCEPTIONAL') > -1) uc = 'emerald';
+          else if (r.classification.indexOf('STABLE') > -1 || r.classification.indexOf('AVERAGE') > -1) uc = 'blue';
+          else if (r.classification.indexOf('NEEDS') > -1) uc = 'amber';
+          else if (r.classification.indexOf('UNDER') > -1) uc = 'rose';
+          chtml += '<div class="p-3 bg-white border border-slate-200 rounded-xl">' +
+            '<div class="flex items-center justify-between mb-1.5">' +
+            '<div class="flex items-center gap-2">' +
+            '<span class="text-sm font-black text-blue-600">' + r.rank + '</span>' +
+            '<span class="text-sm font-bold text-slate-900">' + r.name + '</span></div>' +
+            '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-' + uc + '-100 text-' + uc + '-800 border border-' + uc + '-200">' + r.classification + '</span></div>' +
+            '<div class="text-[11px] text-slate-500 mb-1.5">' + r.constituency + '</div>' +
+            '<div class="grid grid-cols-3 gap-2 text-[11px]">' +
+            '<div><span class="text-slate-500">Util</span> <span class="font-bold text-slate-800">' + r.util + '</span></div>' +
+            '<div><span class="text-slate-500">Comp</span> <span class="font-bold text-slate-800">' + r.comp + '</span></div>' +
+            '<div><span class="text-slate-500">Works</span> <span class="font-bold text-slate-800">' + r.works + '</span></div></div></div>';
+        });
+        cardsContainer.innerHTML = chtml;
+      }
+    }
   }
 
   // ===== FINANCIAL =====
@@ -631,6 +739,8 @@
     var util = Number(s.fund_utilization_pct) || 0;
     var comp = Number(s.completion_rate_pct) || 0;
     var sanctionRate = Number(s.sanction_rate_pct) || 0;
+    var unspent = Math.max(allocated - exp, 0);
+    var completionAmt = Number(s.completion_amount) || 0;
 
     setText('finAllocated', fmtCr(allocated));
     setText('finRecommended', fmtCr(recommended));
@@ -639,7 +749,9 @@
     setText('finUtil', fmtPct(util));
     setText('finComp', fmtPct(comp));
     setText('finSanctionRate', fmtPct(sanctionRate));
-    setText('finExpToAlloc', fmtPct(allocated > 0 ? exp / allocated * 100 : 0));
+    setText('finRecPct', allocated > 0 ? fmtPct(recommended / allocated * 100) : '—');
+    setText('finSancPct', allocated > 0 ? fmtPct(sanctioned / allocated * 100) : '—');
+    setText('finExpPct', allocated > 0 ? fmtPct(exp / allocated * 100) : '—');
 
     var distEl = document.getElementById('finDistributionBar');
     if (distEl) {
@@ -647,10 +759,123 @@
       var rem = 100 - pct;
       distEl.innerHTML = '<div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-1">' +
         '<div class="font-bold text-slate-800">Allocation Distribution (Total: ' + fmtCr(allocated) + ')</div>' +
-        '<div class="text-slate-500 text-[11px]">' + fmtCr(exp) + ' Disbursed (' + fmtPct(pct) + ') vs ' + fmtCr(Math.max(allocated - exp, 0)) + ' Remaining (' + fmtPct(rem) + ')</div></div>' +
+        '<div class="text-slate-500 text-[11px]">' + fmtCr(exp) + ' Disbursed (' + fmtPct(pct) + ') vs ' + fmtCr(unspent) + ' Remaining (' + fmtPct(rem) + ')</div></div>' +
         '<div class="w-full h-4 bg-slate-200 rounded-full overflow-hidden flex shadow-inner mt-2">' +
         '<div class="bg-[#10b981] h-full flex items-center justify-end pr-2 text-[10px] font-bold text-white tracking-wider" style="width:' + pct + '%;">' + fmtPct(pct) + '</div>' +
         '<div class="bg-[#f59e0b] h-full flex items-center justify-center text-[10px] font-bold text-amber-950" style="width:' + rem + '%;">' + fmtPct(rem) + '</div></div>';
+    }
+
+    // Fund Flow Progression bars
+    var flowEl = document.getElementById('finFundFlowBars');
+    if (flowEl) {
+      var stages = [
+        { label: 'Allocated', amount: allocated, pct: 100, color: 'teal' },
+        { label: 'Recommended', amount: recommended, pct: allocated > 0 ? (recommended / allocated * 100) : 0, color: 'emerald' },
+        { label: 'Sanctioned', amount: sanctioned, pct: allocated > 0 ? (sanctioned / allocated * 100) : 0, color: 'blue' },
+        { label: 'Expenditure', amount: exp, pct: allocated > 0 ? (exp / allocated * 100) : 0, color: 'violet' },
+      ];
+      var fhtml = '';
+      stages.forEach(function(st) {
+        fhtml += '<div class="space-y-1">' +
+          '<div class="flex justify-between text-xs"><span class="font-semibold text-slate-700">' + st.label + '</span>' +
+          '<span class="font-bold text-slate-900">' + fmtCr(st.amount) + ' <span class="text-slate-400 font-normal">(' + fmtPct(st.pct) + ')</span></span></div>' +
+          '<div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-' + st.color + '-500 rounded-full transition-all duration-700" style="width:' + Math.min(st.pct, 100) + '%"></div></div></div>';
+      });
+      fhtml += '<div class="pt-2 border-t border-slate-100 flex justify-between text-xs text-slate-500">' +
+        '<span>Unspent: <span class="font-bold text-slate-700">' + fmtCr(unspent) + '</span></span>' +
+        '<span>' + fmtPct(allocated > 0 ? (unspent / allocated * 100) : 0) + ' remaining</span></div>';
+      flowEl.innerHTML = fhtml;
+    }
+
+    // Expenditure stacked bar
+    var expEl = document.getElementById('finExpStackedBar');
+    if (expEl) {
+      var expPct = allocated > 0 ? (exp / allocated * 100) : 0;
+      var unspentPct = 100 - expPct;
+      var ehtml = '<div class="space-y-2">' +
+        '<div class="flex justify-between text-xs"><span class="font-semibold text-slate-700">Expenditure</span><span class="font-bold text-slate-900">' + fmtCr(exp) + ' (' + fmtPct(expPct) + ')</span></div>' +
+        '<div class="w-full h-6 bg-slate-100 rounded-full overflow-hidden flex">' +
+        '<div class="h-full bg-blue-500 rounded-l-full transition-all duration-1000" style="width:' + expPct + '%"></div>' +
+        '<div class="h-full bg-slate-300 rounded-r-full transition-all duration-1000" style="width:' + unspentPct + '%"></div></div>' +
+        '<div class="flex justify-between text-[10px] text-slate-400"><span>Utilized</span><span>Unspent</span></div></div>';
+      ehtml += '<div class="pt-3 border-t border-slate-100 space-y-2 text-xs">' +
+        '<div class="flex justify-between"><span class="text-slate-500">Completion Amount</span><span class="font-semibold text-slate-900">' + fmtCr(completionAmt) + '</span></div>' +
+        '<div class="flex justify-between"><span class="text-slate-500">Unspent Balance</span><span class="font-semibold text-slate-900">' + fmtCr(unspent) + '</span></div></div>';
+      expEl.innerHTML = ehtml;
+    }
+
+    // Financial ratio bars
+    var ratioEl = document.getElementById('finRatioBars');
+    if (ratioEl) {
+      var ratios = [
+        { label: 'Fund Utilization', value: util, color: getColor(util) },
+        { label: 'Completion Rate', value: comp, color: getColor(comp) },
+        { label: 'Sanction Rate', value: sanctionRate, color: getColor(sanctionRate) },
+      ];
+      var rhtml = '';
+      ratios.forEach(function(r) {
+        rhtml += '<div class="space-y-1">' +
+          '<div class="flex justify-between text-xs"><span class="font-medium text-slate-600">' + r.label + '</span><span class="font-bold text-slate-900">' + fmtPct(r.value) + '</span></div>' +
+          '<div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-' + r.color + '-500 rounded-full transition-all duration-1000" style="width:' + Math.min(r.value, 100) + '%"></div></div></div>';
+      });
+      rhtml += '<div class="pt-3 border-t border-slate-100 space-y-2 text-xs">' +
+        '<div class="flex justify-between"><span class="text-slate-500">Avg Work Cost</span><span class="font-semibold text-slate-900">' + fmtCr(s.avg_work_cost) + '</span></div>' +
+        '<div class="flex justify-between"><span class="text-slate-500">Median Work Cost</span><span class="font-semibold text-slate-900">' + fmtCr(s.median_work_cost) + '</span></div></div>';
+      ratioEl.innerHTML = rhtml;
+    }
+
+    // Timeline metrics
+    var timeEl = document.getElementById('finTimelineMetrics');
+    if (timeEl) {
+      var avgExec = Number(s.avg_execution_days) || 0;
+      var medExec = Number(s.median_execution_days) || 0;
+      var avgDelay = Number(s.avg_sanction_delay_days) || 0;
+      var medDelay = Number(s.median_sanction_delay_days) || 0;
+      var avgAge = Number(s.avg_project_age_days) || 0;
+      var maxAge = Number(s.max_project_age_days) || 0;
+      var overdue1 = s.overdue_over_1_year || 0;
+      var overdue2 = s.overdue_over_2_years || 0;
+      var titems = [
+        { label: 'Avg Execution Time', value: fmtDays(avgExec), sub: 'Median: ' + fmtDays(medExec), color: 'blue' },
+        { label: 'Avg Sanction Delay', value: fmtDays(avgDelay), sub: 'Median: ' + fmtDays(medDelay), color: 'amber' },
+        { label: 'Avg Project Age', value: fmtDays(avgAge), sub: 'Max: ' + fmtDays(maxAge), color: 'violet' },
+        { label: 'Overdue Works', value: fmtNum(overdue1) + ' / ' + fmtNum(overdue2), sub: '> 1yr / > 2yr', color: overdue1 > 0 ? 'rose' : 'emerald' },
+      ];
+      var thtml = '';
+      titems.forEach(function(item) {
+        thtml += '<div class="p-4 bg-slate-50/70 border border-slate-200 rounded-xl">' +
+          '<div class="flex items-center gap-2 mb-2"><span class="w-2 h-2 rounded-full bg-' + item.color + '-500"></span>' +
+          '<span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">' + item.label + '</span></div>' +
+          '<div class="text-xl font-bold text-slate-900">' + item.value + '</div>' +
+          '<div class="text-[11px] text-slate-500 mt-0.5">' + item.sub + '</div></div>';
+      });
+      timeEl.innerHTML = thtml;
+    }
+
+    // Detailed financial table
+    var tableBody = document.getElementById('finTableBody');
+    if (tableBody) {
+      var benchmarks = stateData.__benchmarks || {};
+      var rows = [
+        { label: 'Allocated Amount', value: fmtCr(allocated), median: fmtCr(benchmarks.allocated_amount || null), delta: benchmarks.allocated_amount != null ? allocated - benchmarks.allocated_amount : null, isMoney: true },
+        { label: 'Sanctioned Amount', value: fmtCr(sanctioned), median: fmtCr(benchmarks.sanctioned_amount || null), delta: benchmarks.sanctioned_amount != null ? sanctioned - benchmarks.sanctioned_amount : null, isMoney: true },
+        { label: 'Expenditure Amount', value: fmtCr(exp), median: fmtCr(benchmarks.expenditure_amount || null), delta: benchmarks.expenditure_amount != null ? exp - benchmarks.expenditure_amount : null, isMoney: true },
+        { label: 'Fund Utilization', value: fmtPct(util), median: fmtPct(benchmarks.fund_utilization_pct || null), delta: benchmarks.fund_utilization_pct != null ? util - benchmarks.fund_utilization_pct : null, isMoney: false },
+        { label: 'Completion Rate', value: fmtPct(comp), median: fmtPct(benchmarks.completion_rate_pct || null), delta: benchmarks.completion_rate_pct != null ? comp - benchmarks.completion_rate_pct : null, isMoney: false },
+        { label: 'Sanction Rate', value: fmtPct(sanctionRate), median: fmtPct(benchmarks.sanction_rate_pct || null), delta: benchmarks.sanction_rate_pct != null ? sanctionRate - benchmarks.sanction_rate_pct : null, isMoney: false },
+      ];
+      var dhtml = '';
+      rows.forEach(function(row) {
+        var dc = row.delta != null ? (row.delta >= 0 ? 'emerald' : 'rose') : 'slate';
+        var sign = row.delta != null ? (row.delta >= 0 ? '+' : '') : '';
+        var deltaFmt = row.delta != null ? (row.isMoney ? fmtCr(Math.abs(row.delta)) : fmtPct(Math.abs(row.delta))) : '—';
+        dhtml += '<tr class="border-b border-slate-100 hover:bg-slate-50">' +
+          '<td class="py-2.5 px-3 font-medium text-slate-700">' + row.label + '</td>' +
+          '<td class="py-2.5 px-3 text-right font-bold text-slate-900">' + row.value + '</td>' +
+          '<td class="py-2.5 px-3 text-right text-slate-500">' + row.median + '</td>' +
+          '<td class="py-2.5 px-3 text-right font-semibold text-' + dc + '-700">' + (row.delta != null ? sign + deltaFmt : '—') + '</td></tr>';
+      });
+      tableBody.innerHTML = dhtml;
     }
   }
 
@@ -665,6 +890,77 @@
     setText('riskMedium', fmtNum(medium) + ' Works');
     setText('riskHigh', fmtNum(high) + ' Works');
     setText('riskScoreBadge', 'Risk Score: ' + (s.anomaly_level || 'N/A') + ' (' + fmtPct(s.risk_rate_pct) + ' Anomaly Rate)');
+
+    // Risk tab timeline metrics
+    var tEl = document.getElementById('stateTimelineMetrics');
+    if (tEl) {
+      var avgExec = Number(s.avg_execution_days) || 0;
+      var medExec = Number(s.median_execution_days) || 0;
+      var avgDelay = Number(s.avg_sanction_delay_days) || 0;
+      var medDelay = Number(s.median_sanction_delay_days) || 0;
+      var avgAge = Number(s.avg_project_age_days) || 0;
+      var maxAge = Number(s.max_project_age_days) || 0;
+      var overdue1 = s.overdue_over_1_year || 0;
+      var overdue2 = s.overdue_over_2_years || 0;
+      var items = [
+        { label: 'Avg Execution Time', value: fmtDays(avgExec), sub: 'Median: ' + fmtDays(medExec), color: 'blue' },
+        { label: 'Avg Sanction Delay', value: fmtDays(avgDelay), sub: 'Median: ' + fmtDays(medDelay), color: 'amber' },
+        { label: 'Avg Project Age', value: fmtDays(avgAge), sub: 'Max: ' + fmtDays(maxAge), color: 'violet' },
+        { label: 'Overdue Works', value: fmtNum(overdue1) + ' / ' + fmtNum(overdue2), sub: '> 1yr / > 2yr', color: overdue1 > 0 ? 'rose' : 'emerald' },
+      ];
+      var thtml = '';
+      items.forEach(function(item) {
+        thtml += '<div class="p-4 bg-slate-50/70 border border-slate-200 rounded-xl">' +
+          '<div class="flex items-center gap-2 mb-2"><span class="w-2 h-2 rounded-full bg-' + item.color + '-500"></span>' +
+          '<span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">' + item.label + '</span></div>' +
+          '<div class="text-xl font-bold text-slate-900">' + item.value + '</div>' +
+          '<div class="text-[11px] text-slate-500 mt-0.5">' + item.sub + '</div></div>';
+      });
+      tEl.innerHTML = thtml;
+    }
+
+    // Risk Distribution (Performance & Risk tab)
+    var riskDistEl = document.getElementById('perfRiskDistribution');
+    if (riskDistEl) {
+      var risks = [
+        { label: 'High Risk', count: high, color: 'rose' },
+        { label: 'Medium Risk', count: medium, color: 'amber' },
+        { label: 'Low Risk', count: low, color: 'emerald' },
+      ];
+      var rhtml = '';
+      risks.forEach(function(r) {
+        var pct = total > 0 ? (r.count / total * 100) : 0;
+        rhtml += '<div class="p-3 bg-slate-50/70 border border-slate-200 rounded-lg text-center">' +
+          '<div class="text-xl font-black text-' + r.color + '-600">' + fmtNum(r.count) + '</div>' +
+          '<div class="text-[10px] font-bold text-' + r.color + '-700 uppercase tracking-wider mt-0.5">' + r.label + '</div>' +
+          '<div class="text-[11px] text-slate-500">' + fmtPct(pct) + '</div>' +
+          '<div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden mt-1.5"><div class="h-full bg-' + r.color + '-500 rounded-full" style="width:' + Math.min(pct, 100) + '%"></div></div></div>';
+      });
+      rhtml += '<div class="col-span-full pt-2 border-t border-slate-100 flex justify-between text-xs text-slate-500">' +
+        '<span>Anomaly level: <span class="font-bold text-slate-700">' + (s.anomaly_level || 'N/A') + '</span></span>' +
+        '<span>Risk rate: <span class="font-bold">' + fmtPct(s.risk_rate_pct) + '</span></span></div>';
+      riskDistEl.innerHTML = rhtml;
+    }
+
+    // Work Status (Performance & Risk tab)
+    var workStEl = document.getElementById('perfWorkStatusCounts');
+    if (workStEl) {
+      var statuses = [
+        { label: 'Completed', count: Number(s.completed_works) || 0, color: 'emerald' },
+        { label: 'In Progress', count: Number(s.ongoing_works) || 0, color: 'blue' },
+        { label: 'Recommended', count: Number(s.pending_works) || 0, color: 'violet' },
+      ];
+      var whtml = '';
+      statuses.forEach(function(st) {
+        var pct = total > 0 ? (st.count / total * 100) : 0;
+        whtml += '<div class="p-3 bg-slate-50/70 border border-slate-200 rounded-lg text-center">' +
+          '<div class="text-xl font-black text-' + st.color + '-600">' + fmtNum(st.count) + '</div>' +
+          '<div class="text-[10px] font-bold text-' + st.color + '-700 uppercase tracking-wider mt-0.5">' + st.label + '</div>' +
+          '<div class="text-[11px] text-slate-500">' + fmtPct(pct) + '</div>' +
+          '<div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden mt-1.5"><div class="h-full bg-' + st.color + '-500 rounded-full" style="width:' + Math.min(pct, 100) + '%"></div></div></div>';
+      });
+      workStEl.innerHTML = whtml;
+    }
   }
 
   // ===== SCATTER FOCAL NODE =====
@@ -694,6 +990,40 @@
       '<circle cx="' + x + '" cy="' + y + '" fill="#ffffff" r="4"></circle>' +
       '<rect fill="#0f172a" height="20" opacity="0.9" rx="4" width="' + w + '" x="' + (x - w / 2) + '" y="' + (y + 15) + '"></rect>' +
       '<text fill="#34d399" font-size="10" font-weight="800" letter-spacing="0.5" text-anchor="middle" x="' + x + '" y="' + (y + 29) + '">\u2605 ' + label + '</text>';
+
+    // Build mobile scatter summary from SVG data points
+    var el = document.getElementById('scatterQuadrantCards');
+    if (el) {
+      var quadrants = { leaders: [], efficient: [], lagging: [], highSpend: [] };
+      var nodes = document.querySelectorAll('.scatter-node[data-state]');
+      nodes.forEach(function(node) {
+        var state = node.getAttribute('data-state');
+        if (!state || state === 'National Average') return;
+        var utilStr = node.getAttribute('data-util') || '0';
+        var compStr = node.getAttribute('data-comp') || '0';
+        var util = parseFloat(utilStr) || 0;
+        var comp = parseFloat(compStr) || 0;
+        if (comp >= 50 && util >= 50) quadrants.leaders.push(state);
+        else if (comp >= 50 && util < 50) quadrants.efficient.push(state);
+        else if (comp < 50 && util < 50) quadrants.lagging.push(state);
+        else quadrants.highSpend.push(state);
+      });
+      var cards = [
+        { label: 'High Delivery / High Spend', count: quadrants.leaders.length, color: 'emerald', items: quadrants.leaders },
+        { label: 'High Delivery / Low Spend', count: quadrants.efficient.length, color: 'blue', items: quadrants.efficient },
+        { label: 'Low Delivery / Low Spend', count: quadrants.lagging.length, color: 'amber', items: quadrants.lagging },
+        { label: 'Low Delivery / High Spend', count: quadrants.highSpend.length, color: 'rose', items: quadrants.highSpend },
+      ];
+      var h = '';
+      cards.forEach(function(c) {
+        h += '<div class="p-3 bg-white border border-slate-200 rounded-lg">' +
+          '<div class="flex items-center justify-between mb-1">' +
+          '<span class="text-[10px] font-bold uppercase tracking-wider text-' + c.color + '-700">' + c.label + '</span>' +
+          '<span class="text-lg font-black text-' + c.color + '-600">' + c.count + '</span></div>' +
+          '<div class="text-[10px] text-slate-500">' + (c.items.length > 0 ? c.items.join(', ') : 'None') + '</div></div>';
+      });
+      el.innerHTML = h;
+    }
   }
 
   // ===== RESOLVE STATE ID =====
@@ -736,6 +1066,7 @@
   function processData(data) {
     stateData = data.state || {};
     stateData.__members = data.members || [];
+    stateData.__benchmarks = data.benchmarks || {};
     populateHeader(stateData);
     populateKPIs(stateData);
     populateOverview(stateData, data.benchmarks || {});

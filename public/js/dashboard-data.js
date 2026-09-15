@@ -361,6 +361,8 @@
     var compPct = d.completion_rate_pct || 0;
     var ongoPct = ((d.ongoing_works / d.total_works) * 100).toFixed(1);
     var pendPct = ((d.pending_works / d.total_works) * 100).toFixed(1);
+    var pipelineWorks = Math.max(0, d.total_works - d.completed_works - d.ongoing_works - d.pending_works);
+    var pipePct = ((pipelineWorks / d.total_works) * 100).toFixed(1);
     set('donut-pct', compPct + '%');
     set('donut-count', fmtNum(d.completed_works) + ' works');
     set('donut-completed-count', fmtNum(d.completed_works));
@@ -369,21 +371,30 @@
     set('donut-ongoing-pct', ongoPct + '%');
     set('donut-pending-count', fmtNum(d.pending_works));
     set('donut-pending-pct', pendPct + '%');
+    set('donut-pipeline-count', fmtNum(pipelineWorks));
+    set('donut-pipeline-pct', pipePct + '%');
     set('donut-sanctioned-label', 'Sanctioned: ' + fmtNum(d.sanctioned_works) + ' works');
+    set('donut-total-works', 'Total: ' + fmtNum(d.total_works) + ' Works');
 
-    // Donut chart segments (animated draw-in on first load)
+    // Donut chart segments (4 segments: Pending, Pipeline, Ongoing, Completed)
     var circ = 408.4;
     var cp = (d.total_works ? d.completed_works / d.total_works : 0);
     var op = (d.total_works ? d.ongoing_works / d.total_works : 0);
     var pp = (d.total_works ? d.pending_works / d.total_works : 0);
-    var segPending = pp * circ, segOngoing = op * circ, segCompleted = cp * circ;
+    var pip = (d.total_works ? pipelineWorks / d.total_works : 0);
+    var segPending = pp * circ;
+    var segPipeline = pip * circ;
+    var segOngoing = op * circ;
+    var segCompleted = cp * circ;
     var dP = document.getElementById('dashDonutPending');
+    var dI = document.getElementById('dashDonutPipeline');
     var dO = document.getElementById('dashDonutOngoing');
     var dC = document.getElementById('dashDonutCompleted');
     if (dP) dP.setAttribute('stroke-dashoffset', '0');
-    if (dO) dO.setAttribute('stroke-dashoffset', '-' + segPending.toFixed(2));
-    if (dC) dC.setAttribute('stroke-dashoffset', '-' + (segPending + segOngoing).toFixed(2));
-    var donutSegs = [{ el: dP, len: segPending }, { el: dO, len: segOngoing }, { el: dC, len: segCompleted }];
+    if (dI) dI.setAttribute('stroke-dashoffset', '-' + segPending.toFixed(2));
+    if (dO) dO.setAttribute('stroke-dashoffset', '-' + (segPending + segPipeline).toFixed(2));
+    if (dC) dC.setAttribute('stroke-dashoffset', '-' + (segPending + segPipeline + segOngoing).toFixed(2));
+    var donutSegs = [{ el: dP, len: segPending }, { el: dI, len: segPipeline }, { el: dO, len: segOngoing }, { el: dC, len: segCompleted }];
     if (window.ChartAnim) {
       window.ChartAnim.whenVisible(dC || dP || dO, 'dashDonut', function () {
         window.ChartAnim.drawDonut(donutSegs, circ, { duration: 1100 });
