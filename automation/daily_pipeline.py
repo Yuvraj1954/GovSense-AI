@@ -8,34 +8,50 @@ This pipeline is intentionally fail-safe: an error in a downstream step does
 not corrupt DB1 raw ingestion.
 
 Steps:
-  1. DB2 intelligence generation (work_analysis, metrics, ML, risk) — incremental by default
+  1. DB2 intelligence generation (work_analysis, metrics, ML, risk)
   2. Entity classification (DB2, 200-point system)
   3. Allocation matching reconciliation
   4. Intelligence rank / label reconciliation
   5. Update data_updated timestamp
 
-Incremental mode:
-  - Compares source DB1 table row counts + max primary keys against the previous
+Change-detection mode (NOT true member-level incremental processing):
+  - Compares a lightweight fingerprint of source DB1 tables against the previous
     successful pipeline run stored in DB2.public.pipeline_metadata.
-  - If no change is detected, intelligence generation is skipped.
+  - Fingerprint includes row count, max primary key, and max(updated_at) or
+    max(created_at) where available.
+  - If the fingerprint is unchanged, the full intelligence rebuild is skipped.
+  - If the fingerprint changed, ALL derived intelligence is regenerated from
+    DB1. This is a "change-triggered full rebuild", not "process only changed
+    members/records".
   - Use --full to force a complete rebuild (e.g., after code/schema changes).
   - Use --dry-run to print the execution plan without modifying any data.
 
-Nightly cron usage:
-    0 2 * * * cd /path/to/repo && back\ end/.venv/bin/python automation/daily_pipeline.py
+Fail-safe partial-run handling:
+  - The pipeline writes a "RUNNING" status before intelligence generation.
+  - It only writes "SUCCESS" after ALL steps complete.
+  - If a previous run crashed or failed, the next normal run sees the RUNNING
+    status and forces a rebuild, so DB2 can never be falsely marked current
+    while containing partial intelligence.
 
-The pipeline saves metadata only after ALL steps succeed, so a failed run does
-not mark the data as up-to-date.
+Nightly cron usage:
+    0 2 * * * cd "/path/to/repo" && "back end/.venv/bin/python" automation/daily_pipeline.py
+
+IMPORTANT — architecture invariant:
+  DB1 contains raw government data + required ingestion operational state.
+  DB2 contains ALL derived analytics, ML, intelligence, risk, and AI data.
+  No newly generated derived table should be recreated in DB1.
 """
 
 import argparse
 import asyncio
 import asyncpg
+import json
 import os
 import sys
 import time
 import traceback
 from datetime import datetime, timezone
+from typing import Any, Dict, Optional, Tuple
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
@@ -56,11 +72,55 @@ class Conn:
         return await self._c.execute(q, *a)
 
 
-# Tables that drive work_analysis / metrics. If any count changes, rebuild intelligence.
-SOURCE_COUNT_TABLES = [
+# Tables that drive work_analysis / metrics.
+# The fingerprint covers count + max(pk) + max(timestamp) to detect appends,
+# row updates (when updated_at exists), and most deletions.
+SOURCE_FINGERPRINT_TABLES = [
     "works", "work_recommendations", "work_sanctions", "work_expenditures", "work_completions",
     "mla_works", "mla_work_recommendations", "mla_work_sanctions", "mla_work_expenditures", "mla_work_completions",
 ]
+
+# Derived tables that must be non-empty for DB2 to be considered current.
+# If any are empty, the pipeline forces a rebuild regardless of fingerprint.
+REQUIRED_DERIVED_TABLES = [
+    "work_analysis",
+    "mla_work_analysis",
+    "member_metrics",
+    "state_metrics",
+    "member_intelligence",
+    "state_intelligence",
+    "statistics",
+]
+
+
+def _guess_primary_key(table: str) -> Optional[str]:
+    """Return the likely synthetic primary key column for a source table."""
+    if table == "works" or table == "mla_works":
+        return "work_id"
+    if table.endswith("_recommendations"):
+        return "recommendation_id"
+    if table.endswith("_sanctions"):
+        return "sanction_id"
+    if table.endswith("_expenditures"):
+        return "expenditure_id"
+    if table.endswith("_completions"):
+        return "completion_id"
+    return None
+
+
+def _guess_change_timestamp(table: str) -> Optional[str]:
+    """Return the best available change-tracking timestamp column."""
+    # works / mla_works are the only tables with a real updated_at column.
+    if table in ("works", "mla_works"):
+        return "updated_at"
+    # For child tables, created_at at least detects late-arriving rows that
+    # might share a primary key space with existing rows.
+    if table in (
+        "work_expenditures", "work_completions",
+        "mla_work_expenditures", "mla_work_completions",
+    ):
+        return "created_at"
+    return None
 
 
 async def _ensure_metadata_table(db2):
@@ -73,43 +133,10 @@ async def _ensure_metadata_table(db2):
     """)
 
 
-async def _get_source_fingerprint(db1):
-    """Build a lightweight fingerprint of source DB1 tables.
-
-    Uses row count + max id column where available. This is safe for the
-    append-only government data ingestion pattern.
-    """
-    fingerprint = {}
-    for tbl in SOURCE_COUNT_TABLES:
-        row = await db1.fetchrow(f"SELECT COUNT(*) AS c FROM public.{tbl}")
-        fingerprint[tbl] = {"count": row["c"]}
-        # Add max primary key where we can guess it
-        id_col = None
-        if "works" in tbl and not tbl.endswith("_works"):
-            id_col = "work_id"
-        elif tbl == "mla_works":
-            id_col = "work_id"
-        elif "recommendations" in tbl:
-            id_col = "recommendation_id"
-        elif "sanctions" in tbl:
-            id_col = "sanction_id"
-        elif "expenditures" in tbl:
-            id_col = "expenditure_id"
-        elif "completions" in tbl:
-            id_col = "completion_id"
-        if id_col:
-            try:
-                mrow = await db1.fetchrow(f"SELECT MAX({id_col}) AS m FROM public.{tbl}")
-                fingerprint[tbl]["max_id"] = mrow["m"]
-            except Exception:
-                pass
-    return fingerprint
-
-
-async def _get_last_fingerprint(db2):
+async def _get_metadata(db2, key: str) -> Optional[Any]:
     try:
         row = await db2.fetchrow(
-            "SELECT metadata_value FROM public.pipeline_metadata WHERE key = 'source_fingerprint'"
+            "SELECT metadata_value FROM public.pipeline_metadata WHERE key = $1", key
         )
         if row and row["metadata_value"]:
             return row["metadata_value"]
@@ -118,23 +145,90 @@ async def _get_last_fingerprint(db2):
     return None
 
 
-async def _source_changed(db1, db2):
-    current = await _get_source_fingerprint(db1)
-    last = await _get_last_fingerprint(db2)
+async def _set_metadata(db2, key: str, value: Any):
+    await _ensure_metadata_table(db2)
+    now = datetime.now(timezone.utc)
+    await db2.execute("""
+        INSERT INTO public.pipeline_metadata (key, metadata_value, updated_at)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (key) DO UPDATE SET
+            metadata_value = EXCLUDED.metadata_value,
+            updated_at = EXCLUDED.updated_at
+    """, key, json.dumps(value), now)
+
+
+async def _get_source_fingerprint(db1):
+    """Build a lightweight fingerprint of source DB1 tables.
+
+    Captures:
+      - row count
+      - max primary key value (for append detection)
+      - max(updated_at) or max(created_at) (for row-update detection)
+
+    Limitations:
+      - Updates to child tables without updated_at (recommendations, sanctions)
+        are not detected unless they change the row count or max primary key.
+      - In-place edits that do not touch the timestamp columns are not detected.
+      This is acceptable for the append-heavy government ingestion pattern and
+      keeps the nightly fingerprint cheap.
+    """
+    fingerprint: Dict[str, Dict[str, Any]] = {}
+    for tbl in SOURCE_FINGERPRINT_TABLES:
+        row = await db1.fetchrow(f"SELECT COUNT(*) AS c FROM public.{tbl}")
+        fingerprint[tbl] = {"count": row["c"]}
+
+        pk = _guess_primary_key(tbl)
+        if pk:
+            try:
+                mrow = await db1.fetchrow(f"SELECT MAX({pk}) AS m FROM public.{tbl}")
+                fingerprint[tbl]["max_id"] = mrow["m"]
+            except asyncpg.exceptions.UndefinedColumnError:
+                pass  # guessed column missing; ignore
+
+        ts = _guess_change_timestamp(tbl)
+        if ts:
+            try:
+                trow = await db1.fetchrow(f"SELECT MAX({ts}) AS m FROM public.{tbl}")
+                fingerprint[tbl][f"max_{ts}"] = trow["m"].isoformat() if trow["m"] else None
+            except asyncpg.exceptions.UndefinedColumnError:
+                pass
+    return fingerprint
+
+
+async def _derived_tables_populated(db2) -> bool:
+    """Return True if all required derived tables appear to have data."""
+    for tbl in REQUIRED_DERIVED_TABLES:
+        try:
+            cnt = await db2.fetchval(f"SELECT COUNT(*) FROM public.{tbl}")
+        except asyncpg.exceptions.UndefinedTableError:
+            return False
+        if (cnt or 0) == 0:
+            return False
+    return True
+
+
+async def _source_changed(db1, db2, current_fingerprint: Optional[Dict] = None) -> Tuple[bool, Dict]:
+    current = current_fingerprint or await _get_source_fingerprint(db1)
+    last = await _get_metadata(db2, "source_fingerprint")
+
+    # If a previous run started intelligence but never finished, force rebuild.
+    status = await _get_metadata(db2, "pipeline_status")
+    if status == "RUNNING":
+        P("  previous pipeline run did not complete (status=RUNNING); will rebuild intelligence")
+        return True, current
+
     if last is None:
         P("  no previous fingerprint found; will rebuild intelligence")
         return True, current
 
-    # Also force rebuild if DB2 work_analysis is empty (first deploy / truncated)
-    wa_count = await db2.fetchval("SELECT COUNT(*) FROM public.work_analysis")
-    mwa_count = await db2.fetchval("SELECT COUNT(*) FROM public.mla_work_analysis")
-    if (wa_count or 0) == 0 and (mwa_count or 0) == 0:
-        P("  DB2 work_analysis tables are empty; will rebuild intelligence")
+    # If DB2 derived tables are empty/partial, force rebuild even if fingerprint matches.
+    if not await _derived_tables_populated(db2):
+        P("  DB2 derived tables are empty or incomplete; will rebuild intelligence")
         return True, current
 
     if current != last:
         P("  source fingerprint changed; will rebuild intelligence")
-        for tbl in SOURCE_COUNT_TABLES:
+        for tbl in SOURCE_FINGERPRINT_TABLES:
             if current.get(tbl) != last.get(tbl):
                 P(f"    {tbl}: {last.get(tbl)} -> {current.get(tbl)}")
         return True, current
@@ -143,43 +237,32 @@ async def _source_changed(db1, db2):
     return False, current
 
 
-async def _save_pipeline_success(db2, fingerprint):
-    import json
+async def _save_pipeline_success(db2, fingerprint: Dict):
     now = datetime.now(timezone.utc)
     await _ensure_metadata_table(db2)
-    await db2.execute("""
-        INSERT INTO public.pipeline_metadata (key, metadata_value, updated_at)
-        VALUES ('source_fingerprint', $1, $2)
-        ON CONFLICT (key) DO UPDATE SET
-            metadata_value = EXCLUDED.metadata_value,
-            updated_at = EXCLUDED.updated_at
-    """, json.dumps(fingerprint), now)
-    await db2.execute("""
-        INSERT INTO public.pipeline_metadata (key, metadata_value, updated_at)
-        VALUES ('last_run_at', $1::jsonb, $2)
-        ON CONFLICT (key) DO UPDATE SET
-            metadata_value = EXCLUDED.metadata_value,
-            updated_at = EXCLUDED.updated_at
-    """, json.dumps(now.isoformat()), now)
+    await _set_metadata(db2, "source_fingerprint", fingerprint)
+    await _set_metadata(db2, "last_run_at", now.isoformat())
+    await _set_metadata(db2, "pipeline_status", "SUCCESS")
 
 
 async def step_intelligence(results, skip: bool = False, full: bool = False, dry_run: bool = False, db1=None, db2=None):
     P("\n[Step 1] DB2 intelligence generation")
+
+    fingerprint = await _get_source_fingerprint(db1) if db1 else None
+
     if skip:
         P("  skipped (--skip-intelligence)")
         results["intelligence"] = {"skipped": True}
-        return None
+        return fingerprint
 
     from automation.intelligence.backfill import backfill_all
 
     if not full and db1 and db2:
-        changed, fingerprint = await _source_changed(db1, db2)
+        changed, _ = await _source_changed(db1, db2, current_fingerprint=fingerprint)
         if not changed:
             P("  skipping intelligence rebuild (use --full to force)")
             results["intelligence"] = {"skipped": True, "reason": "source_fingerprint_unchanged"}
-            return None
-    else:
-        fingerprint = await _get_source_fingerprint(db1) if db1 else None
+            return fingerprint
 
     if dry_run:
         P("  DRY RUN: would execute full intelligence backfill")
@@ -287,17 +370,22 @@ async def run_pipeline(skip_intelligence: bool = False, full: bool = False, dry_
 
     results = {"start_time": datetime.now(timezone.utc).isoformat(), "dry_run": dry_run}
     fingerprint = None
+    run_intelligence = not skip_intelligence
 
     try:
+        # Mark intelligence as in-progress so a crash cannot leave DB2 falsely current.
+        if not dry_run and run_intelligence:
+            await _set_metadata(db2, "pipeline_status", "RUNNING")
+
         fingerprint = await step_intelligence(results, skip=skip_intelligence, full=full, dry_run=dry_run, db1=db1, db2=db2)
         await step_classification(db2, results, dry_run=dry_run)
         await step_allocations(results, dry_run=dry_run)
         await step_ranks(results, dry_run=dry_run)
         await step_data_updated(db1, results, dry_run=dry_run)
 
-        if not dry_run and fingerprint is not None:
+        if not dry_run and fingerprint is not None and run_intelligence:
             await _save_pipeline_success(db2, fingerprint)
-            P("\nPipeline metadata saved (source fingerprint + last_run_at).")
+            P("\nPipeline metadata saved (source fingerprint + last_run_at + SUCCESS).")
 
     except Exception as e:
         P(f"\nPIPELINE ERROR: {e}")
