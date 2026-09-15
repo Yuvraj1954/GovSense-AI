@@ -338,7 +338,7 @@
   function populateAI(s, analysis) {
     var score = Number(s.performance_score_100 != null ? s.performance_score_100 : s.performance_score) || 0;
     var cls = s.performance_label || s.performance_classification || 'N/A';
-    var displayMax = s.performance_score_100 != null ? 100 : 200;
+    var displayMax = 100;
     var cc = getClsColor(cls);
 
     var ring = document.getElementById('stateAiScoreRing');

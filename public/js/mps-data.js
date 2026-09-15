@@ -167,7 +167,7 @@
     var score = Number(m.performance_score) || 0;
     tip.innerHTML =
       '<div class="font-bold text-white text-xs">' + (m.member_name || 'Unknown') + '</div>' +
-      '<div class="text-[11px] text-slate-300 mt-0.5">' + (m.state_name || '') + ' · ' + cls + ' · ' + score.toFixed(0) + '/200</div>' +
+      '<div class="text-[11px] text-slate-300 mt-0.5">' + (m.state_name || '') + ' · ' + cls + ' · ' + score.toFixed(0) + '/100</div>' +
       '<div class="mt-1 pt-1 border-t border-slate-700/80 flex items-center gap-3 text-[10px]">' +
       '<span>Utilization: <strong class="text-emerald-400 font-bold">' + fmtPct(m.fund_utilization_pct) + '</strong></span>' +
       '<span>Completion: <strong class="text-blue-400 font-bold">' + fmtPct(m.completion_rate_pct) + '</strong></span>' +
@@ -190,6 +190,8 @@
     if (cached && Array.isArray(cached.data)) {
       renderHistogram(cached.data);
       renderScatter(cached.data);
+      _scatterData = cached.data;
+      renderRanking('ai_score');
     }
     return fetch(API_BASE + '/api/members/scatter?member_type=' + _currentHouse)
       .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
@@ -197,8 +199,73 @@
         setCache(SCATTER_CACHE_KEY, data);
         renderHistogram(data);
         renderScatter(data);
+        _scatterData = data;
+        renderRanking('ai_score');
       })
       .catch(function () {});
+  }
+
+  var _scatterData = [];
+
+  function renderRanking(metric) {
+    var container = document.getElementById('mpRankingBarsList');
+    if (!container || !_scatterData.length) return;
+    var sorted = _scatterData.slice();
+    if (metric === 'ai_score') sorted.sort(function (a, b) { return (b.performance_score || 0) - (a.performance_score || 0); });
+    else if (metric === 'utilization') sorted.sort(function (a, b) { return (b.fund_utilization_pct || 0) - (a.fund_utilization_pct || 0); });
+    else if (metric === 'completion') sorted.sort(function (a, b) { return (b.completion_rate_pct || 0) - (a.completion_rate_pct || 0); });
+    else if (metric === 'works') sorted.sort(function (a, b) { return (b.total_works || 0) - (a.total_works || 0); });
+    var top10 = sorted.slice(0, 10);
+    var maxVal = 0;
+    top10.forEach(function (m) {
+      var val = metric === 'ai_score' ? (m.performance_score || 0) : metric === 'utilization' ? (m.fund_utilization_pct || 0) : metric === 'completion' ? (m.completion_rate_pct || 0) : (m.total_works || 0);
+      if (val > maxVal) maxVal = val;
+    });
+    maxVal = maxVal || 1;
+    var html = '';
+    top10.forEach(function (m, i) {
+      var val = metric === 'ai_score' ? (m.performance_score || 0) : metric === 'utilization' ? (m.fund_utilization_pct || 0) : metric === 'completion' ? (m.completion_rate_pct || 0) : (m.total_works || 0);
+      var widthPct = (val / maxVal) * 100;
+      var color = metric === 'ai_score' ? getRankColor(val, 100) : metric === 'utilization' || metric === 'completion' ? getRankColor(val, 100) : 'blue';
+      var displayVal = metric === 'ai_score' ? val.toFixed(1) + '/100' : metric === 'utilization' ? fmtPct(val) : metric === 'completion' ? fmtPct(val) : fmtNum(val);
+      var sub = m.member_type || '';
+      var memberType = m.member_type || 'MP';
+      var detailUrl = 'mpdetail.html?member_id=' + m.member_id + '&member_type=' + encodeURIComponent(memberType);
+      html += '<div class="flex items-center gap-3 text-xs">' +
+        '<span class="w-6 font-mono font-bold text-slate-400 text-right">#' + (i + 1) + '</span>' +
+        '<a href="' + detailUrl + '" class="w-36 font-semibold text-slate-800 truncate hover:text-blue-600 hover:underline transition">' + (m.member_name || 'Unknown') + '</a>' +
+        '<span class="w-12 text-[10px] font-medium text-slate-400">' + sub + '</span>' +
+        '<div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden"><div class="rank-bar h-full bg-' + color + '-500 rounded-full transition-all duration-700" style="width:' + widthPct + '%"></div></div>' +
+        '<span class="w-20 text-right font-bold text-slate-900 rank-val">' + displayVal + '</span>' +
+        '<span class="w-24 text-right text-[11px] text-slate-400 rank-sub">' + (m.state_name || '') + '</span></div>';
+    });
+    container.innerHTML = html;
+    var footer = document.getElementById('mpRankFooter');
+    if (footer) footer.textContent = 'Showing top 10 ranked members · ' + _scatterData.length + ' total evaluated';
+  }
+
+  function getRankColor(val, max) {
+    var pct = max > 0 ? (val / max * 100) : 0;
+    if (pct >= 70) return 'emerald';
+    if (pct >= 50) return 'blue';
+    if (pct >= 30) return 'amber';
+    return 'rose';
+  }
+
+  function setupRankingTabs() {
+    var container = document.getElementById('mpRankTabs');
+    if (!container) return;
+    container.addEventListener('click', function (e) {
+      var btn = e.target.closest('.rank-tab-btn');
+      if (!btn) return;
+      container.querySelectorAll('.rank-tab-btn').forEach(function (b) {
+        b.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-2xs', 'font-semibold');
+        b.classList.add('text-slate-600');
+      });
+      btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-2xs', 'font-semibold');
+      btn.classList.remove('text-slate-600');
+      renderRanking(btn.getAttribute('data-metric'));
+    });
   }
 
   var currentPage = 1;
@@ -499,6 +566,7 @@
     setupHouseFilter();
     setupSearch();
     setupFilters();
+    setupRankingTabs();
 
     var cached = getCached(KPI_CACHE_KEY);
     if (cached) { updateKPIs(cached.data); } else { fetchKPIs(); }

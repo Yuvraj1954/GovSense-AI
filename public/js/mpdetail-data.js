@@ -115,7 +115,7 @@
     setText('mpHouse', m.house_name || (m.member_type === 'MLA' ? 'Rajya Sabha' : 'Lok Sabha'));
     setText('mpTenure', m.tenure || 'Current Term');
     setText('headerMpName', (m.member_name || '') + ' — ' + (m.state_name || ''));
-    setText('mpRank', rank ? ('National Rank #' + rank) : 'Rank: N/A');
+    setText('mpRank', m.rank ? ('National Rank #' + m.rank) : 'Rank: N/A');
     var cls = m.performance_classification || 'N/A';
     var c = getClsColor(cls);
     var clsEl = document.getElementById('mpClassification');
@@ -503,7 +503,7 @@
     var hasNew = (newScore !== null && newScore !== undefined && newLabel);
     var displayScore = hasNew ? Number(newScore) : legacyScore;
     var displayLabel = hasNew ? newLabel : legacyLabel;
-    var displayMax = hasNew ? 100 : 200;
+    var displayMax = 100;
     var cc = getClsColor(hasNew ? newLabel : legacyLabel);
 
     // Score ring — animated when the AI Analysis tab is opened

@@ -178,7 +178,7 @@ async def get_members_scatter(response: Response, member_type: str = Query("MP",
     db2 = await get_db2_pool()
     if member_type == "BOTH":
         rows = await db2.fetch("""
-            SELECT member_id, member_name, state_name, completion_rate_pct, fund_utilization_pct,
+            SELECT member_id, member_name, member_type, state_name, completion_rate_pct, fund_utilization_pct,
                    total_works, performance_score, performance_classification
             FROM public.member_metrics
             WHERE completion_rate_pct IS NOT NULL
@@ -188,7 +188,7 @@ async def get_members_scatter(response: Response, member_type: str = Query("MP",
         """)
     else:
         rows = await db2.fetch("""
-            SELECT member_id, member_name, state_name, completion_rate_pct, fund_utilization_pct,
+            SELECT member_id, member_name, member_type, state_name, completion_rate_pct, fund_utilization_pct,
                    total_works, performance_score, performance_classification
             FROM public.member_metrics
             WHERE member_type = $1
