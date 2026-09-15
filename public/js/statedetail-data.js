@@ -62,10 +62,13 @@
   }
 
   function getClsColor(cls) {
+    if (cls === 'EXCEPTIONAL') return 'emerald';
     if (cls === 'PERFORMER') return 'emerald';
+    if (cls === 'STABLE') return 'blue';
     if (cls === 'AVERAGE') return 'blue';
     if (cls === 'NEEDS_ATTENTION') return 'amber';
     if (cls === 'UNDERPERFORMER') return 'rose';
+    if (cls === 'NO_DATA' || cls === 'INSUFFICIENT_DATA') return 'slate';
     return 'slate';
   }
 
@@ -125,14 +128,6 @@
     setText('stateMpCount', fmtNum(s.mp_count || 0) + ' MPs');
     setText('stateMlaCount', fmtNum(s.mla_count || 0) + ' MLAs');
     setText('stateRank', s.rank ? ('National Rank #' + s.rank) : 'Rank: N/A');
-    var pct2 = s.national_percentile;
-    if (pct2 !== null && pct2 !== undefined) {
-      setText('stateRank', (s.rank ? ('National Rank #' + s.rank) : 'Rank: N/A') + '  ·  ' + Number(pct2).toFixed(1) + ' %ile');
-    }
-    if (s.cluster_label && s.cluster_label !== 'insufficient') {
-      var cur = document.getElementById('stateRank') ? document.getElementById('stateRank').textContent : '';
-      setText('stateRank', cur + '  ·  ' + s.cluster_label);
-    }
     setText('tabProjectsCount', fmtNum(s.total_works || 0));
     setText('repDescMp', fmtNum(s.mp_count || 0));
     setText('repDescMla', fmtNum(s.mla_count || 0));

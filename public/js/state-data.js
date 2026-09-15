@@ -51,10 +51,13 @@
   }
 
   function getClsColor(cls) {
+    if (cls === 'EXCEPTIONAL') return 'emerald';
     if (cls === 'PERFORMER') return 'emerald';
+    if (cls === 'STABLE') return 'blue';
     if (cls === 'AVERAGE') return 'blue';
     if (cls === 'NEEDS_ATTENTION') return 'amber';
     if (cls === 'UNDERPERFORMER') return 'rose';
+    if (cls === 'NO_DATA' || cls === 'INSUFFICIENT_DATA') return 'slate';
     return 'slate';
   }
 
@@ -98,7 +101,7 @@
 
   // ========== DISTRIBUTION CHARTS ==========
   function populateDistributions(data) {
-    var clsCounts = { PERFORMER: 0, AVERAGE: 0, NEEDS_ATTENTION: 0, UNDERPERFORMER: 0, NO_DATA: 0, INSUFFICIENT_DATA: 0 };
+    var clsCounts = { EXCEPTIONAL: 0, PERFORMER: 0, STABLE: 0, AVERAGE: 0, NEEDS_ATTENTION: 0, UNDERPERFORMER: 0, NO_DATA: 0, INSUFFICIENT_DATA: 0 };
     var utilBuckets = { high: 0, moderate: 0, low: 0, critical: 0 };
 
     data.forEach(function(s) {
@@ -113,7 +116,9 @@
 
     // Classification bars
     var clsItems = [
+      { key: 'EXCEPTIONAL', label: 'Exceptional', color: 'emerald' },
       { key: 'PERFORMER', label: 'Performer', color: 'emerald' },
+      { key: 'STABLE', label: 'Stable', color: 'blue' },
       { key: 'AVERAGE', label: 'Average', color: 'blue' },
       { key: 'NEEDS_ATTENTION', label: 'Needs Attention', color: 'amber' },
       { key: 'UNDERPERFORMER', label: 'Underperformer', color: 'rose' },
@@ -164,7 +169,7 @@
       var util = Number(s.fund_utilization_pct) || Number(s.expenditure_sanction_utilization_pct) || 0;
       var comp = Number(s.completion_rate_pct) || 0;
       var cls = s.performance_classification || '';
-      var color = cls === 'PERFORMER' ? '#10b981' : cls === 'AVERAGE' ? '#3b82f6' : cls === 'NEEDS_ATTENTION' ? '#f59e0b' : cls === 'UNDERPERFORMER' ? '#ef4444' : '#94a3b8';
+      var color = cls === 'EXCEPTIONAL' ? '#10b981' : cls === 'PERFORMER' ? '#10b981' : cls === 'STABLE' ? '#3b82f6' : cls === 'AVERAGE' ? '#3b82f6' : cls === 'NEEDS_ATTENTION' ? '#f59e0b' : cls === 'UNDERPERFORMER' ? '#ef4444' : '#94a3b8';
       var cx = 60 + (util / 100) * 900;
       var cy = 330 - (comp / 100) * 300;
       svg += '<circle cx="' + cx + '" cy="' + cy + '" r="6" fill="' + color + '" opacity="0.8" class="scatter-dot scatter-point" ' +

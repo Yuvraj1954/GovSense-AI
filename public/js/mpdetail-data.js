@@ -97,10 +97,13 @@
   }
 
   function getClsColor(cls) {
+    if (cls === 'EXCEPTIONAL') return 'emerald';
     if (cls === 'PERFORMER') return 'emerald';
+    if (cls === 'STABLE') return 'blue';
     if (cls === 'AVERAGE') return 'blue';
     if (cls === 'NEEDS_ATTENTION') return 'amber';
     if (cls === 'UNDERPERFORMER') return 'rose';
+    if (cls === 'NO_DATA' || cls === 'INSUFFICIENT_DATA') return 'slate';
     return 'slate';
   }
 
@@ -115,7 +118,7 @@
     var rank = m.rank;
     var rankLabel = rank ? ('National Rank #' + rank) : 'Rank: N/A';
     var pct = m.national_percentile;
-    if (pct !== null && pct !== undefined && hasNew) {
+    if (pct !== null && pct !== undefined) {
       rankLabel += '  ·  ' + Number(pct).toFixed(1) + ' %ile';
     }
     var cluster = m.cluster_label;

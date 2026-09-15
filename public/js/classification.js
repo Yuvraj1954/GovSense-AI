@@ -43,7 +43,9 @@
 
     // Dashboard IDs (cls-*) and mps.html IDs (mp-cls-*)
     var idMap = {
+      EXCEPTIONAL:       ['cls-performer',   'mp-cls-performer'],
       PERFORMER:         ['cls-performer',   'mp-cls-performer'],
+      STABLE:            ['cls-average',     'mp-cls-average'],
       AVERAGE:           ['cls-average',     'mp-cls-average'],
       NEEDS_ATTENTION:   ['cls-needs',       'mp-cls-needs'],
       UNDERPERFORMER:    ['cls-under',       'mp-cls-under'],
@@ -84,7 +86,7 @@
     var topEl = document.getElementById('mp-cls-top-label');
     if (topEl && top) topEl.textContent = top.classification.replace('_', ' ');
 
-    var healthy = (map['PERFORMER'] || 0) + (map['AVERAGE'] || 0);
+    var healthy = (map['EXCEPTIONAL'] || 0) + (map['PERFORMER'] || 0) + (map['STABLE'] || 0) + (map['AVERAGE'] || 0);
     var healthyPctEl = document.getElementById('mp-cls-healthy-pct');
     if (healthyPctEl) healthyPctEl.textContent = total > 0 ? ((healthy / total) * 100).toFixed(1) + '%' : '—';
 
@@ -102,7 +104,9 @@
     });
 
     var stateIds = {
+      EXCEPTIONAL: 'st-performer',
       PERFORMER: 'st-performer',
+      STABLE: 'st-average',
       AVERAGE: 'st-average',
       NEEDS_ATTENTION: 'st-needs',
       UNDERPERFORMER: 'st-under',

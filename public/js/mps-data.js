@@ -120,7 +120,7 @@
     var svgNS = 'http://www.w3.org/2000/svg';
     var chartX0 = 60, chartX1 = 960, chartY0 = 30, chartY1 = 330;
     var w = chartX1 - chartX0, h = chartY1 - chartY0;
-    var colorMap = { PERFORMER: '#10b981', AVERAGE: '#3b82f6', NEEDS_ATTENTION: '#f59e0b', UNDERPERFORMER: '#ef4444', NO_DATA: '#cbd5e1', INSUFFICIENT_DATA: '#a78bfa' };
+    var colorMap = { EXCEPTIONAL: '#10b981', PERFORMER: '#10b981', STABLE: '#3b82f6', AVERAGE: '#3b82f6', NEEDS_ATTENTION: '#f59e0b', UNDERPERFORMER: '#ef4444', NO_DATA: '#cbd5e1', INSUFFICIENT_DATA: '#a78bfa' };
     members.forEach(function (m) {
       var util = Number(m.fund_utilization_pct) || 0;
       var comp = Number(m.completion_rate_pct) || 0;
@@ -217,7 +217,9 @@
 
   function colorForCls(cls) {
     var map = {
+      EXCEPTIONAL: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', bar: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-600' },
       PERFORMER: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', bar: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-600' },
+      STABLE: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', bar: 'bg-blue-500', badge: 'bg-blue-50 text-blue-600' },
       AVERAGE: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', bar: 'bg-blue-500', badge: 'bg-blue-50 text-blue-600' },
       NEEDS_ATTENTION: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', bar: 'bg-amber-500', badge: 'bg-amber-50 text-amber-600' },
       UNDERPERFORMER: { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700', bar: 'bg-rose-500', badge: 'bg-rose-50 text-rose-600' }
