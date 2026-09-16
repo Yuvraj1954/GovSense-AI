@@ -38,6 +38,7 @@ main{padding-top:12px!important;}
 #mainContent > div:first-child + *{margin-top:12px!important;}
 </style>
 
+
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Govsense AI</title>
 <link rel="icon" type="image/x-icon" href="favicon/favicon.ico">
@@ -113,6 +114,11 @@ tailwind.config = {
 <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 <span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">MPs</span>
 </a>
+<!-- About -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="about.html" title="About">
+<svg class="w-5 h-5 text-violet-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">About</span>
+</a>
 </nav>
 <div class="p-3 border-t border-slate-100 bg-slate-50/50">
 <div class="hidden flex justify-center py-2" id="sidebarCollapsedStatus">
@@ -145,15 +151,15 @@ tailwind.config = {
 <button aria-label="Toggle Navigation Sidebar" class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 flex-shrink-0" id="sidebarToggleBtn" type="button">
 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 </button>
-<div>
+<div class="flex-shrink-0 min-w-0">
 <div class="flex items-center gap-2.5">
-<h1 class="text-base md:text-lg font-bold text-slate-900 tracking-tight leading-none">MP Analysis</h1>
-<span class="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
+<h1 class="text-base md:text-lg font-bold text-slate-900 tracking-tight leading-none whitespace-nowrap">MP Analysis</h1>
+<span class="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
 Data update unavailable
 </span>
 </div>
-<p class="text-xs text-slate-500 mt-1 leading-none font-normal"><span id="headerMpName">Loading MP details...</span></p>
+<p class="hidden md:block text-xs text-slate-500 mt-1 leading-none font-normal"><span id="headerMpName">Loading MP details...</span></p>
 </div>
 </div>
 <div class="mobile-header-meta" id="headerMeta">Analysis</div>
@@ -719,12 +725,19 @@ Performance Metrics
 <!-- END: TAB AI ANALYSIS -->
 
 <!-- Footer -->
-<footer class="pt-4 border-t border-slate-200 text-[11px] text-slate-400 pb-4 flex flex-wrap md:flex-nowrap md:justify-between items-center gap-x-4 gap-y-1">
-<div class="flex-shrink-0 w-full md:w-auto">Govsense AI · Official data aggregated from MoSPI MPLADS Portal (NIC) · Performance Metrics System</div>
-<div class="flex flex-nowrap items-center gap-x-4 gap-y-1">
+<footer class="pt-4 border-t border-slate-200 text-[11px] text-slate-400 pb-4" style="padding-bottom:max(1rem, env(safe-area-inset-bottom, 0px));">
+<div class="flex flex-wrap md:flex-nowrap md:justify-between items-center gap-x-6 gap-y-1 mb-1.5">
+<div>Govsense AI · Official data aggregated from MoSPI MPLADS Portal (NIC) · Performance Metrics System</div>
+<div class="flex items-center gap-x-4 gap-y-1 flex-shrink-0">
 <a class="hover:text-slate-600 transition" href="methodology.html">Methodology &amp; Audit</a>
 <a class="hover:text-slate-600 transition" href="privacy.html?from=mpdetail">Privacy Policy</a>
 <a class="hover:text-slate-600 transition" href="api-docs.html?from=mpdetail">API Documentation</a>
+<a class="hover:text-slate-600 transition" href="about.html">About</a>
+</div>
+</div>
+<div class="flex flex-wrap md:flex-nowrap md:justify-between items-center gap-x-6 gap-y-1">
+<div>© 2026 GovSense AI. All rights reserved. · Built for <strong class="text-slate-500">Smart India Hackathon 2026</strong> by <strong class="text-violet-500">Team Spark</strong></div>
+<div>Data sourced from official government datasets. GovSense AI provides analytical insights and is not an official government service.</div>
 </div>
 </footer>
 

@@ -30,13 +30,14 @@
     display:none!important;
   }
 }
-/* Dashboard header: hide the House filter dropdown on mobile to save space */
+/* Mobile header meta text */
 @media(max-width:767px){
-  header.h-16.gap-4 > div:last-child{
+  .mobile-header-meta{
     display:none !important;
   }
 }
 </style>
+
 
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Govsense AI</title>
@@ -154,6 +155,11 @@
 </svg>
 <span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">MPs</span>
 </a>
+<!-- About -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium text-sm transition-all group" href="about.html" title="About">
+<svg class="w-5 h-5 text-violet-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="sidebar-text-content hidden transition-opacity duration-200 whitespace-nowrap">About</span>
+</a>
 </nav>
 <!-- Sidebar Footer Details -->
 <div class="p-3 border-t border-slate-100 bg-slate-50/50">
@@ -179,47 +185,45 @@
 <!-- BEGIN: MainContentWrapper -->
 <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#f8fafc]">
 <!-- BEGIN: HeaderTopControls -->
-<header class="h-16 px-6 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0 z-20 gap-4">
-<!-- Left Section: Toggle & Title -->
-<div class="flex items-center gap-3 md:gap-4 flex-shrink-0">
-<button aria-label="Open navigation" aria-expanded="false" aria-controls="appSidebar" class="md:hidden w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 flex-shrink-0" id="mobileMenuBtn" type="button">
+<header class="h-16 px-6 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0 z-20">
+<!-- Left: Hamburger + Logo + Title -->
+<div class="flex items-center gap-3 flex-shrink-0">
+<button aria-label="Open navigation" aria-expanded="false" aria-controls="appSidebar" class="md:hidden w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300" id="mobileMenuBtn" type="button">
 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
 </button>
-<button aria-label="Toggle Navigation Sidebar" class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 flex-shrink-0" id="sidebarToggleBtn" type="button">
+<button aria-label="Toggle Navigation Sidebar" class="w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300" id="sidebarToggleBtn" type="button">
 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
 </button>
-<div class="flex-shrink-0 min-w-0">
-<div class="flex items-center gap-2 md:gap-2.5">
-<h1 class="text-[15px] md:text-lg font-bold text-slate-900 tracking-tight leading-none whitespace-nowrap">Dashboard</h1>
-<span class="hidden md:inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
+<div class="min-w-0">
+<div class="flex items-center gap-2.5">
+<h1 class="text-base md:text-lg font-bold text-slate-900 tracking-tight leading-none whitespace-nowrap">Dashboard</h1>
+<span class="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-        Data update unavailable
-      </span>
+              Data update unavailable
+            </span>
 </div>
 <p class="hidden md:block text-xs text-slate-500 mt-1 leading-none font-normal">National overview of MPLADS funds, works and implementation</p>
 </div>
 </div>
-<!-- Center Section: Compact Application Search Bar (approx 360-400px width) -->
-<div class="flex-1 flex justify-end md:justify-center px-2">
-<div class="relative w-full max-w-[390px]" id="searchContainer">
-  <div class="flex items-center gap-2 px-3 py-2 border border-slate-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
-    <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-    <input autocomplete="off" class="w-full text-xs text-slate-800 placeholder-slate-400 bg-transparent border-none p-0 focus:ring-0 focus:outline-none" id="headerSearchInput" placeholder="Search MP, MLA, State / UT..." type="text">
-    <button aria-label="Clear search" class="hidden text-slate-400 hover:text-slate-600" id="clearSearchBtn" type="button"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
-  </div>
-  <!-- Autocomplete Dropdown (populated dynamically) -->
-  <div class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden text-xs max-h-96 overflow-y-auto" id="searchResultsDropdown">
-  </div>
+<!-- Center: Search Bar (desktop only) -->
+<div class="hidden md:flex flex-1 justify-center px-6">
+<div class="relative w-full max-w-[390px]" id="searchContainerDesktop">
+<div class="flex items-center gap-2 px-3 py-2 border border-slate-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
+<svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<input autocomplete="off" class="w-full text-xs text-slate-800 placeholder-slate-400 bg-transparent border-none p-0 focus:ring-0 focus:outline-none" id="headerSearchInputDesktop" placeholder="Search MP, MLA, State / UT..." type="text">
+<button aria-label="Clear search" class="hidden text-slate-400 hover:text-slate-600" id="clearSearchBtnDesktop" type="button"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+</div>
+<div class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden text-xs max-h-96 overflow-y-auto" id="searchResultsDropdownDesktop"></div>
 </div>
 </div>
-<!-- Right Section: Filter Dropdown -->
-<div class="flex items-center justify-end flex-shrink-0">
+<!-- Right: House Filter (desktop only) -->
+<div class="hidden md:flex items-center flex-shrink-0">
 <div class="relative">
-<select id="houseFilter" aria-label="Parliament House Selector" class="appearance-none bg-white border border-slate-300 hover:border-slate-400 text-slate-700 text-xs font-medium py-1.5 pl-3 pr-8 rounded-lg shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer">
+<select id="houseFilterDesktop" aria-label="Parliament House Selector" class="appearance-none bg-white border border-slate-300 hover:border-slate-400 text-slate-700 text-xs font-medium py-2 pl-3 pr-8 rounded-lg shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer">
 <option selected="" value="both">Both Houses (LS &amp; RS)</option>
 <option value="ls">Lok Sabha (LS)</option>
 <option value="rs">Rajya Sabha (RS)</option>
@@ -231,19 +235,42 @@
 </div>
 </div>
 </div>
+<div class="mobile-header-meta" id="headerMeta">Dashboard</div>
 </header>
-<!-- END: HeaderTopControls -->
-<!-- Mobile-only House scope selector (desktop keeps it in the header) -->
-<div class="md:hidden bg-white border-b border-slate-200 px-3 py-2 flex items-center gap-2">
-<label class="text-[11px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap" for="houseFilterMobile">House</label>
-<select aria-label="Parliament House Selector" class="flex-1 bg-white border border-slate-300 text-slate-700 text-xs font-medium py-1.5 pl-2.5 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" id="houseFilterMobile" style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 0.625rem center;background-size:14px;-webkit-appearance:none;-moz-appearance:none;appearance:none;">
+<!-- END: TopHeader -->
+<!-- BEGIN: ScrollableDashboardBody -->
+<main class="flex-1 overflow-y-auto px-4 md:px-6 pt-1 md:pt-2 pb-4 md:pb-6 space-y-4">
+<!-- BEGIN: Search & Filters Bar (mobile only - scrollable with page) -->
+<section class="md:hidden bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-2xs" data-purpose="search-filters-bar">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<!-- Search Bar (Left) -->
+<div class="relative w-full sm:w-[380px]" id="searchContainer">
+<div class="flex items-center gap-2 px-3 py-2 border border-slate-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
+<svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<input autocomplete="off" class="w-full text-xs text-slate-800 placeholder-slate-400 bg-transparent border-none p-0 focus:ring-0 focus:outline-none" id="headerSearchInput" placeholder="Search MP, MLA, State / UT..." type="text">
+<button aria-label="Clear search" class="hidden text-slate-400 hover:text-slate-600" id="clearSearchBtn" type="button"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+</div>
+<!-- Autocomplete Dropdown (populated dynamically) -->
+<div class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden text-xs max-h-96 overflow-y-auto" id="searchResultsDropdown">
+</div>
+</div>
+<!-- House Filter Dropdown (Right) -->
+<div class="flex items-center gap-2">
+<div class="relative">
+<select id="houseFilter" aria-label="Parliament House Selector" class="appearance-none bg-white border border-slate-300 hover:border-slate-400 text-slate-700 text-xs font-medium py-2 pl-3 pr-8 rounded-lg shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer">
 <option selected="" value="both">Both Houses (LS &amp; RS)</option>
 <option value="ls">Lok Sabha (LS)</option>
 <option value="rs">Rajya Sabha (RS)</option>
 </select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-500">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
 </div>
-<!-- BEGIN: ScrollableDashboardBody -->
-<main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+</div>
+</div>
+</section>
+<!-- END: Search & Filters Bar -->
 <!-- BEGIN: 4x2 Deterministic Database-backed KPI Grid -->
 <section class="space-y-2.5" data-purpose="metrics-kpi-grid">
 <div class="flex items-center justify-between">
@@ -442,87 +469,68 @@
 <!-- END: 4x2 KPI Grid -->
 <!-- BEGIN: Analytics Section Row 1 (Card 1: Project Status & Card 2: Activity Trend) -->
 <section class="grid grid-cols-1 lg:grid-cols-12 gap-6" data-purpose="status-trend-section">
-<!-- Card 1: PROJECT STATUS (Large card with Donut Chart) -->
+<!-- Card 1: PROJECT STATUS DISTRIBUTION (3-segment donut) -->
 <div class="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-6 shadow-xs flex flex-col justify-between">
 <div>
 <div class="flex items-center justify-between pb-3 border-b border-slate-100">
 <div>
-<h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">PROJECT STATUS</h3>
-<p class="text-[11px] text-slate-500 mt-0.5">Execution status of all registered records</p>
+<h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">PROJECT STATUS DISTRIBUTION</h3>
+<p class="text-[11px] text-slate-500 mt-0.5">Execution status across all registered works</p>
 </div>
 <span id="donut-total-works" class="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md">Loading...</span>
 </div>
 <div class="py-6 flex flex-col sm:flex-row items-center justify-around gap-6">
-<!-- SVG Donut Chart (Completed, Ongoing, In Pipeline, Pending) -->
+<!-- SVG Donut Chart (Completed, Ongoing, Pending) -->
 <div class="relative w-48 h-48 flex items-center justify-center flex-shrink-0">
 <svg class="w-full h-full -rotate-90" viewBox="0 0 160 160">
 <circle cx="80" cy="80" fill="transparent" r="65" stroke="#f1f5f9" stroke-width="16"></circle>
-<!-- Pending segment -->
-<circle id="dashDonutPending" cx="80" cy="80" fill="transparent" r="65" stroke="#94a3b8" stroke-dasharray="0 408.4" stroke-dashoffset="0" stroke-width="16"></circle>
-<!-- In Pipeline segment -->
-<circle id="dashDonutPipeline" cx="80" cy="80" fill="transparent" r="65" stroke="#8b5cf6" stroke-dasharray="0 408.4" stroke-dashoffset="0" stroke-width="16"></circle>
-<!-- Ongoing segment -->
-<circle id="dashDonutOngoing" cx="80" cy="80" fill="transparent" r="65" stroke="#ea580c" stroke-dasharray="0 408.4" stroke-dashoffset="0" stroke-width="16"></circle>
-<!-- Completed segment -->
-<circle id="dashDonutCompleted" cx="80" cy="80" fill="transparent" r="65" stroke="#0d9488" stroke-dasharray="0 408.4" stroke-dashoffset="0" stroke-width="16"></circle>
+<circle id="dashDonutPending" cx="80" cy="80" fill="transparent" r="65" stroke="#f59e0b" stroke-dasharray="0 408.4" stroke-dashoffset="0" stroke-width="16"></circle>
+<circle id="dashDonutOngoing" cx="80" cy="80" fill="transparent" r="65" stroke="#3b82f6" stroke-dasharray="0 408.4" stroke-dashoffset="0" stroke-width="16"></circle>
+<circle id="dashDonutCompleted" cx="80" cy="80" fill="transparent" r="65" stroke="#10b981" stroke-dasharray="0 408.4" stroke-dashoffset="0" stroke-width="16"></circle>
 </svg>
 <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">COMPLETED</span>
-<span id="donut-pct" class="text-3xl font-extrabold text-teal-700 leading-none mt-1">33.7%</span>
-<span id="donut-count" class="text-[11px] font-medium text-slate-500 mt-1">44,840 works</span>
+<span id="donut-pct" class="text-3xl font-extrabold text-emerald-600 leading-none mt-1">—</span>
+<span id="donut-count" class="text-[11px] font-medium text-slate-500 mt-1">— works</span>
 </div>
 </div>
-<!-- Detailed Legend & Counts -->
+<!-- Legend: 3 tags -->
 <div class="space-y-3 w-full sm:w-auto min-w-[200px]">
-<!-- Completed -->
-<div class="flex items-center justify-between gap-4 p-2.5 rounded-lg bg-teal-50/60 border border-teal-100">
+<div class="flex items-center justify-between gap-4 p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-100">
 <div class="flex items-center gap-2">
-<span class="w-3 h-3 rounded-full bg-[#0d9488]"></span>
+<span class="w-3 h-3 rounded-full bg-[#10b981]"></span>
 <span class="font-semibold text-slate-800 text-xs">Completed</span>
 </div>
 <div class="text-right">
-<div id="donut-completed-count" class="font-bold text-slate-900 text-xs">44,840</div>
-<div id="donut-completed-pct" class="text-[10px] text-teal-700 font-semibold">33.7%</div>
+<div id="donut-completed-count" class="font-bold text-slate-900 text-xs">—</div>
+<div id="donut-completed-pct" class="text-[10px] text-emerald-600 font-semibold">—%</div>
 </div>
 </div>
-<!-- Ongoing -->
-<div class="flex items-center justify-between gap-4 p-2.5 rounded-lg bg-orange-50/60 border border-orange-100">
+<div class="flex items-center justify-between gap-4 p-2.5 rounded-lg bg-blue-50/60 border border-blue-100">
 <div class="flex items-center gap-2">
-<span class="w-3 h-3 rounded-full bg-[#ea580c]"></span>
+<span class="w-3 h-3 rounded-full bg-[#3b82f6]"></span>
 <span class="font-semibold text-slate-800 text-xs">Ongoing</span>
 </div>
 <div class="text-right">
-<div id="donut-ongoing-count" class="font-bold text-slate-900 text-xs">54,225</div>
-<div id="donut-ongoing-pct" class="text-[10px] text-orange-700 font-semibold">40.8%</div>
+<div id="donut-ongoing-count" class="font-bold text-slate-900 text-xs">—</div>
+<div id="donut-ongoing-pct" class="text-[10px] text-blue-600 font-semibold">—%</div>
 </div>
 </div>
-<!-- Pending -->
-<div class="flex items-center justify-between gap-4 p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+<div class="flex items-center justify-between gap-4 p-2.5 rounded-lg bg-amber-50/60 border border-amber-100">
 <div class="flex items-center gap-2">
-<span class="w-3 h-3 rounded-full bg-[#94a3b8]"></span>
+<span class="w-3 h-3 rounded-full bg-[#f59e0b]"></span>
 <span class="font-semibold text-slate-800 text-xs">Pending</span>
 </div>
 <div class="text-right">
 <div id="donut-pending-count" class="font-bold text-slate-900 text-xs">—</div>
-<div id="donut-pending-pct" class="text-[10px] text-slate-500 font-medium">—%</div>
-</div>
-</div>
-<!-- In Pipeline -->
-<div class="flex items-center justify-between gap-4 p-2.5 rounded-lg bg-violet-50/60 border border-violet-100">
-<div class="flex items-center gap-2">
-<span class="w-3 h-3 rounded-full bg-[#8b5cf6]"></span>
-<span class="font-semibold text-slate-800 text-xs">In Pipeline</span>
-</div>
-<div class="text-right">
-<div id="donut-pipeline-count" class="font-bold text-slate-900 text-xs">—</div>
-<div id="donut-pipeline-pct" class="text-[10px] text-violet-700 font-semibold">—%</div>
+<div id="donut-pending-pct" class="text-[10px] text-amber-600 font-semibold">—%</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-<span class=""><span id="donut-sanctioned-label"><span id="donut-sanctioned-label">Sanctioned: 99,065 works</span></span></span>
+<span id="donut-sanctioned-label">Sanctioned: — works</span>
 <span class="font-mono text-[10px] text-slate-400">Deterministic SQL aggregation</span>
 </div>
 </div>
@@ -954,12 +962,19 @@
 </section>
 <!-- END: QuickActionsBar -->
 <!-- System Metadata Footer -->
-<footer class="pt-4 border-t border-slate-200 text-[11px] text-slate-400 pb-4 md:pb-4 flex flex-wrap md:flex-nowrap md:justify-between items-center gap-x-4 gap-y-1" style="padding-bottom:max(1rem, env(safe-area-inset-bottom, 0px));">
-<div class="flex-shrink-0 w-full md:w-auto">Govsense AI · Official data aggregated from MoSPI MPLADS Portal (NIC) · Performance Metrics System</div>
-<div class="flex flex-nowrap items-center gap-x-4 gap-y-1">
+<footer class="pt-4 border-t border-slate-200 text-[11px] text-slate-400 pb-4" style="padding-bottom:max(1rem, env(safe-area-inset-bottom, 0px));">
+<div class="flex flex-wrap md:flex-nowrap md:justify-between items-center gap-x-6 gap-y-1 mb-1.5">
+<div>Govsense AI · Official data aggregated from MoSPI MPLADS Portal (NIC) · Performance Metrics System</div>
+<div class="flex items-center gap-x-4 gap-y-1 flex-shrink-0">
 <a class="hover:text-slate-600 transition" href="methodology.html">Methodology &amp; Audit</a>
 <a class="hover:text-slate-600 transition" href="privacy.html?from=dashboard">Privacy Policy</a>
 <a class="hover:text-slate-600 transition" href="api-docs.html?from=dashboard">API Documentation</a>
+<a class="hover:text-slate-600 transition" href="about.html">About</a>
+</div>
+</div>
+<div class="flex flex-wrap md:flex-nowrap md:justify-between items-center gap-x-6 gap-y-1">
+<div>© 2026 GovSense AI. All rights reserved. · Built for <strong class="text-slate-500">Smart India Hackathon 2026</strong> by <strong class="text-violet-500">Team Spark</strong></div>
+<div>Data sourced from official government datasets. GovSense AI provides analytical insights and is not an official government service.</div>
 </div>
 </footer>
 </main>

@@ -453,11 +453,11 @@
       var pct = x.count / t * 100;
       var height = (x.count / max) * 100;
       var c = colors[i] || 'slate';
-      html += '<div class="flex flex-col items-center gap-1 h-full justify-end min-w-0">' +
-        '<span class="text-[11px] font-bold text-' + c + '-700">' + fmtPct(pct) + '</span>' +
-        '<span class="text-[10px] text-slate-500 leading-tight">' + fmtNum(x.count) + '</span>' +
-        '<div class="w-full bg-' + c + '-500 rounded-t-lg transition-all duration-500" style="height:' + Math.max(height, 2) + '%"></div>' +
-        '<span class="text-[9px] font-bold text-slate-700 text-center leading-tight break-words">' + x.label + '</span></div>';
+      html += '<div class="flex flex-col items-center gap-1 sm:gap-1.5 h-full justify-end min-w-0">' +
+        '<span class="text-[11px] sm:text-xs font-extrabold text-' + c + '-800">' + fmtPct(pct) + '</span>' +
+        '<span class="text-[10px] sm:text-[11px] font-bold text-slate-600 leading-tight">' + fmtNum(x.count) + '</span>' +
+        '<div class="w-3/5 bg-' + c + '-500 rounded-t-lg transition-all duration-500" style="height:' + Math.max(height, 4) + '%"></div>' +
+        '<span class="text-[9px] sm:text-[10px] font-bold text-slate-800 text-center leading-tight mt-0.5 break-words max-w-full">' + x.label + '</span></div>';
     });
     el.innerHTML = html;
     if (window.ChartAnim) {

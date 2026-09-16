@@ -20,8 +20,8 @@
     return 'statedetail.html?state_id=' + encodeURIComponent(id) + '&state=' + encodeURIComponent(name) + '&from=dashboard';
   }
 
-  function render(members, states, q) {
-    var dropdown = document.getElementById('searchResultsDropdown');
+  function render(members, states, q, dropdownId) {
+    var dropdown = document.getElementById(dropdownId);
     if (!dropdown) return;
     var html = '';
     if (members.length) {
@@ -52,11 +52,11 @@
     dropdown.classList.remove('hidden');
   }
 
-  function doSearch(q) {
+  function doSearch(q, dropdownId) {
     var query = q.trim();
     if (query.length < 1) return Promise.resolve();
     var memberPromise = fetch(API_BASE + '/api/members/search?q=' + encodeURIComponent(query) + '&member_type=BOTH&limit=6')
-      .then(function (r) { return r.ok ? r.json() : { items: [] }; })
+      .then(function (r) { return r.ok ? r.json() : { items: []; }; })
       .then(function (d) { return d.items || []; })
       .catch(function () { return []; });
     var statePromise = ensureStates().then(function (all) {
@@ -64,15 +64,15 @@
       return all.filter(function (s) { return (s.state_name || '').toLowerCase().indexOf(lower) !== -1; }).slice(0, 5);
     });
     return Promise.all([memberPromise, statePromise]).then(function (res) {
-      render(res[0], res[1], query);
+      render(res[0], res[1], query, dropdownId);
     });
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    var input = document.getElementById('headerSearchInput');
-    var dropdown = document.getElementById('searchResultsDropdown');
-    var clearBtn = document.getElementById('clearSearchBtn');
-    var container = document.getElementById('searchContainer');
+  function bindSearch(inputId, dropdownId, clearBtnId, containerId) {
+    var input = document.getElementById(inputId);
+    var dropdown = document.getElementById(dropdownId);
+    var clearBtn = document.getElementById(clearBtnId);
+    var container = document.getElementById(containerId);
     if (!input || !dropdown) return;
 
     ensureStates();
@@ -85,11 +85,11 @@
       else { if (clearBtn) clearBtn.classList.add('hidden'); dropdown.classList.add('hidden'); return; }
       clearTimeout(deb);
       var my = ++seq;
-      deb = setTimeout(function () { doSearch(val).then(function () { if (my !== seq) { /* stale */ } }); }, 220);
+      deb = setTimeout(function () { doSearch(val, dropdownId).then(function () { if (my !== seq) { /* stale */ } }); }, 220);
     });
 
     input.addEventListener('focus', function () {
-      if (input.value.trim().length > 0) doSearch(input.value);
+      if (input.value.trim().length > 0) doSearch(input.value, dropdownId);
     });
 
     input.addEventListener('keydown', function (e) {
@@ -109,13 +109,27 @@
     document.addEventListener('click', function (e) {
       if (container && !container.contains(e.target)) dropdown.classList.add('hidden');
     });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // Desktop search (in header)
+    bindSearch('headerSearchInputDesktop', 'searchResultsDropdownDesktop', 'clearSearchBtnDesktop', 'searchContainerDesktop');
+    // Mobile search (in scrollable section)
+    bindSearch('headerSearchInput', 'searchResultsDropdown', 'clearSearchBtn', 'searchContainer');
 
     // Deep-link: ?search=<query> pre-fills and runs the search
     var pre = new URLSearchParams(window.location.search).get('search');
     if (pre) {
-      input.value = pre;
-      if (clearBtn) clearBtn.classList.remove('hidden');
-      doSearch(pre);
+      var desktopInput = document.getElementById('headerSearchInputDesktop');
+      var mobileInput = document.getElementById('headerSearchInput');
+      var activeInput = desktopInput || mobileInput;
+      if (activeInput) {
+        activeInput.value = pre;
+        var activeClear = document.getElementById(activeInput === desktopInput ? 'clearSearchBtnDesktop' : 'clearSearchBtn');
+        if (activeClear) activeClear.classList.remove('hidden');
+        var activeDropdown = activeInput === desktopInput ? 'searchResultsDropdownDesktop' : 'searchResultsDropdown';
+        doSearch(pre, activeDropdown);
+      }
     }
   });
 })();
