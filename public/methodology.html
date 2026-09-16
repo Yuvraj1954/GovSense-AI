@@ -167,7 +167,7 @@ Back
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
 <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Version</div>
-<div class="font-bold text-slate-800 mt-0.5">2.1.0</div>
+<div class="font-bold text-slate-800 mt-0.5">3.0.0</div>
 </div>
 <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Audit</div>
@@ -186,7 +186,7 @@ Back
 <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">1</div>
 <h3 class="text-sm font-bold text-slate-900">Performance Scoring Methodology</h3>
 </div>
-<p class="text-xs text-slate-600 leading-relaxed mb-4">Every Member of Parliament (MP), Member of Legislative Assembly (MLA), and State/UT is assigned a composite performance score on a <strong>0–100 scale</strong>. The score aggregates multiple weighted indicators to produce a single comparable metric.</p>
+<p class="text-xs text-slate-600 leading-relaxed mb-4">Every Member of Parliament (MP), Member of Legislative Assembly (MLA), and State/UT is assigned a composite performance score on a <strong>0–100 scale</strong>. The score uses two equally weighted indicators, each natively on a 0–100 scale — no min-max normalization is applied.</p>
 
 <div class="overflow-x-auto -mx-5 md:-mx-6 px-5 md:px-6">
 <table class="w-full text-xs border-collapse">
@@ -198,13 +198,14 @@ Back
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-100">
-<tr><td class="py-2.5 px-3 font-medium text-slate-800">Fund Utilization</td><td class="py-2.5 px-3 text-slate-600">30%</td><td class="py-2.5 px-3 text-slate-600">Ratio of actual expenditure to sanctioned allocation</td></tr>
-<tr><td class="py-2.5 px-3 font-medium text-slate-800">Completion Rate</td><td class="py-2.5 px-3 text-slate-600">30%</td><td class="py-2.5 px-3 text-slate-600">Percentage of works completed vs total recommended</td></tr>
-<tr><td class="py-2.5 px-3 font-medium text-slate-800">Sanction Conversion</td><td class="py-2.5 px-3 text-slate-600">15%</td><td class="py-2.5 px-3 text-slate-600">Speed and rate of converting recommendations to sanctioned works</td></tr>
-<tr><td class="py-2.5 px-3 font-medium text-slate-800">Execution Speed</td><td class="py-2.5 px-3 text-slate-600">15%</td><td class="py-2.5 px-3 text-slate-600">Average duration from sanction to completion (lower is better)</td></tr>
-<tr><td class="py-2.5 px-3 font-medium text-slate-800">Anomaly Resistance</td><td class="py-2.5 px-3 text-slate-600">10%</td><td class="py-2.5 px-3 text-slate-600">Inverse of detected cost/duration anomalies</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">Wilson Lower Bound (Completion)</td><td class="py-2.5 px-3 text-slate-600">50%</td><td class="py-2.5 px-3 text-slate-600">Bayesian confidence-interval lower bound on completion rate (z=1.96). Penalizes entities with few completed works — a conservative completion proxy, not a raw percentage.</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">Fund Utilization</td><td class="py-2.5 px-3 text-slate-600">50%</td><td class="py-2.5 px-3 text-slate-600">Ratio of actual expenditure to sanctioned allocation, as a percentage (0–100).</td></tr>
 </tbody>
 </table>
+</div>
+
+<div class="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-[11px] text-slate-600">
+<strong class="text-slate-700">Formula:</strong> <code>raw = (wilson_lower_bound(completed_works, total_works) + fund_utilization_pct) / 2</code>. Small-sample shrinkage pulls scores toward the midpoint: <code>score = (n × raw + K × 50) / (n + K)</code> where K=5 for members, K=10 for states. Entities with zero works receive NO_DATA; members with &lt;5 works and states with &lt;10 works receive INSUFFICIENT_DATA.
 </div>
 
 <div class="mt-4 space-y-2">
@@ -268,24 +269,34 @@ Back
 <div class="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center font-bold text-sm">3</div>
 <h3 class="text-sm font-bold text-slate-900">Peer Cluster Classification</h3>
 </div>
-<p class="text-xs text-slate-600 leading-relaxed mb-4">Entities are grouped into peer clusters to enable meaningful performance comparisons. Clustering uses k-means on standardized metrics (fund utilization, completion rate, total works) to create comparable cohorts.</p>
+<p class="text-xs text-slate-600 leading-relaxed mb-4">Entities are grouped into peer clusters to enable meaningful performance comparisons. K-Means clustering runs on 5 standardized features (members) or 6 features (states). Optimal <em>k</em> is chosen dynamically from {2, 3, 4, 5, 6} by silhouette score. Cluster labels are generated from centroid values binned against population tertiles — the two most informative dimensions are kept and joined with " / ".</p>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-<div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-<div class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">High Performer — Strong Completion</div>
-<p class="text-[11px] text-emerald-600 mt-1">Above-average completion rates and fund utilization. Consistent execution track record.</p>
+<div class="overflow-x-auto -mx-5 md:-mx-6 px-5 md:px-6 mb-4">
+<table class="w-full text-xs border-collapse">
+<thead>
+<tr class="bg-slate-50 border-b border-slate-200">
+<th class="text-left py-2.5 px-3 font-bold text-slate-700">Feature</th>
+<th class="text-left py-2.5 px-3 font-bold text-slate-700">Source</th>
+<th class="text-left py-2.5 px-3 font-bold text-slate-700">Role</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">financial_efficiency</td><td class="py-2.5 px-3 text-slate-600">fund_utilization_pct</td><td class="py-2.5 px-3 text-slate-600">Raw 0–100, higher = better</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">implementation_efficiency</td><td class="py-2.5 px-3 text-slate-600">completed_works / total_works × 100</td><td class="py-2.5 px-3 text-slate-600">Raw percent, higher = better</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">timeliness</td><td class="py-2.5 px-3 text-slate-600">avg_sanction_delay_days</td><td class="py-2.5 px-3 text-slate-600">Raw days, lower = better</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">portfolio_health</td><td class="py-2.5 px-3 text-slate-600">Composite: 100 − (flagged_rate + overdue + cost_anomaly penalties)</td><td class="py-2.5 px-3 text-slate-600">Raw 0–100, higher = healthier</td></tr>
+<tr><td class="py-2.5 px-3 font-medium text-slate-800">portfolio_size_log</td><td class="py-2.5 px-3 text-slate-600">log(total_works + 1)</td><td class="py-2.5 px-3 text-slate-600">Log-scaled scale proxy</td></tr>
+<tr class="bg-slate-50"><td class="py-2.5 px-3 font-medium text-slate-800 italic">active_members_log <span class="text-[10px] not-italic text-slate-400">(states only)</span></td><td class="py-2.5 px-3 text-slate-600">log(active_members + 1)</td><td class="py-2.5 px-3 text-slate-600">State-level only</td></tr>
+</tbody>
+</table>
 </div>
-<div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-<div class="text-[10px] font-bold text-blue-700 uppercase tracking-wider">Large Scale — High Activity</div>
-<p class="text-[11px] text-blue-600 mt-1">High volume of works with moderate completion. Scale compensates for partial underperformance.</p>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] text-slate-600">
+<div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+<strong class="text-slate-700">Preprocessing:</strong> Z-score standardization (mean=0, std=1) per feature. Minimum cluster sizes enforced: 5 (members), 3 (states). Clusters below threshold receive "insufficient" label. Bootstrap ARI stability (5 resamples, 85% fraction) recorded for diagnostic purposes.
 </div>
-<div class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-<div class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Moderate Growth — Emerging</div>
-<p class="text-[11px] text-amber-600 mt-1">Mid-range performance with improving trends. Room for acceleration in execution.</p>
-</div>
-<div class="p-3 bg-rose-50 border border-rose-200 rounded-lg">
-<div class="text-[10px] font-bold text-rose-700 uppercase tracking-wider">Needs Improvement — Low Activity</div>
-<p class="text-[11px] text-rose-600 mt-1">Below-average metrics across multiple dimensions. Priority for intervention and support.</p>
+<div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+<strong class="text-slate-700">Label generation:</strong> For each centroid feature (excluding portfolio_size_log), values are binned against population tertiles (33.3rd / 66.6th percentiles) into High/Mid/Low (or Fast/Mid/Slow for timeliness). Only the two most informative dimensions are kept in the final label, e.g. "High Financial Efficiency / Fast Timeliness".
 </div>
 </div>
 </div>
@@ -304,15 +315,15 @@ Back
 <ul class="space-y-2.5 text-[11px] text-slate-600">
 <li>
 <div class="font-bold text-slate-700">K-Means Clustering</div>
-<p>Groups MPs/MLAs into performance cohorts based on fund utilization, completion rate, sanction conversion, execution speed, and anomaly resistance. Optimal <em>k</em> selected via elbow method + silhouette score. Produces 4 readable cluster labels (High Performer, Large Scale, Moderate Growth, Needs Improvement).</p>
+<p>Groups MPs/MLAs into peer cohorts on 5 features (members) or 6 features (states): financial_efficiency, implementation_efficiency, timeliness, portfolio_health, portfolio_size_log (+ active_members_log for states). Z-score standardized. Optimal <em>k</em> chosen from {2–6} by silhouette score. Cluster labels generated from centroid tertile bins — two most informative dimensions retained (e.g. "High Financial Efficiency / Fast Timeliness").</p>
 </li>
 <li>
-<div class="font-bold text-slate-700">Weighted Composite Scoring</div>
-<p>Multi-indicator performance index using domain-expert weights (Fund Utilization 30%, Completion Rate 30%, Sanction Conversion 15%, Execution Speed 15%, Anomaly Resistance 10%). Min-max normalized per indicator before aggregation.</p>
+<div class="font-bold text-slate-700">Performance Scoring (Wilson + Bayesian)</div>
+<p>Two-indicator score: 50% Wilson Lower Bound of completion rate (z=1.96) + 50% Fund Utilization. Both natively 0–100. Small-sample Bayesian shrinkage toward midpoint (K=5 members, K=10 states). No min-max normalization — indicators are already on the same scale.</p>
 </li>
 <li>
 <div class="font-bold text-slate-700">Threshold-Based Classification</div>
-<p>Discretizes continuous scores into 5 ordinal classes (EXCEPTIONAL → UNDERPERFORMER) using fixed thresholds. NO_DATA class assigned when fewer than 3 works exist for the entity.</p>
+<p>Discretizes the 0–100 score into 5 ordinal classes: EXCEPTIONAL (≥85), PERFORMER (≥70), STABLE (≥50), NEEDS_ATTENTION (≥35), UNDERPERFORMER (&lt;35). NO_DATA when n=0; INSUFFICIENT_DATA when n&lt;5 (members) or n&lt;10 (states).</p>
 </li>
 </ul>
 </div>
@@ -320,16 +331,16 @@ Back
 <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Anomaly Detection</h4>
 <ul class="space-y-2.5 text-[11px] text-slate-600">
 <li>
-<div class="font-bold text-slate-700">Z-Score Outlier Detection</div>
-<p>Computes mean and standard deviation of cost-per-work and duration-per-work across the national dataset. Works with z-score &gt; 3.0 flagged as cost or duration anomalies. Per-member anomaly rate computed as <code>anomalous / total works</code>.</p>
+<div class="font-bold text-slate-700">Robust Z-Score (MAD-Based) Outlier Detection</div>
+<p>Entity-level anomaly scoring across 12 member-level features (flagged_rate, high_risk_rate, completion_rate, expenditure_utilization, avg_sanction_delay, overdue_rate, cost_anomaly_rate, duration_anomaly_rate, avg_cost_percentile, expenditure_over_sanction_rate, negative_delay_rate, avg_project_age_days). Uses median and Median Absolute Deviation (MAD) with consistency constant 0.6745 — not mean/std. Per-feature z-scores direction-adjusted (only deviations in the anomalous direction contribute). Composite = mean of contributing z-scores. Classification uses dynamic population percentiles: HIGH (&gt;95th), MEDIUM (&gt;80th), NORMAL.</p>
 </li>
 <li>
-<div class="font-bold text-slate-700">IQR (Interquartile Range) Method</div>
-<p>Used as a secondary check for skewed distributions. Values below Q1 − 1.5×IQR or above Q3 + 1.5×IQR flagged. Particularly effective for detecting extreme fund allocation outliers in small-sample MP/MLA groups.</p>
+<div class="font-bold text-slate-700">Isolation Forest (ML Anomaly Detection)</div>
+<p>sklearn IsolationForest on 8 numerical features per work: sanction_amount, recommended_amount, expenditure_amount, sanction_delay_days, execution_days, project_age_days, cost_percentile, duration_percentile. Contamination=0.05. Scores normalized using [50th percentile, 95th percentile] range to [0, 1]. Labels: NORMAL (&lt;0.33), UNUSUAL (0.33–0.66), HIGHLY_UNUSUAL (≥0.66). Minimum 30 works required. Currently <strong>READY</strong> and producing per-work anomaly scores in production.</p>
 </li>
 <li>
-<div class="font-bold text-slate-700">Statistical Process Control (SPC)</div>
-<p>Control charts track monthly expenditure and completion rates against rolling 12-month baselines. Points beyond ±2σ trigger early-warning alerts in the AI Risk Centre before full anomaly classification.</p>
+<div class="font-bold text-slate-700">Work-Level Risk Flags (Deterministic)</div>
+<p>10 deterministic flags per work (SANCTION_DELAY_VERY_HIGH, LONG_PENDING, LOW_EXPENDITURE, PAYMENT_STAGNATION, COST_ANOMALY, DURATION_ANOMALY, OVER_EXPENDITURE, POST_COMPLETION_PAYMENT, etc.). Risk level from flag count: HIGH (≥3 flags or OVER_EXPENDITURE present), MEDIUM (2 flags), LOW (1 flag), NORMAL (0 flags). Positive signals (SANCTION_MATCHES_RECOMMENDATION, RECENT_PAYMENT_ACTIVITY, etc.) computed as countervailing evidence.</p>
 </li>
 </ul>
 </div>
@@ -340,16 +351,12 @@ Back
 <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Trend &amp; Time-Series Analysis</h4>
 <ul class="space-y-2.5 text-[11px] text-slate-600">
 <li>
-<div class="font-bold text-slate-700">Rolling Window Aggregation</div>
-<p>3-month and 6-month rolling averages smooth short-term volatility in fund flow and completion metrics. Enables meaningful quarter-over-quarter comparison without seasonal noise.</p>
+<div class="font-bold text-slate-700">Entity Anomaly Scoring</div>
+<p>Robust z-score (MAD-based) across 12 features per entity, compared within same member type (MP vs MLA separately). Dynamic percentile-based thresholds (95th/80th) classify anomaly levels. Confidence levels derived from sample size (≥50 → HIGH, ≥20 → MEDIUM, &lt;20 → LOW).</p>
 </li>
 <li>
-<div class="font-bold text-slate-700">Linear Regression Trend Lines</div>
-<p>Ordinary Least Squares (OLS) fitted to monthly expenditure time series. Slope magnitude and direction classify each member as Accelerating, Stable, or Decelerating. R² reported for trend confidence.</p>
-</li>
-<li>
-<div class="font-bold text-slate-700">Moving Average Convergence</div>
-<p>Short-term (3-month) vs long-term (6-month) moving average crossovers detect inflection points in fund disbursement velocity. Crossover events surface in the performance timeline visualizations.</p>
+<div class="font-bold text-slate-700">Gemini AI — Contextual Narrative Layer</div>
+<p>Gemini 3.1 Flash Lite generates natural-language summaries, highlights, and cautions for citizen-facing dashboards. It is an <strong>explanation layer</strong>, not a predictive model — evidence is pre-computed deterministically; Gemini rephrases it into accessible language. Prompt version: gemini_analysis_v5. Forbidden terms prevent exposure of implementation details.</p>
 </li>
 </ul>
 </div>
@@ -357,16 +364,16 @@ Back
 <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Risk Scoring Model</h4>
 <ul class="space-y-2.5 text-[11px] text-slate-600">
 <li>
-<div class="font-bold text-slate-700">Multi-Factor Risk Index</div>
-<p>Combines 4 risk signals into a single 0–100 risk score: anomaly_rate (35% weight), low_utilization flag (25%), zero_completion flag (25%), high_pipeline_ratio (15%). Each factor min-max normalized before weighted sum.</p>
+<div class="font-bold text-slate-700">Multi-Source Risk Engine</div>
+<p>Combines 3 evidence sources with <strong>equal 1/3 weighting</strong>: (1) XGBoost delay probability (predictive), (2) Isolation Forest 95th-percentile anomaly score (unsupervised ML), (3) robust z-score entity anomaly (statistical). Score = mean of 3 normalized sources × 100. Risk levels determined by <strong>population percentile ranking</strong>: CRITICAL (≥90th percentile), HIGH (≥70th), MODERATE (≥40th), LOW (&lt;40th).</p>
 </li>
 <li>
-<div class="font-bold text-slate-700">Severity Classification</div>
-<p>Risk index mapped to 4 severity levels: CRITICAL (≥75), HIGH (≥50), MODERATE (≥25), LOW (&lt;25). Thresholds calibrated against historical intervention data to minimize false positives.</p>
+<div class="font-bold text-slate-700">Confidence Assessment</div>
+<p>Based on sample size of works per entity. Members: ≥20 works → HIGH, ≥2 → MEDIUM, &lt;2 → LOW. States: ≥50 works → HIGH, ≥2 → MEDIUM, &lt;2 → LOW. This is a sample-adequacy label, not a statistical confidence interval.</p>
 </li>
 <li>
-<div class="font-bold text-slate-700">Confidence Intervals</div>
-<p>Every risk score includes a confidence metric based on sample size (number of works). Entities with &lt;5 works receive lower confidence flags. Bootstrap resampling (1000 iterations) used for small-sample confidence estimation.</p>
+<div class="font-bold text-slate-700">XGBoost Delay Model (NOT_READY)</div>
+<p>XGBClassifier predicting slow completion (execution_days &gt; 365 days). 10 sanction-time features. Temporal train/val/test split (cutoff 2026-01-01 / 2026-04-01). <strong>Currently NOT_READY</strong> — test set contains only one class (no recent completions crossing the split), so ROC/PR AUC undefined. No predictions are persisted when NOT_READY.</p>
 </li>
 </ul>
 </div>
@@ -375,9 +382,37 @@ Back
 <div class="mt-4 p-4 bg-violet-50 border border-violet-200 rounded-xl">
 <h4 class="text-xs font-bold text-violet-800 uppercase tracking-wider mb-2">Key Statistical Principles</h4>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[11px] text-violet-700">
-<div><strong>Reproducibility:</strong> All computations are deterministic given the same DB1 snapshot. No random seeds, no stochastic elements in production scoring.</div>
-<div><strong>Explainability:</strong> Every score and classification can be traced back to its input indicators and weights. No black-box neural networks or ensemble methods.</div>
-<div><strong>Conservatism:</strong> When data is insufficient (&lt;5 works), the system defaults to NO_DATA or LOW confidence rather than producing potentially misleading scores.</div>
+<div><strong>Reproducibility:</strong> All computations are deterministic given the same DB1 snapshot. K-Means uses fixed random_state=42. XGBoost and Isolation Forest use deterministic temporal splits.</div>
+<div><strong>Explainability:</strong> Every score and classification can be traced to input indicators and weights. Cluster labels are human-readable. Gemini outputs include explicit evidence citations.</div>
+<div><strong>Conservatism:</strong> When data is insufficient (&lt;5 works for members, &lt;10 for states), the system defaults to NO_DATA or INSUFFICIENT_DATA rather than producing potentially misleading scores.</div>
+</div>
+</div>
+
+<!-- Section 4b: Planned Methods -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">4b</div>
+<h3 class="text-sm font-bold text-slate-900">Planned Methods (Not Yet in Production)</h3>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed mb-4">The following methods are part of the design roadmap but are <strong>not currently implemented</strong> in the production pipeline. They are listed here for transparency and completeness.</p>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-[11px] text-slate-600">
+<div class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+<div class="font-bold text-amber-800">Rolling Window Aggregation</div>
+<p class="mt-1">3-month and 6-month rolling averages for smoothing short-term volatility. Planned for quarter-over-quarter comparison.</p>
+</div>
+<div class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+<div class="font-bold text-amber-800">Linear Regression Trend Lines</div>
+<p class="mt-1">OLS fitted to monthly expenditure time series. Planned for classifying entities as Accelerating / Stable / Decelerating.</p>
+</div>
+<div class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+<div class="font-bold text-amber-800">Moving Average Convergence</div>
+<p class="mt-1">3-month vs 6-month MA crossovers for detecting fund disbursement inflection points.</p>
+</div>
+<div class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+<div class="font-bold text-amber-800">Statistical Process Control</div>
+<p class="mt-1">Control charts for monthly expenditure/completion against rolling baselines. Planned for early-warning alerts.</p>
+</div>
 </div>
 </div>
 </div>
@@ -427,7 +462,7 @@ Back
 </div>
 </div>
 
-<!-- Section 5: Audit Trail -->
+<!-- Section 6: Audit Trail -->
 <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
 <div class="flex items-center gap-3 mb-4">
 <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">6</div>
@@ -455,10 +490,10 @@ Back
 </div>
 </div>
 
-<!-- Section 6: Limitations -->
+<!-- Section 7: Limitations -->
 <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
 <div class="flex items-center gap-3 mb-4">
-<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">6</div>
+<div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">7</div>
 <h3 class="text-sm font-bold text-slate-900">Known Limitations &amp; Disclaimers</h3>
 </div>
 <ul class="space-y-2 text-xs text-slate-600 leading-relaxed">
@@ -467,6 +502,8 @@ Back
 <li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span>Risk flags are probabilistic assessments based on statistical anomaly detection. They do not imply misconduct or wrongdoing.</li>
 <li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span>Data freshness depends on the NIC portal update cycle. There may be a lag between ground reality and available records.</li>
 <li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span>MLA data coverage varies by state. Some states may have incomplete records.</li>
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span><strong>XGBoost delay prediction model</strong> is currently NOT_READY — the test set is single-class (no recent completions crossing the temporal split), so ROC/PR AUC are undefined. No delay predictions are persisted. This will activate automatically once sufficient temporal data accumulates.</li>
+<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span><strong>Gemini AI</strong> is an explanation layer, not a predictive model. It generates natural-language summaries and highlights from pre-computed deterministic evidence. It does not produce probability scores or classifications.</li>
 </ul>
 </div>
 
