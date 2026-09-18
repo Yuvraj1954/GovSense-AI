@@ -50,6 +50,22 @@ def _cacheable(key_prefix, ttl_name, *parts):
     return key_prefix + "::" + "::".join("" if p is None else str(p) for p in parts), TTL.get(ttl_name, 300)
 
 
+async def _state_to_constituency_ids(db1, db2, db2_state_id):
+    """Convert a DB2 state_id to a list of DB1 constituency_ids.
+    DB2 and DB1 use different state_id numbering, so we resolve via state name."""
+    smrow = await db2.fetchrow(
+        "SELECT state_name FROM public.state_metrics WHERE state_id = $1", db2_state_id
+    )
+    if not smrow or not smrow["state_name"]:
+        return []
+    crows = await db1.fetch(
+        "SELECT c.constituency_id FROM public.constituencies c "
+        "JOIN public.states s ON c.state_id = s.state_id "
+        "WHERE s.state_name = $1", smrow["state_name"]
+    )
+    return [r["constituency_id"] for r in crows]
+
+
 def _with_cache_headers(response: Response, max_age: int, stale_while_revalidate: int = 0):
     """Set HTTP Cache-Control on the response so repeat visitors / CDNs can
     skip the network round-trip entirely."""
@@ -179,7 +195,7 @@ async def get_members_scatter(response: Response, member_type: str = Query("MP",
     if member_type == "BOTH":
         rows = await db2.fetch("""
             SELECT member_id, member_name, member_type, state_name, completion_rate_pct, fund_utilization_pct,
-                   total_works, performance_score, performance_classification
+                   total_works, performance_score_weighted, performance_classification
             FROM public.member_metrics
             WHERE completion_rate_pct IS NOT NULL
               AND fund_utilization_pct IS NOT NULL
@@ -189,7 +205,7 @@ async def get_members_scatter(response: Response, member_type: str = Query("MP",
     else:
         rows = await db2.fetch("""
             SELECT member_id, member_name, member_type, state_name, completion_rate_pct, fund_utilization_pct,
-                   total_works, performance_score, performance_classification
+                   total_works, performance_score_weighted, performance_classification
             FROM public.member_metrics
             WHERE member_type = $1
               AND completion_rate_pct IS NOT NULL
@@ -225,10 +241,10 @@ async def get_members_list(
     db2 = await get_db2_pool()
 
     if member_type == "BOTH":
-        base_where = "total_works >= 5"
+        base_where = "total_works >= 1"
         base_args = []
     else:
-        base_where = "member_type = $1 AND total_works >= 5"
+        base_where = "member_type = $1 AND total_works >= 1"
         base_args = [member_type]
 
     extra = ""
@@ -253,7 +269,7 @@ async def get_members_list(
         else:
             count_row = await db2.fetchrow("""
                 SELECT COUNT(*) as cnt FROM public.member_metrics
-                WHERE total_works >= 5 AND member_type = $1
+                WHERE total_works >= 1 AND member_type = $1
             """, member_type)
             total = count_row["cnt"] if count_row else 0
     else:
@@ -362,10 +378,10 @@ async def search_members(
         return cached
     db2 = await get_db2_pool()
     if member_type == "BOTH":
-        conditions = ["total_works >= 5"]
+        conditions = ["member_name IS NOT NULL", "TRIM(member_name) <> ''"]
         args = []
     else:
-        conditions = ["member_type = $1", "total_works >= 5"]
+        conditions = ["member_type = $1", "member_name IS NOT NULL", "TRIM(member_name) <> ''"]
         args = [member_type]
     idx = len(args) + 1
 
@@ -388,16 +404,42 @@ async def search_members(
 
     where = " AND ".join(conditions)
     rows = await db2.fetch(f"""
-        SELECT member_id, member_name, member_type as member_type_field, state_name, completion_rate_pct, fund_utilization_pct,
-               total_works, completed_works, sanctioned_works, performance_score, performance_classification,
-               sanctioned_amount, expenditure_amount
-        FROM public.member_metrics
-        WHERE {where}
-        ORDER BY member_name
-        LIMIT ${idx}
-    """, *args, limit)
+        WITH ranked AS (
+            SELECT member_id, member_name, member_type as member_type_field, state_name, completion_rate_pct, fund_utilization_pct,
+                   total_works, completed_works, sanctioned_works, performance_score_weighted, performance_classification,
+                   sanctioned_amount, expenditure_amount,
+                   ROW_NUMBER() OVER (PARTITION BY performance_classification ORDER BY performance_score_weighted DESC NULLS LAST) as rn
+            FROM public.member_metrics
+            WHERE completion_rate_pct IS NOT NULL
+              AND fund_utilization_pct IS NOT NULL
+              AND total_works >= 5
+        )
+        SELECT member_id, member_name, member_type_field, state_name, completion_rate_pct, fund_utilization_pct,
+               total_works, completed_works, sanctioned_works, performance_score_weighted, performance_classification,
+               rn
+        FROM ranked
+        WHERE rn <= 10
+        ORDER BY performance_classification, rn
+    """)
 
-    value = {"items": [dict(r) for r in rows], "total": len(rows)}
+    items = [dict(r) for r in rows]
+    cids = list({r["constituency_id"] for r in items if r.get("constituency_id")})
+    if cids:
+        try:
+            db1 = await get_pool()
+            crows = await db1.fetch(
+                "SELECT constituency_id, constituency_name FROM public.constituencies WHERE constituency_id = ANY($1)",
+                cids,
+            )
+            cmap = {r["constituency_id"]: r["constituency_name"] for r in crows}
+            for item in items:
+                item["constituency_name"] = cmap.get(item.get("constituency_id"))
+        except Exception:
+            pass
+    for item in items:
+        item.setdefault("constituency_name", None)
+
+    value = {"items": items, "total": len(items)}
     _with_cache_headers(response, ttl)
     return _cache_set(cache_key, value, ttl=ttl)
 
@@ -418,11 +460,11 @@ async def _fetch_mixed_page(pool, member_type: str, page_size: int, offset: int)
     rows = await pool.fetch(f"""
         WITH ranked AS (
             SELECT member_id, member_name, member_type as member_type_field, state_name, completion_rate_pct, fund_utilization_pct,
-                   total_works, completed_works, sanctioned_works, performance_score, performance_classification,
+                   total_works, completed_works, sanctioned_works, performance_score_weighted, performance_classification,
                    sanctioned_amount, expenditure_amount,
-                   ROW_NUMBER() OVER (PARTITION BY performance_classification ORDER BY performance_score DESC NULLS LAST) as rn
+                   ROW_NUMBER() OVER (PARTITION BY performance_classification ORDER BY performance_score_weighted DESC NULLS LAST) as rn
             FROM public.member_metrics
-            WHERE total_works >= 5 {mt_filter}
+            WHERE total_works >= 1 {mt_filter}
         ),
         bucket_pick AS (
             SELECT *,
@@ -430,11 +472,11 @@ async def _fetch_mixed_page(pool, member_type: str, page_size: int, offset: int)
             FROM ranked
         )
         SELECT member_id, member_name, member_type_field, state_name, completion_rate_pct, fund_utilization_pct,
-               total_works, completed_works, sanctioned_works, performance_score, performance_classification,
+               total_works, completed_works, sanctioned_works, performance_score_weighted, performance_classification,
                sanctioned_amount, expenditure_amount
         FROM bucket_pick
         WHERE pick_num > {(page_num - 1) * per_bucket} AND pick_num <= {page_num * per_bucket}
-        ORDER BY performance_classification, performance_score DESC NULLS LAST
+        ORDER BY performance_classification, performance_score_weighted DESC NULLS LAST
     """, *mt_args)
 
     buckets = {}
@@ -476,11 +518,11 @@ async def _fetch_mixed_page_filtered(pool, member_type: str, page_size: int, off
         rows = await pool.fetch(f"""
             WITH ranked AS (
                 SELECT member_id, member_name, member_type as member_type_field, state_name, completion_rate_pct, fund_utilization_pct,
-                       total_works, completed_works, sanctioned_works, performance_score, performance_classification,
+                       total_works, completed_works, sanctioned_works, performance_score_weighted, performance_classification,
                        sanctioned_amount, expenditure_amount,
-                       ROW_NUMBER() OVER (PARTITION BY performance_classification ORDER BY performance_score DESC NULLS LAST) as rn
+                       ROW_NUMBER() OVER (PARTITION BY performance_classification ORDER BY performance_score_weighted DESC NULLS LAST) as rn
                 FROM public.member_metrics
-                WHERE total_works >= 5 {extra}
+                WHERE total_works >= 1 {extra}
             ),
             bucket_pick AS (
                 SELECT *,
@@ -488,22 +530,22 @@ async def _fetch_mixed_page_filtered(pool, member_type: str, page_size: int, off
                 FROM ranked
             )
             SELECT member_id, member_name, member_type_field, state_name, completion_rate_pct, fund_utilization_pct,
-                   total_works, completed_works, sanctioned_works, performance_score, performance_classification,
+                   total_works, completed_works, sanctioned_works, performance_score_weighted, performance_classification,
                    sanctioned_amount, expenditure_amount
             FROM bucket_pick
             WHERE pick_num > {(page_num - 1) * per_bucket} AND pick_num <= {page_num * per_bucket}
-            ORDER BY performance_classification, performance_score DESC NULLS LAST
+            ORDER BY performance_classification, performance_score_weighted DESC NULLS LAST
         """, *extra_args)
     else:
         all_args = [member_type] + extra_args
         rows = await pool.fetch(f"""
             WITH ranked AS (
                 SELECT member_id, member_name, member_type as member_type_field, state_name, completion_rate_pct, fund_utilization_pct,
-                       total_works, completed_works, sanctioned_works, performance_score, performance_classification,
+                       total_works, completed_works, sanctioned_works, performance_score_weighted, performance_classification,
                        sanctioned_amount, expenditure_amount,
-                       ROW_NUMBER() OVER (PARTITION BY performance_classification ORDER BY performance_score DESC NULLS LAST) as rn
+                       ROW_NUMBER() OVER (PARTITION BY performance_classification ORDER BY performance_score_weighted DESC NULLS LAST) as rn
                 FROM public.member_metrics
-                WHERE total_works >= 5 AND member_type = $1 {extra}
+                WHERE total_works >= 1 AND member_type = $1 {extra}
             ),
             bucket_pick AS (
                 SELECT *,
@@ -511,11 +553,11 @@ async def _fetch_mixed_page_filtered(pool, member_type: str, page_size: int, off
                 FROM ranked
             )
             SELECT member_id, member_name, member_type_field, state_name, completion_rate_pct, fund_utilization_pct,
-                   total_works, completed_works, sanctioned_works, performance_score, performance_classification,
+                   total_works, completed_works, sanctioned_works, performance_score_weighted, performance_classification,
                    sanctioned_amount, expenditure_amount
             FROM bucket_pick
             WHERE pick_num > {(page_num - 1) * per_bucket} AND pick_num <= {page_num * per_bucket}
-            ORDER BY performance_classification, performance_score DESC NULLS LAST
+            ORDER BY performance_classification, performance_score_weighted DESC NULLS LAST
         """, *all_args)
 
     buckets = {}
@@ -586,7 +628,8 @@ async def get_member_detail(
                flagged_works, high_risk_works, medium_risk_works,
                flagged_rate_pct, high_risk_rate_pct, cost_anomaly_works,
                duration_anomaly_works, anomaly_score, anomaly_level,
-               confidence_level, performance_classification, rank, performance_score
+               confidence_level, performance_classification, rank, performance_score,
+               performance_score_weighted
         FROM public.member_metrics
         WHERE member_id = $1 {where_type}
     """, *args)
@@ -610,23 +653,48 @@ async def get_member_detail(
 
     member_dict = dict(member)
     if intel:
-        member_dict["performance_score_100"] = intel["performance_score_100"]
-        member_dict["performance_label"] = intel["performance_label"]
-        member_dict["performance_confidence"] = intel["performance_confidence"]
-        member_dict["national_rank"] = intel["national_rank"]
-        # Fallback to national_rank for the generic rank field used by the header.
-        member_dict["rank"] = member_dict.get("rank") or intel["national_rank"]
-        member_dict["national_percentile"] = intel["national_percentile"]
-        member_dict["peer_rank"] = intel["peer_rank"]
-        member_dict["peer_percentile"] = intel["peer_percentile"]
+        # Keep Wilson-based fields for ML/clustering context only
         member_dict["cluster_id"] = intel["cluster_id"]
         member_dict["cluster_label"] = intel["cluster_label"]
         member_dict["risk_score"] = intel["risk_score"]
         member_dict["risk_level"] = intel["risk_level"]
         member_dict["risk_confidence"] = intel["risk_confidence"]
         member_dict["risk_evidence"] = intel["risk_evidence"]
+        member_dict["peer_rank"] = intel["peer_rank"]
+        member_dict["peer_percentile"] = intel["peer_percentile"]
+        # DO NOT override rank/percentile/score with Wilson-based values.
+        # The authoritative rank comes from member_metrics.rank (weighted score).
+        # The authoritative score comes from member_metrics.performance_score_weighted.
+        # The authoritative classification comes from member_metrics.performance_classification.
+
+    # Map weighted rank to national_rank/national_percentile for frontend display
+    # The rank in member_metrics is computed from performance_score_weighted
+    w_rank = member_dict.get("rank")
+    if w_rank is not None:
+        member_dict["national_rank"] = w_rank
+        # Compute percentile from rank: percentile = (total - rank) / (total - 1) * 100
+        total_qualified = await db2.fetchval("""
+            SELECT COUNT(*) FROM public.member_metrics
+            WHERE member_type = $1 AND ranking_qualified = true
+        """, member_dict.get("member_type", "MP")) or 1
+        member_dict["national_percentile"] = round(
+            (total_qualified - w_rank) / max(total_qualified - 1, 1) * 100, 2
+        )
+
     member_type = member_dict.get("member_type") or "MP"
     scope = member_type if member_type in ("MP", "MLA") else "BOTH"
+
+    # Resolve constituency name from DB1
+    cid = member_dict.get("constituency_id")
+    if cid:
+        try:
+            crow = await db1.fetchrow(
+                "SELECT constituency_name FROM public.constituencies WHERE constituency_id = $1", cid
+            )
+            if crow:
+                member_dict["constituency_name"] = crow["constituency_name"]
+        except Exception:
+            pass
 
     # Run all remaining queries in parallel
     async def fetch_analysis():
@@ -846,16 +914,23 @@ async def get_state_detail(response: Response, state_id: int):
 
     state_dict = dict(state)
     if state_intel:
-        state_dict["performance_score_100"] = state_intel["performance_score_100"]
-        state_dict["performance_label"] = state_intel["performance_label"]
-        state_dict["performance_confidence"] = state_intel["performance_confidence"]
-        state_dict["rank"] = state_intel["rank"]
-        state_dict["national_percentile"] = state_intel["national_percentile"]
+        # Keep ML/clustering context from intelligence layer
         state_dict["cluster_id"] = state_intel["cluster_id"]
         state_dict["cluster_label"] = state_intel["cluster_label"]
         state_dict["risk_score"] = state_intel["risk_score"]
         state_dict["risk_level"] = state_intel["risk_level"]
         state_dict["risk_confidence"] = state_intel["risk_confidence"]
+        # DO NOT override rank/percentile/score with Wilson-based values.
+        # Authoritative rank comes from state_metrics.rank (weighted score).
+
+    # Map weighted rank to national_rank/national_percentile for frontend display
+    w_rank = state_dict.get("rank")
+    if w_rank is not None:
+        state_dict["national_rank"] = w_rank
+        total_states = await db2.fetchval("SELECT COUNT(*) FROM public.state_metrics") or 1
+        state_dict["national_percentile"] = round(
+            (total_states - w_rank) / max(total_states - 1, 1) * 100, 2
+        )
         state_dict["risk_evidence"] = state_intel["risk_evidence"]
     state_name = state_dict.get("state_name")
 
@@ -976,6 +1051,12 @@ async def get_state_works_paginated(
         _with_cache_headers(response, ttl)
         return cached
     db2 = await get_db2_pool()
+    db1 = await get_pool()
+
+    # Convert DB2 state_id → constituency_ids via DB1
+    cids_for_state = await _state_to_constituency_ids(db1, db2, state_id)
+    if not cids_for_state:
+        return {"items": [], "total": 0, "page": page, "page_size": page_size, "total_pages": 1}
 
     if category == "completed":
         status_clause = " AND LOWER(status) = 'completed'"
@@ -993,11 +1074,11 @@ async def get_state_works_paginated(
     try:
         count_row = await db2.fetchrow(f"""
             SELECT COUNT(*) AS cnt FROM (
-                SELECT work_id FROM public.work_analysis WHERE state_id = $1 {status_clause}
+                SELECT work_id FROM public.work_analysis WHERE constituency_id = ANY($1) {status_clause}
                 UNION ALL
-                SELECT work_id FROM public.mla_work_analysis WHERE state_id = $1 {status_clause}
+                SELECT work_id FROM public.mla_work_analysis WHERE constituency_id = ANY($1) {status_clause}
             ) t
-        """, state_id)
+        """, cids_for_state)
         total = int(count_row["cnt"]) if count_row else 0
 
         rows = await db2.fetch(f"""
@@ -1005,16 +1086,16 @@ async def get_state_works_paginated(
                 SELECT work_id, work_description, activity_name, work_category, status, risk_level,
                        recommended_amount, sanction_amount, expenditure_amount, completion_percentage,
                        recommendation_date, sanction_date, completion_date, member_type
-                FROM public.work_analysis WHERE state_id = $1 {status_clause}
+                FROM public.work_analysis WHERE constituency_id = ANY($1) {status_clause}
                 UNION ALL
                 SELECT work_id, work_description, activity_name, work_category, status, risk_level,
                        recommended_amount, sanction_amount, expenditure_amount, completion_percentage,
                        recommendation_date, sanction_date, completion_date, member_type
-                FROM public.mla_work_analysis WHERE state_id = $1 {status_clause}
+                FROM public.mla_work_analysis WHERE constituency_id = ANY($1) {status_clause}
             ) t
             ORDER BY sanction_amount DESC NULLS LAST
             LIMIT {page_size} OFFSET {offset}
-        """, state_id)
+        """, cids_for_state)
         items = [dict(r) for r in rows]
     except Exception:
         pass
@@ -1036,31 +1117,34 @@ async def get_state_constituencies(state_id: int):
     """Representative/constituency-level aggregation for a state. Names are
     resolved on the frontend from the state's member records."""
     db2 = await get_db2_pool()
+    db1 = await get_pool()
+    cids_for_state = await _state_to_constituency_ids(db1, db2, state_id)
     rows = []
-    try:
-        rows = await db2.fetch("""
-            SELECT t.member_id,
-                   t.member_type,
-                   COUNT(*) AS total_works,
-                   COUNT(*) FILTER (WHERE LOWER(t.status) = 'completed') AS completed_works,
-                   COALESCE(SUM(t.sanction_amount), 0) AS sanctioned_amount,
-                   COALESCE(SUM(t.expenditure_amount), 0) AS expenditure_amount,
-                   ROUND(CASE WHEN COALESCE(SUM(t.sanction_amount),0) > 0
-                        THEN SUM(t.expenditure_amount)/SUM(t.sanction_amount)*100 ELSE 0 END, 2) AS utilization_pct,
-                   ROUND(CASE WHEN COUNT(*) > 0
-                        THEN COUNT(*) FILTER (WHERE LOWER(t.status)='completed')::numeric/COUNT(*)*100 ELSE 0 END, 2) AS completion_rate_pct
-            FROM (
-                SELECT member_id, member_type, status, sanction_amount, expenditure_amount
-                FROM public.work_analysis WHERE state_id = $1
-                UNION ALL
-                SELECT member_id, member_type, status, sanction_amount, expenditure_amount
-                FROM public.mla_work_analysis WHERE state_id = $1
-            ) t
-            GROUP BY t.member_id, t.member_type
-            ORDER BY utilization_pct DESC NULLS LAST
-        """, state_id)
-    except Exception:
-        rows = []
+    if cids_for_state:
+        try:
+            rows = await db2.fetch("""
+                SELECT t.member_id,
+                       t.member_type,
+                       COUNT(*) AS total_works,
+                       COUNT(*) FILTER (WHERE LOWER(t.status) = 'completed') AS completed_works,
+                       COALESCE(SUM(t.sanction_amount), 0) AS sanctioned_amount,
+                       COALESCE(SUM(t.expenditure_amount), 0) AS expenditure_amount,
+                       ROUND(CASE WHEN COALESCE(SUM(t.sanction_amount),0) > 0
+                            THEN SUM(t.expenditure_amount)/SUM(t.sanction_amount)*100 ELSE 0 END, 2) AS utilization_pct,
+                       ROUND(CASE WHEN COUNT(*) > 0
+                            THEN COUNT(*) FILTER (WHERE LOWER(t.status)='completed')::numeric/COUNT(*)*100 ELSE 0 END, 2) AS completion_rate_pct
+                FROM (
+                    SELECT member_id, member_type, status, sanction_amount, expenditure_amount
+                    FROM public.work_analysis WHERE constituency_id = ANY($1)
+                    UNION ALL
+                    SELECT member_id, member_type, status, sanction_amount, expenditure_amount
+                    FROM public.mla_work_analysis WHERE constituency_id = ANY($1)
+                ) t
+                GROUP BY t.member_id, t.member_type
+                ORDER BY utilization_pct DESC NULLS LAST
+            """, cids_for_state)
+        except Exception:
+            rows = []
 
     items = []
     for r in rows:
@@ -1103,15 +1187,29 @@ async def list_constituencies(response: Response, state_id: int = Query(None)):
     db2 = await get_db2_pool()
     if state_id:
         try:
+            # Convert DB2 state_id → state_name → DB1 constituency_ids
+            smrow = await db2.fetchrow(
+                "SELECT state_name FROM public.state_metrics WHERE state_id = $1", state_id
+            )
+            cids_for_state = []
+            if smrow and smrow["state_name"]:
+                crows = await db1.fetch(
+                    "SELECT c.constituency_id FROM public.constituencies c "
+                    "JOIN public.states s ON c.state_id = s.state_id "
+                    "WHERE s.state_name = $1", smrow["state_name"]
+                )
+                cids_for_state = [r["constituency_id"] for r in crows]
+            if not cids_for_state:
+                return []
             rows = await db2.fetch("""
                 SELECT constituency_id, COUNT(*) AS work_count FROM (
-                    SELECT constituency_id FROM public.work_analysis WHERE state_id = $1
+                    SELECT constituency_id FROM public.work_analysis WHERE constituency_id = ANY($1)
                     UNION ALL
-                    SELECT constituency_id FROM public.mla_work_analysis WHERE state_id = $1
+                    SELECT constituency_id FROM public.mla_work_analysis WHERE constituency_id = ANY($1)
                 ) t
                 WHERE constituency_id IS NOT NULL
                 GROUP BY constituency_id
-            """, state_id)
+            """, cids_for_state)
             mmap = {}
             try:
                 mrows = await db2.fetch(
@@ -1208,7 +1306,12 @@ async def list_works(
     args = []
     idx = 1
     if state_id:
-        filters.append(f"state_id = ${idx}"); args.append(state_id); idx += 1
+        # DB2 state_id numbering differs from DB1. Convert via state name.
+        cids_for_state = await _state_to_constituency_ids(db1, db2, state_id)
+        if cids_for_state:
+            filters.append(f"constituency_id = ANY(${idx})"); args.append(cids_for_state); idx += 1
+        else:
+            filters.append("1 = 0")
     if constituency_id:
         filters.append(f"constituency_id = ${idx}"); args.append(constituency_id); idx += 1
     if member_id:
@@ -1217,7 +1320,7 @@ async def list_works(
         filters.append(f"work_category = ${idx}"); args.append(work_category); idx += 1
     status_clause = _work_status_clause(category)
     if q:
-        filters.append(f"(work_description ILIKE ${idx} OR activity_name ILIKE ${idx})")
+        filters.append(f"(work_description ILIKE ${idx} OR activity_name ILIKE ${idx} OR normalized_activity ILIKE ${idx})")
         args.append(f"%{q}%"); idx += 1
     where = ("WHERE " + " AND ".join(filters)) if filters else ""
 
@@ -1231,14 +1334,14 @@ async def list_works(
 
     union = f"""
         SELECT work_id, member_id, member_type, constituency_id, state_id, state_name,
-               work_category, work_description, activity_name, status,
+               work_category, work_description, activity_name, normalized_activity, status,
                recommended_amount, sanction_amount, expenditure_amount,
                completion_percentage, recommendation_date, sanction_date, completion_date,
                project_age_days, execution_days, risk_level
         FROM public.work_analysis {where} {status_clause}
         UNION ALL
         SELECT work_id, member_id, member_type, constituency_id, state_id, state_name,
-               work_category, work_description, activity_name, status,
+               work_category, work_description, activity_name, normalized_activity, status,
                recommended_amount, sanction_amount, expenditure_amount,
                completion_percentage, recommendation_date, sanction_date, completion_date,
                project_age_days, execution_days, risk_level
@@ -1255,7 +1358,6 @@ async def list_works(
     offset = (page - 1) * page_size
     total = 0
     items = []
-    constituency_names = {}
     try:
         crow = await db2.fetchrow(f"SELECT COUNT(*) AS cnt FROM ({union}) t", *args)
         total = int(crow["cnt"]) if crow else 0
@@ -1266,16 +1368,34 @@ async def list_works(
             LIMIT {page_size} OFFSET {offset}
         """, *args)
         items = [dict(r) for r in rows]
+        constituency_names = {}
+        cid_to_db1_sid = {}
+        state_names_map = {}
         if items:
             cids = [i["constituency_id"] for i in items if i.get("constituency_id")]
             if cids:
                 crows = await db1.fetch(
-                    "SELECT constituency_id, constituency_name FROM public.constituencies WHERE constituency_id = ANY($1)",
+                    "SELECT constituency_id, constituency_name, state_id FROM public.constituencies WHERE constituency_id = ANY($1)",
                     cids,
                 )
                 constituency_names = {r["constituency_id"]: r["constituency_name"] for r in crows}
+                # Build constituency_id -> DB1 state_id mapping
+                cid_to_db1_sid = {r["constituency_id"]: r["state_id"] for r in crows}
+                # Resolve state names from DB1's states table using DB1 state_ids
+                db1_sids = list(set(cid_to_db1_sid.values()))
+                state_names_map = {}
+                if db1_sids:
+                    srows = await db1.fetch(
+                        "SELECT state_id, state_name FROM public.states WHERE state_id = ANY($1)",
+                        db1_sids,
+                    )
+                    state_names_map = {r["state_id"]: r["state_name"] for r in srows}
             for i in items:
                 i["constituency_name"] = constituency_names.get(i.get("constituency_id"))
+                # Derive correct state from constituency's DB1 state_id
+                db1_sid = cid_to_db1_sid.get(i.get("constituency_id")) if cids else None
+                if db1_sid and state_names_map.get(db1_sid):
+                    i["state_name"] = state_names_map[db1_sid]
     except Exception:
         pass
 
@@ -1283,6 +1403,72 @@ async def list_works(
     value = {"items": items, "total": total, "page": page, "page_size": page_size, "total_pages": total_pages}
     _with_cache_headers(response, ttl)
     return _cache_set(cache_key, value, ttl=ttl)
+
+
+@router.get("/works/detail/{work_id}")
+async def get_work_detail(response: Response, work_id: int):
+    """Single work record detail. Looks in work_analysis (MP) then mla_work_analysis (MLA)."""
+    cache_key, ttl = _cacheable("work_detail", "work_detail", work_id)
+    cached = _cache_get(cache_key)
+    if cached is not None:
+        _with_cache_headers(response, ttl)
+        return cached
+    db2 = await get_db2_pool()
+    db1 = await get_pool()
+
+    row = await db2.fetchrow(
+        "SELECT *, 'MP' as source_table FROM public.work_analysis WHERE work_id = $1", work_id
+    )
+    if not row:
+        row = await db2.fetchrow(
+            "SELECT *, 'MLA' as source_table FROM public.mla_work_analysis WHERE work_id = $1", work_id
+        )
+    if not row:
+        raise HTTPException(status_code=404, detail="Work not found")
+
+    work = dict(row)
+
+    member_info = None
+    if work.get("member_id"):
+        # Use member_type from work_analysis to pick the correct member_metrics row
+        mt = work.get("member_type", "MP")
+        member_info = await db2.fetchrow(
+            "SELECT member_id, member_name, member_type, state_name, constituency_id "
+            "FROM public.member_metrics WHERE member_id = $1 AND UPPER(member_type) = UPPER($2)",
+            work["member_id"], mt,
+        )
+        # Fallback: try without member_type filter
+        if not member_info:
+            member_info = await db2.fetchrow(
+                "SELECT member_id, member_name, member_type, state_name, constituency_id "
+                "FROM public.member_metrics WHERE member_id = $1", work["member_id"]
+            )
+        if member_info:
+            work["member_name"] = member_info["member_name"]
+            work["member_type"] = member_info["member_type"]
+            work["mp_state_name"] = member_info["state_name"]
+
+    if work.get("constituency_id"):
+        try:
+            crow = await db1.fetchrow(
+                "SELECT constituency_name, state_id FROM public.constituencies WHERE constituency_id = $1",
+                work["constituency_id"],
+            )
+            if crow:
+                work["constituency_name"] = crow["constituency_name"]
+                # Derive correct state from constituency's DB1 state_id
+                if crow["state_id"]:
+                    srow = await db1.fetchrow(
+                        "SELECT state_name FROM public.states WHERE state_id = $1",
+                        crow["state_id"],
+                    )
+                    if srow:
+                        work["state_name"] = srow["state_name"]
+        except Exception:
+            pass
+
+    _with_cache_headers(response, ttl)
+    return _cache_set(cache_key, work, ttl=ttl)
 
 
 @router.get("/projects/summary")
@@ -1714,7 +1900,8 @@ async def risk_alerts(response: Response, limit: int = Query(6, ge=1, le=50), en
                    anomaly_score, anomaly_level, risk_score, risk_level, confidence_level,
                    flagged_works, high_risk_works, risk_rate_pct AS flagged_rate_pct
             FROM public.state_metrics
-            ORDER BY risk_score DESC NULLS LAST LIMIT {limit}
+            WHERE UPPER(risk_level) IN ('HIGH','CRITICAL')
+            ORDER BY risk_score DESC NULLS LAST
         """)
 
     member_rows, state_rows = await asyncio.gather(fetch_members(), fetch_states(), return_exceptions=True)
@@ -1725,7 +1912,7 @@ async def risk_alerts(response: Response, limit: int = Query(6, ge=1, le=50), en
         for r in state_rows:
             d = dict(r); d["entity_type"] = "state"; out.append(d)
     out.sort(key=lambda x: -(x.get("risk_score") or 0))
-    value = {"items": out[:limit]}
+    value = {"items": out}
     _with_cache_headers(response, ttl)
     return _cache_set(cache_key, value, ttl=ttl)
 

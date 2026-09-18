@@ -384,7 +384,7 @@
     pageStates.forEach(function(s, i) {
       var util = Number(s.fund_utilization_pct) || Number(s.expenditure_sanction_utilization_pct) || 0;
       var comp = Number(s.completion_rate_pct) || 0;
-      var cls = s.performance_classification || 'N/A';
+      var cls = s.performance_label || s.performance_classification || 'N/A';
       var cc = getClsColor(cls);
       var uc = getColor(util);
       var totalWorks = s.total_works || 0;
@@ -549,6 +549,7 @@
       var c = map[s.state_id];
       if (c) {
         s.performance_classification = c.performance_classification;
+        s.performance_label = c.performance_label;
         s.performance_score = c.performance_score;
         if (!s.fund_utilization_pct) s.fund_utilization_pct = c.fund_utilization_pct;
       }

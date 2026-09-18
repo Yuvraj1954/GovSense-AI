@@ -1,34 +1,31 @@
-"""Deterministic performance scoring for members and states."""
+"""Deterministic performance scoring for members and states.
+
+Authoritative formula:
+  performance_score_weighted =
+      0.40 * completion_rate_pct
+    + 0.40 * fund_utilization_pct
+    + 0.20 * scale_score
+
+Where scale_score = percentile rank (midrank) of total_works across
+the ranking-qualified population (0-100).
+"""
 import math
 from typing import List, Dict, Any
 import asyncpg
 from automation.intelligence.database import db2_pool
 
 
-def _wilson_lower_bound(successes: int, trials: int, confidence: float = 0.95) -> float:
-    """Wilson score interval lower bound, scaled 0-100."""
-    if trials <= 0:
+def _percentile_rank(values, target):
+    """Midrank percentile: (count_below + 0.5 * count_equal) / n * 100."""
+    n = len(values)
+    if n == 0:
         return 0.0
-    successes = max(0, min(successes, trials))
-    z = 1.96 if confidence == 0.95 else 2.576
-    p = successes / trials
-    n = trials
-    z2 = z * z
-    denominator = 1 + z2 / n
-    centre = p + z2 / (2 * n)
-    width = z * math.sqrt((p * (1 - p) / n) + (z2 / (4 * n * n)))
-    lower = (centre - width) / denominator
-    return max(0.0, min(100.0, lower * 100.0))
+    below = sum(1 for v in values if v < target)
+    at = sum(1 for v in values if v == target)
+    return round((below + 0.5 * at) / n * 100.0, 2)
 
 
-def _bayesian_shrinkage(value: float, n: int, prior: float, k: float) -> float:
-    """Shrink value toward prior with strength k."""
-    if n is None or n <= 0:
-        return prior
-    return (value * n + prior * k) / (n + k)
-
-
-def performance_label(score: float, sample_size: int, zero_work: bool = False) -> str:
+def performance_label(score, sample_size, zero_work=False):
     if zero_work or sample_size == 0 or score is None:
         return "NO_DATA"
     if score >= 85:
@@ -42,7 +39,7 @@ def performance_label(score: float, sample_size: int, zero_work: bool = False) -
     return "UNDERPERFORMER"
 
 
-def performance_confidence(sample_size: int) -> str:
+def performance_confidence(sample_size):
     if sample_size == 0:
         return "NONE"
     if sample_size < 5:
@@ -53,7 +50,14 @@ def performance_confidence(sample_size: int) -> str:
 
 
 async def compute_member_performance() -> int:
-    """Compute deterministic performance scores for all members."""
+    """Compute deterministic performance scores for all members.
+
+    Uses the authoritative 0-100 weighted formula:
+      performance_score_weighted = 0.40 * comp + 0.40 * util + 0.20 * scale_score
+
+    Writes to member_metrics: performance_score, performance_score_weighted,
+    performance_classification.
+    """
     p2 = await db2_pool()
     try:
         async with p2.acquire() as conn:
@@ -61,32 +65,26 @@ async def compute_member_performance() -> int:
             if not rows:
                 return 0
 
-            # Compute raw scores first
-            raw_scores: List[float] = []
-            valid_n = []
-            for r in rows:
-                if r["zero_work_member"]:
-                    continue
-                impl = _wilson_lower_bound(r["completed_works"], r["recommended_works"])
-                util = min(100.0, max(0.0, float(r["fund_utilization_pct"] or 0)))
-                raw = (impl + util) / 2.0
-                raw_scores.append(raw)
-                valid_n.append(r["total_works"])
-
-            prior = sum(raw_scores) / len(raw_scores) if raw_scores else 50.0
+            # Compute percentile rank of total_works for scale_score
+            qualified_total_works = [
+                int(r["total_works"] or 0)
+                for r in rows
+                if not r["zero_work_member"] and (r["total_works"] or 0) >= 5
+            ]
 
             updates = []
             for r in rows:
-                if r["zero_work_member"] or r["total_works"] == 0:
+                if r["zero_work_member"] or (r["total_works"] or 0) == 0:
                     score = 0.0
                     weighted = 0.0
                 else:
-                    impl = _wilson_lower_bound(r["completed_works"], r["recommended_works"])
+                    comp = float(r["completion_rate_pct"] or 0)
                     util = min(100.0, max(0.0, float(r["fund_utilization_pct"] or 0)))
-                    raw = (impl + util) / 2.0
-                    n = r["total_works"]
-                    score = _bayesian_shrinkage(raw, n, prior, k=5.0)
-                    weighted = score
+                    total_works = int(r["total_works"] or 0)
+                    scale = _percentile_rank(qualified_total_works, total_works) if total_works >= 5 else 0.0
+                    weighted = round(comp * 0.40 + util * 0.40 + scale * 0.20, 2)
+                    score = weighted
+
                 updates.append({
                     "member_id": r["member_id"],
                     "member_type": r["member_type"],
@@ -111,7 +109,10 @@ async def compute_member_performance() -> int:
 
 
 async def compute_state_performance() -> int:
-    """Compute deterministic performance scores for all states."""
+    """Compute deterministic performance scores for all states.
+
+    Uses the authoritative 0-100 weighted formula.
+    """
     p2 = await db2_pool()
     try:
         async with p2.acquire() as conn:
@@ -119,29 +120,26 @@ async def compute_state_performance() -> int:
             if not rows:
                 return 0
 
-            raw_scores = []
-            for r in rows:
-                if r["total_works"] == 0:
-                    continue
-                impl = _wilson_lower_bound(r["completed_works"], r["recommended_works"])
-                util = min(100.0, max(0.0, float(r["fund_utilization_pct"] or 0)))
-                raw = (impl + util) / 2.0
-                raw_scores.append(raw)
-
-            prior = sum(raw_scores) / len(raw_scores) if raw_scores else 50.0
+            # Compute percentile rank of total_works for scale_score
+            qualified_total_works = [
+                int(r["total_works"] or 0)
+                for r in rows
+                if (r["total_works"] or 0) > 0
+            ]
 
             updates = []
             for r in rows:
-                if r["total_works"] == 0:
+                if (r["total_works"] or 0) == 0:
                     score = 0.0
                     weighted = 0.0
                 else:
-                    impl = _wilson_lower_bound(r["completed_works"], r["recommended_works"])
+                    comp = float(r["completion_rate_pct"] or 0)
                     util = min(100.0, max(0.0, float(r["fund_utilization_pct"] or 0)))
-                    raw = (impl + util) / 2.0
-                    n = r["total_works"]
-                    score = _bayesian_shrinkage(raw, n, prior, k=10.0)
-                    weighted = score
+                    total_works = int(r["total_works"] or 0)
+                    scale = _percentile_rank(qualified_total_works, total_works)
+                    weighted = round(comp * 0.40 + util * 0.40 + scale * 0.20, 2)
+                    score = weighted
+
                 updates.append({
                     "state_id": r["state_id"],
                     "performance_score": score,

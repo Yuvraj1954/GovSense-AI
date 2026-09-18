@@ -9,7 +9,7 @@ not corrupt DB1 raw ingestion.
 
 Steps:
   1. DB2 intelligence generation (work_analysis, metrics, ML, risk)
-  2. Entity classification (DB2, 200-point system)
+  2. Entity classification (DB2, 0-100 weighted score)
   3. Allocation matching reconciliation
   4. Intelligence rank / label reconciliation
   5. Update data_updated timestamp
@@ -279,13 +279,13 @@ async def step_intelligence(results, skip: bool = False, full: bool = False, dry
     P(f"  work_analysis: {result.get('work_analysis', {})}")
     P(f"  member_metrics: {result.get('member_metrics', 0)}")
     P(f"  state_metrics: {result.get('state_metrics', 0)}")
-    P(f"  model statuses: isolation_forest={result.get('anomaly', {}).get('isolation_forest', {}).get('status')}, project_delay_xgb={result.get('delay_xgb', {}).get('status')}")
+    P(f"  model statuses: isolation_forest={result.get('anomaly', {}).get('isolation_forest', {}).get('status')}")
     P(f"  duration: {result.get('duration_seconds', 0):.1f}s")
     return fingerprint
 
 
 async def step_classification(db2, results, dry_run: bool = False):
-    P("\n[Step 2] Entity classification (200-point)")
+    P("\n[Step 2] Entity classification (0-100 weighted score)")
     if dry_run:
         P("  DRY RUN: would run classification")
         results["classification"] = {"dry_run": True}

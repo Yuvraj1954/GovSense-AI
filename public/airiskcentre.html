@@ -533,16 +533,16 @@
 <!-- Entity Filter Tabs: All, MPs, MLAs, States -->
 <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 self-start sm:self-auto text-xs" id="alertTabsContainer">
 <button class="alert-tab-btn px-3 py-1 rounded-lg font-bold transition bg-white text-slate-900 shadow-xs" data-target="all">
-              All <span class="ml-1 text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full">18</span>
+              All <span class="ml-1 text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full">—</span>
 </button>
 <button class="alert-tab-btn px-3 py-1 rounded-lg font-semibold hover:text-slate-900 transition text-slate-600" data-target="mp">
-              MPs <span class="ml-1 text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full">12</span>
+              MPs <span class="ml-1 text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full">—</span>
 </button>
 <button class="alert-tab-btn px-3 py-1 rounded-lg font-semibold hover:text-slate-900 transition text-slate-600" data-target="mla">
-              MLAs <span class="ml-1 text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full">6</span>
+              MLAs <span class="ml-1 text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full">—</span>
 </button>
 <button class="alert-tab-btn px-3 py-1 rounded-lg font-semibold hover:text-slate-900 transition text-slate-600" data-target="state">
-              States <span class="ml-1 text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full">4</span>
+              States <span class="ml-1 text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full">—</span>
 </button>
 </div>
 </div>
@@ -551,10 +551,10 @@
 <div class="col-span-full text-center py-10 text-slate-400 text-sm">Loading priority alerts...</div>
 
 </div>
-<!-- View All Button -->
+<!-- View All Button (hidden initially, shown by JS if needed) -->
 <div class="flex justify-center pt-2">
-<button class="px-5 py-2 rounded-xl border border-slate-300 hover:bg-white text-slate-700 font-bold text-xs shadow-2xs hover:shadow-xs transition flex items-center gap-2" id="viewAllAlertsBtn">
-<span class="" id="viewAllAlertsLabel">View All High-Priority Alerts</span>
+<button class="hidden px-5 py-2 rounded-xl border border-slate-300 hover:bg-white text-slate-700 font-bold text-xs shadow-2xs hover:shadow-xs transition flex items-center gap-2" id="viewAllAlertsBtn">
+<span class="" id="viewAllAlertsLabel">View More</span>
 <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 </button>
 </div>

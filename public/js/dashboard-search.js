@@ -1,6 +1,7 @@
 (function () {
   var API_BASE = (typeof window.API_BASE === 'string') ? window.API_BASE : 'http://127.0.0.1:8000';
   var statesList = null;
+  var membersList = null;
 
   function esc(s) { return String(s == null ? '' : s); }
 
@@ -10,6 +11,14 @@
       .then(function (r) { return r.ok ? r.json() : []; })
       .then(function (d) { statesList = d || []; return statesList; })
       .catch(function () { statesList = []; return statesList; });
+  }
+
+  function ensureMembers() {
+    if (membersList) return Promise.resolve(membersList);
+    return fetch(API_BASE + '/api/members/scatter?member_type=BOTH')
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (d) { membersList = d || []; return membersList; })
+      .catch(function () { membersList = []; return membersList; });
   }
 
   function memberDetailHref(m) {
@@ -29,9 +38,18 @@
       members.forEach(function (m) {
         var href = memberDetailHref(m);
         var mt = m.member_type || m.member_type_field || '';
+        var house = m.house_name || '';
+        var cons = m.constituency_name || '';
+        var works = m.total_works || 0;
+        var parts = [mt];
+        if (house) parts.push(house);
+        if (cons) parts.push(cons);
+        else if (m.state_name) parts.push(m.state_name);
+        var extra = parts.join(' · ');
+        if (works) extra += ' (' + works + ' works)';
         html += '<a class="flex items-center justify-between px-2.5 py-1.5 hover:bg-slate-50 rounded cursor-pointer transition" href="' + href + '">' +
           '<span class="font-medium text-slate-800">' + esc(m.member_name) + '</span>' +
-          '<span class="text-[10px] text-slate-400">' + esc(mt) + ' · ' + esc(m.state_name || '') + '</span></a>';
+          '<span class="text-[10px] text-slate-400">' + esc(extra) + '</span></a>';
       });
       html += '</div>';
     }
@@ -55,12 +73,24 @@
   function doSearch(q, dropdownId) {
     var query = q.trim();
     if (query.length < 1) return Promise.resolve();
-    var memberPromise = fetch(API_BASE + '/api/members/search?q=' + encodeURIComponent(query) + '&member_type=BOTH&limit=6')
-      .then(function (r) { return r.ok ? r.json() : { items: []; }; })
-      .then(function (d) { return d.items || []; })
-      .catch(function () { return []; });
+    var lower = query.toLowerCase();
+    var memberPromise = ensureMembers().then(function (all) {
+      if (!all || !all.length) {
+        return fetch(API_BASE + '/api/members/scatter?member_type=BOTH')
+          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (d) { membersList = d || []; return membersList; })
+          .catch(function () { return []; })
+          .then(function (fresh) {
+            return fresh.filter(function (m) {
+              return (m.member_name || '').toLowerCase().indexOf(lower) !== -1;
+            }).slice(0, 6);
+          });
+      }
+      return all.filter(function (m) {
+        return (m.member_name || '').toLowerCase().indexOf(lower) !== -1;
+      }).slice(0, 6);
+    });
     var statePromise = ensureStates().then(function (all) {
-      var lower = query.toLowerCase();
       return all.filter(function (s) { return (s.state_name || '').toLowerCase().indexOf(lower) !== -1; }).slice(0, 5);
     });
     return Promise.all([memberPromise, statePromise]).then(function (res) {
@@ -76,6 +106,7 @@
     if (!input || !dropdown) return;
 
     ensureStates();
+    ensureMembers();
     var deb = null;
     var seq = 0;
 
@@ -112,6 +143,9 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    ensureStates();
+    ensureMembers();
+
     // Desktop search (in header)
     bindSearch('headerSearchInputDesktop', 'searchResultsDropdownDesktop', 'clearSearchBtnDesktop', 'searchContainerDesktop');
     // Mobile search (in scrollable section)

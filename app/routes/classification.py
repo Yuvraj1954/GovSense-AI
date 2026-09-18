@@ -72,6 +72,7 @@ class StateClassificationResponse(BaseModel):
     state_name: str
     performance_score: float | None
     performance_classification: str
+    performance_label: str | None = None
     total_works: int
     completed_works: int
     completion_rate_pct: float | None
@@ -135,10 +136,12 @@ async def get_state_classifications(response: Response):
     pool = await get_db2_pool()
     try:
         rows = await pool.fetch(
-            "SELECT state_id, state_name, performance_score, performance_classification, "
-            "total_works, completed_works, completion_rate_pct, fund_utilization_pct "
-            "FROM public.state_metrics "
-            "ORDER BY state_name"
+            "SELECT m.state_id, m.state_name, m.performance_score, m.performance_classification, "
+            "i.performance_label, "
+            "m.total_works, m.completed_works, m.completion_rate_pct, m.fund_utilization_pct "
+            "FROM public.state_metrics m "
+            "LEFT JOIN public.state_intelligence i ON m.state_id = i.state_id "
+            "ORDER BY m.state_name"
         )
     except Exception:
         raise HTTPException(status_code=500, detail="Database error")
@@ -152,20 +155,18 @@ async def get_state_classifications(response: Response):
 async def get_member_evidence(member_id: int):
     pool = await get_db2_pool()
     try:
-        # First get member name and type
         member = await pool.fetchrow(
-            "SELECT member_name, member_type FROM public.member_metrics WHERE member_id = $1",
+            "SELECT member_type FROM public.member_metrics WHERE member_id = $1",
             member_id
         )
         if member is None:
             return {"evidence": None}
         
-        # Now get evidence by name and type
         row = await pool.fetchrow(
             "SELECT evidence FROM public.entity_evidence "
-            "WHERE entity_name = $1 AND entity_type = $2 "
-            "ORDER BY evidence_version DESC LIMIT 1",
-            member["member_name"], member["member_type"]
+            "WHERE entity_id = $1 AND entity_type = $2 "
+            "ORDER BY evidence_version DESC, generated_at DESC LIMIT 1",
+            member_id, member["member_type"]
         )
     except Exception:
         raise HTTPException(status_code=500, detail="Database error")
@@ -186,12 +187,12 @@ async def get_member_analysis(member_id: int):
         if member is None:
             return {"analysis": None}
         
-        # Now get analysis by name and type
+        # Now get analysis by entity_id + entity_type
         row = await pool.fetchrow(
             "SELECT analysis_text, model, prompt_version, generated_at FROM public.ai_analysis "
-            "WHERE entity_name = $1 AND entity_type = $2 "
+            "WHERE entity_id = $1 AND entity_type = $2 "
             "ORDER BY generated_at DESC LIMIT 1",
-            member["member_name"], member["member_type"]
+            member_id, member["member_type"]
         )
     except Exception:
         raise HTTPException(status_code=500, detail="Database error")

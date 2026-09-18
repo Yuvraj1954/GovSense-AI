@@ -122,7 +122,7 @@
   function populateHeader(s) {
     document.title = (s.state_name || 'State') + ' — Govsense AI';
     setText('stateName', (s.state_name || '—').toUpperCase());
-    var cls = s.performance_classification || 'N/A';
+    var cls = s.performance_label || s.performance_classification || 'N/A';
     var c = getClsColor(cls);
     var el = document.getElementById('stateClassification');
     if (el) {
@@ -284,7 +284,7 @@
       else if (rk === 'low') rc = 'emerald';
       var desc = w.work_description || w.activity_name || 'No description';
       if (desc.length > 120) desc = desc.substring(0, 120) + '...';
-      html += '<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">' +
+      html += '<a class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer block" href="workdetail.html?id=' + w.work_id + '">' +
         '<div class="flex items-start justify-between gap-2 mb-2">' +
         '<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">' + (w.work_category || 'General') + '</span>' +
         '<div class="flex items-center gap-1.5">' +
@@ -296,7 +296,7 @@
         '<div><span class="text-slate-400">Sanction</span><div class="font-bold text-slate-900">' + fmtCr(w.sanction_amount) + '</div></div>' +
         '<div><span class="text-slate-400">Expenditure</span><div class="font-bold text-slate-900">' + fmtCr(w.expenditure_amount) + '</div></div></div>' +
         (w.recommendation_date ? '<div class="mt-2 text-[10px] text-slate-400">Recommended: ' + String(w.recommendation_date).substring(0, 10) + '</div>' : '') +
-        '</div>';
+        '</a>';
     });
     grid.innerHTML = html;
 
@@ -342,7 +342,8 @@
 
   // ===== AI TAB =====
   function populateAI(s, analysis) {
-    var score = Number(s.performance_score_100 != null ? s.performance_score_100 : s.performance_score) || 0;
+    var score = Number(s.performance_score_weighted != null ? s.performance_score_weighted
+      : s.performance_score_100 != null ? s.performance_score_100 : s.performance_score) || 0;
     var cls = s.performance_label || s.performance_classification || 'N/A';
     var displayMax = 100;
     var cc = getClsColor(cls);

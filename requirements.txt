@@ -4,6 +4,5 @@ asyncpg>=0.29.0
 pydantic-settings>=2.0.0
 # GovSense AI ML dependencies
 scikit-learn==1.9.1
-xgboost==3.4.1
 numpy==2.5.3
 scipy==1.18.1

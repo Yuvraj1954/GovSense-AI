@@ -52,21 +52,21 @@ async def build_member_intelligence() -> int:
             if not rows:
                 return 0
 
-            # National ranking across all qualifying members
+            # National ranking SEPARATELY within each member_type (MP and MLA)
             qualifying = [r for r in rows if r["total_works"] > 0]
             non_qualifying = [r for r in rows if r["total_works"] == 0]
-            n = len(qualifying)
 
-            national_ranks = _rank(qualifying, "performance_score_weighted", ascending=False)
-            for i, r in enumerate(qualifying):
-                r = dict(r)
-                qualifying[i] = r
-
-            # Peer ranking by member_type
             by_type: Dict[str, List[Dict[str, Any]]] = {}
             for r in qualifying:
                 by_type.setdefault(r["member_type"], []).append(r)
 
+            national_ranks_map = {}
+            for mtype, group in by_type.items():
+                ranks = _rank(group, "performance_score_weighted", ascending=False)
+                for i, r in enumerate(group):
+                    national_ranks_map[(r["member_id"], mtype)] = ranks[i]
+
+            # Peer ranking by member_type
             peer_ranks_map = {}
             for mtype, group in by_type.items():
                 ranks = _rank(group, "performance_score_weighted", ascending=False)
@@ -75,13 +75,14 @@ async def build_member_intelligence() -> int:
 
             # Build member_intelligence records
             records = []
-            for i, r in enumerate(qualifying):
+            for r in qualifying:
                 score = _safe_float(r["performance_score_weighted"])
                 sample = _safe_int(r["total_works"])
                 label = performance_label(score, sample, zero_work=False)
                 conf = performance_confidence(sample)
-                national_rank = national_ranks[i]
-                national_pct = _percentile_from_rank(national_rank, n)
+                national_rank = national_ranks_map[(r["member_id"], r["member_type"])]
+                n_qual_type = len(by_type[r["member_type"]])
+                national_pct = _percentile_from_rank(national_rank, n_qual_type)
                 peer_rank = peer_ranks_map[(r["member_id"], r["member_type"])]
                 peer_group_n = len(by_type[r["member_type"]])
                 peer_pct = _percentile_from_rank(peer_rank, peer_group_n)

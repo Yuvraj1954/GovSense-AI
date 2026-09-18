@@ -741,11 +741,21 @@
     <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Top 10 Performance Ranking</h2>
     <p class="text-[11px] text-slate-500 mt-0.5">Compare top members across key metrics</p>
   </div>
-  <div class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs font-medium" id="mpRankTabs">
-    <button class="rank-tab-btn active px-3 py-1 rounded-md bg-white text-slate-900 shadow-2xs font-semibold" data-metric="ai_score">AI Score</button>
-    <button class="rank-tab-btn px-3 py-1 rounded-md text-slate-600 hover:text-slate-900" data-metric="utilization">Fund Utilization</button>
-    <button class="rank-tab-btn px-3 py-1 rounded-md text-slate-600 hover:text-slate-900" data-metric="completion">Completion Rate</button>
-    <button class="rank-tab-btn px-3 py-1 rounded-md text-slate-600 hover:text-slate-900" data-metric="works">Total Works</button>
+  <div class="flex items-center gap-2 flex-wrap">
+    <div class="relative">
+      <select id="rankHouseFilter" class="text-xs border border-slate-300 rounded-lg pl-3 pr-7 py-1.5 bg-white text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer" style="-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:none;">
+        <option value="BOTH" selected>Both Houses</option>
+        <option value="MP">Lok Sabha (MPs)</option>
+        <option value="MLA">Rajya Sabha (MLAs)</option>
+      </select>
+      <svg class="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+    </div>
+    <div class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs font-medium" id="mpRankTabs">
+      <button class="rank-tab-btn active px-3 py-1 rounded-md bg-white text-slate-900 shadow-2xs font-semibold" data-metric="national">National Rank</button>
+      <button class="rank-tab-btn px-3 py-1 rounded-md text-slate-600 hover:text-slate-900" data-metric="utilization">Fund Utilization</button>
+      <button class="rank-tab-btn px-3 py-1 rounded-md text-slate-600 hover:text-slate-900" data-metric="completion">Completion Rate</button>
+      <button class="rank-tab-btn px-3 py-1 rounded-md text-slate-600 hover:text-slate-900" data-metric="works">Total Works</button>
+    </div>
   </div>
 </div>
 <div class="mt-4 space-y-2.5" id="mpRankingBarsList"></div>
@@ -761,9 +771,9 @@
 <!-- END: Section3_SearchAndFilters -->
 <!-- BEGIN: Section4_MpListCardsGrid -->
 <section data-purpose="mp-cards-grid">
-<div class="flex items-center justify-between mb-3">
+<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
 <h3 class="text-sm font-bold text-slate-800">Member of Parliament Performance</h3>
-<div class="flex items-center gap-1" id="mpSortButtons">
+<div class="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap sm:items-center sm:gap-1" id="mpSortButtons">
 <button class="mp-sort-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white shadow-xs" data-sort="mixed">Mixed View</button>
 <button class="mp-sort-btn px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" data-sort="performance_score">By Score</button>
 <button class="mp-sort-btn px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" data-sort="completion_rate_pct">By Completion</button>
@@ -910,5 +920,5 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="js/chart-anim.js?v=3"></script>
 <script src="js/searchable-select.js?v=3"></script>
 <script src="js/classification.js?v=3"></script>
-<script src="js/mps-data.js?v=3"></script>
+<script src="js/mps-data.js?v=4"></script>
 </body></html>

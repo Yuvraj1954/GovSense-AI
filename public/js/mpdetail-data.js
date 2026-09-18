@@ -115,9 +115,16 @@
     setText('mpHouse', m.house_name || (m.member_type === 'MLA' ? 'Rajya Sabha' : 'Lok Sabha'));
     setText('mpTenure', m.tenure || 'Current Term');
     setText('headerMpName', (m.member_name || '') + ' — ' + (m.state_name || ''));
-    setText('mpRank', m.rank ? ('National Rank #' + m.rank) : 'Rank: N/A');
-    setText('headerMeta', m.rank ? '#' + m.rank : 'Analysis');
-    var cls = m.performance_classification || 'N/A';
+    var conEl = document.getElementById('mpConstituency');
+    var conDot = document.getElementById('mpConstituencyDot');
+    if (m.constituency_name && conEl) {
+      conEl.textContent = m.constituency_name;
+      conEl.style.display = '';
+      if (conDot) conDot.style.display = '';
+    }
+    setText('mpRank', m.national_rank ? ('National Rank #' + m.national_rank) : m.rank ? ('National Rank #' + m.rank) : 'Rank: N/A');
+    setText('headerMeta', m.national_rank ? '#' + m.national_rank : m.rank ? '#' + m.rank : 'Analysis');
+    var cls = m.performance_label || m.performance_classification || 'N/A';
     var c = getClsColor(cls);
     var clsEl = document.getElementById('mpClassification');
     if (clsEl) {
@@ -493,19 +500,23 @@
 
   // ========== AI ANALYSIS ==========
   function populateAIAnalysis(m, analysis) {
-    // Phase: Intelligence Foundation. Prefer the authoritative 0-100 score +
-    // label + national rank/percentile + cluster label + risk from DB. Fall back
-    // to the legacy 0-200 score + classification only if the new fields are
-    // missing (e.g. before the intelligence backfill has run for this row).
-    var newScore = m.performance_score_100;
-    var newLabel = m.performance_label;
+    var skel = document.getElementById('aiSkeleton');
+    var content = document.getElementById('aiContent');
+    if (skel) skel.classList.add('hidden');
+    if (content) content.classList.remove('hidden');
+    // AUTHORITATIVE SCORE: performance_score_weighted (0-100, formula:
+    // 0.40*completion_rate_pct + 0.40*fund_utilization_pct + 0.20*scale_score).
+    // This is the ONLY score that drives rank, percentile, and classification
+    // on the detail page. Falls back to performance_score (0-200) only if
+    // weighted score is not yet computed.
+    var weightedScore = m.performance_score_weighted;
     var legacyScore = Number(m.performance_score) || 0;
-    var legacyLabel = m.performance_classification || 'N/A';
-    var hasNew = (newScore !== null && newScore !== undefined && newLabel);
-    var displayScore = hasNew ? Number(newScore) : legacyScore;
-    var displayLabel = hasNew ? newLabel : legacyLabel;
+    var displayScore = (weightedScore !== null && weightedScore !== undefined)
+      ? Number(weightedScore) : legacyScore;
+    // Classification from the authoritative weighted score system
+    var displayLabel = m.performance_classification || 'N/A';
     var displayMax = 100;
-    var cc = getClsColor(hasNew ? newLabel : legacyLabel);
+    var cc = getClsColor(displayLabel);
 
     // Score ring — animated when the AI Analysis tab is opened
     var ring = document.getElementById('aiScoreRing');
@@ -723,7 +734,7 @@
       else if (rk === 'low') rc = 'emerald';
       var desc = w.work_description || w.activity_name || 'No description';
       if (desc.length > 120) desc = desc.substring(0, 120) + '...';
-      html += '<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">' +
+      html += '<a class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer block" href="workdetail.html?id=' + w.work_id + '">' +
         '<div class="flex items-start justify-between gap-2 mb-2">' +
         '<span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">' + (w.work_category || 'General') + '</span>' +
         '<div class="flex items-center gap-1.5">' +
@@ -735,7 +746,7 @@
         '<div><span class="text-slate-400">Sanction</span><div class="font-bold text-slate-900">' + fmtCr(w.sanction_amount) + '</div></div>' +
         '<div><span class="text-slate-400">Expenditure</span><div class="font-bold text-slate-900">' + fmtCr(w.expenditure_amount) + '</div></div></div>' +
         (w.recommendation_date ? '<div class="mt-2 text-[10px] text-slate-400">Recommended: ' + w.recommendation_date + '</div>' : '') +
-        '</div>';
+        '</a>';
     });
     grid.innerHTML = html;
 

@@ -365,15 +365,11 @@ Back
 <ul class="space-y-2.5 text-[11px] text-slate-600">
 <li>
 <div class="font-bold text-slate-700">Multi-Source Risk Engine</div>
-<p>Combines 3 evidence sources with <strong>equal 1/3 weighting</strong>: (1) XGBoost delay probability (predictive), (2) Isolation Forest 95th-percentile anomaly score (unsupervised ML), (3) robust z-score entity anomaly (statistical). Score = mean of 3 normalized sources × 100. Risk levels determined by <strong>population percentile ranking</strong>: CRITICAL (≥90th percentile), HIGH (≥70th), MODERATE (≥40th), LOW (&lt;40th).</p>
+<p>Combines 2 evidence sources with <strong>equal weighting</strong>: (1) Isolation Forest 95th-percentile anomaly score (unsupervised ML), (2) robust z-score entity anomaly (statistical). Score = mean of 2 normalized sources × 100. Risk levels determined by <strong>population percentile ranking</strong>: CRITICAL (≥90th percentile), HIGH (≥70th), MODERATE (≥40th), LOW (&lt;40th).</p>
 </li>
 <li>
 <div class="font-bold text-slate-700">Confidence Assessment</div>
 <p>Based on sample size of works per entity. Members: ≥20 works → HIGH, ≥2 → MEDIUM, &lt;2 → LOW. States: ≥50 works → HIGH, ≥2 → MEDIUM, &lt;2 → LOW. This is a sample-adequacy label, not a statistical confidence interval.</p>
-</li>
-<li>
-<div class="font-bold text-slate-700">XGBoost Delay Model (NOT_READY)</div>
-<p>XGBClassifier predicting slow completion (execution_days &gt; 365 days). 10 sanction-time features. Temporal train/val/test split (cutoff 2026-01-01 / 2026-04-01). <strong>Currently NOT_READY</strong> — test set contains only one class (no recent completions crossing the split), so ROC/PR AUC undefined. No predictions are persisted when NOT_READY.</p>
 </li>
 </ul>
 </div>
@@ -382,7 +378,7 @@ Back
 <div class="mt-4 p-4 bg-violet-50 border border-violet-200 rounded-xl">
 <h4 class="text-xs font-bold text-violet-800 uppercase tracking-wider mb-2">Key Statistical Principles</h4>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[11px] text-violet-700">
-<div><strong>Reproducibility:</strong> All computations are deterministic given the same DB1 snapshot. K-Means uses fixed random_state=42. XGBoost and Isolation Forest use deterministic temporal splits.</div>
+<div><strong>Reproducibility:</strong> All computations are deterministic given the same DB1 snapshot. K-Means uses fixed random_state=42. Isolation Forest uses deterministic contamination threshold.</div>
 <div><strong>Explainability:</strong> Every score and classification can be traced to input indicators and weights. Cluster labels are human-readable. Gemini outputs include explicit evidence citations.</div>
 <div><strong>Conservatism:</strong> When data is insufficient (&lt;5 works for members, &lt;10 for states), the system defaults to NO_DATA or INSUFFICIENT_DATA rather than producing potentially misleading scores.</div>
 </div>
@@ -502,7 +498,6 @@ Back
 <li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span>Risk flags are probabilistic assessments based on statistical anomaly detection. They do not imply misconduct or wrongdoing.</li>
 <li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span>Data freshness depends on the NIC portal update cycle. There may be a lag between ground reality and available records.</li>
 <li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span>MLA data coverage varies by state. Some states may have incomplete records.</li>
-<li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span><strong>XGBoost delay prediction model</strong> is currently NOT_READY — the test set is single-class (no recent completions crossing the temporal split), so ROC/PR AUC are undefined. No delay predictions are persisted. This will activate automatically once sufficient temporal data accumulates.</li>
 <li class="flex items-start gap-2"><span class="text-slate-400 mt-0.5">&bull;</span><strong>Gemini AI</strong> is an explanation layer, not a predictive model. It generates natural-language summaries and highlights from pre-computed deterministic evidence. It does not produce probability scores or classifications.</li>
 </ul>
 </div>

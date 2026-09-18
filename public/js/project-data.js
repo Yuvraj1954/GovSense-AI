@@ -16,7 +16,8 @@
   function cleanName(w) {
     var s = (w.activity_name && w.activity_name.trim())
       ? w.activity_name
-      : (w.work_description && w.work_description.trim() ? w.work_description : '');
+      : (w.work_description && w.work_description.trim() ? w.work_description
+      : (w.normalized_activity && w.normalized_activity.trim() ? w.normalized_activity : ''));
     if (!s) return '';
     s = s.replace(/^\s*NA\s*[-–—:]\s*/i, '').trim();
     // Strip leading reference codes like "WS/MP18309/2024-2025/143138-"
@@ -190,6 +191,12 @@
       setHTML('worksPagination', '');
       return;
     }
+
+    items.sort(function (a, b) {
+      var aUnnamed = cleanName(a) ? 0 : 1;
+      var bUnnamed = cleanName(b) ? 0 : 1;
+      return aUnnamed - bUnnamed;
+    });
 
     var html = '';
     items.forEach(function (w) {

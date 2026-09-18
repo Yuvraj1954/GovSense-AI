@@ -219,17 +219,27 @@
   }
 
   // ================= ALERTS =================
-  var baseAlerts = [];
-  var alertsExpanded = false;
+  var allAlerts = [];
+  var currentFilter = 'all';
+  var visibleCount = 9;
+  var BATCH_SIZE = 3;
+  var INITIAL_COUNT = 9;
+
+  function isHighPriority(e) {
+    var lvl = (e.risk_level || '').toUpperCase();
+    return lvl === 'CRITICAL' || lvl === 'HIGH';
+  }
 
   function loadAlerts() {
-    fetch(API_BASE + '/api/risk/alerts?limit=12')
+    fetch(API_BASE + '/api/risk/alerts?limit=50')
       .then(function (r) { return r.ok ? r.json() : { items: [] }; })
       .then(function (d) {
-        var items = d.items || [];
-        baseAlerts = items.slice();
-        renderAlerts(items, 'all');
+        var items = (d.items || []).filter(isHighPriority);
+        allAlerts = items;
+        visibleCount = INITIAL_COUNT;
+        currentFilter = 'all';
         wireAlertTabs(items);
+        renderAlertsIncremental();
       })
       .catch(function () {});
   }
@@ -239,9 +249,8 @@
   }
 
   function alertCard(e) {
-    // Prefer composite risk_level over ML-only anomaly_level for actionable triage.
     var lvl = (e.risk_level || e.anomaly_level || '').toUpperCase();
-    var lc = lvl === 'HIGH' || lvl === 'CRITICAL' ? 'rose' : lvl === 'MODERATE' || lvl === 'MEDIUM' ? 'amber' : 'emerald';
+    var lc = lvl === 'CRITICAL' ? 'rose' : lvl === 'HIGH' ? 'rose' : 'amber';
     var type = e.entity_type || (e.member_type || '').toLowerCase();
     var isState = type === 'state';
     var typeLabel = isState ? 'State / UT' : (e.member_type || '').toUpperCase();
@@ -251,39 +260,69 @@
     var score = e.risk_score != null ? Number(e.risk_score) : (e.anomaly_score != null ? Number(e.anomaly_score) : 0);
     var scorePct = Math.min(score, 100);
     var conf = e.confidence_level || 'MEDIUM';
-    return '<article class="alert-item bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:shadow-md hover:border-' + lc + '-400 transition-all duration-200 flex flex-col justify-between" data-type="' + type + '">' +
+    return '<article class="alert-item bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:shadow-md hover:border-rose-400 transition-all duration-200 flex flex-col justify-between" data-type="' + type + '">' +
       '<div>' +
       '<div class="flex items-start justify-between gap-2">' +
       '<div class="flex items-center gap-3">' +
-      '<div class="w-10 h-10 rounded-full bg-' + lc + '-50 border border-' + lc + '-200 flex items-center justify-center text-' + lc + '-700 font-bold text-sm flex-shrink-0">' + initials(e.name) + '</div>' +
+      '<div class="w-10 h-10 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-700 font-bold text-sm flex-shrink-0">' + initials(e.name) + '</div>' +
       '<div><h3 class="text-sm font-bold text-slate-900 leading-snug">' + (e.name || 'Unknown') + '</h3>' +
       '<div class="flex items-center gap-1 text-[11px] text-slate-500 mt-0.5">' +
       '<svg class="w-3 h-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>' +
       '<span>' + (e.state_name || 'India') + '</span></div></div></div>' +
-      '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-' + lc + '-100 text-' + lc + '-800 border border-' + lc + '-200">' + lvl + ' RISK</span></div>' +
+      '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">' + lvl + ' RISK</span></div>' +
       '<div class="flex items-center gap-2 mt-3">' +
       '<span class="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded">' + typeLabel + '</span>' +
-      '<span class="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded flex items-center gap-1"><span class="w-1 h-1 rounded-full bg-' + lc + '-500"></span> ' + conf + ' Confidence</span></div>' +
+      '<span class="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded flex items-center gap-1"><span class="w-1 h-1 rounded-full bg-rose-500"></span> ' + conf + ' Confidence</span></div>' +
       '<div class="mt-3.5"><div class="flex justify-between items-center text-xs mb-1">' +
       '<span class="text-[11px] font-semibold text-slate-600">Risk Score</span>' +
-      '<span class="font-bold text-' + lc + '-700 text-xs">' + score.toFixed(1) + ' / 100</span></div>' +
-      '<div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-' + lc + '-500 rounded-full transition-all duration-700" style="width:' + scorePct + '%"></div></div></div>' +
+      '<span class="font-bold text-rose-700 text-xs">' + score.toFixed(1) + ' / 100</span></div>' +
+      '<div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-rose-500 rounded-full transition-all duration-700" style="width:' + scorePct + '%"></div></div></div>' +
       '<div class="grid grid-cols-2 gap-2 mt-3">' +
       '<div class="p-2 border border-slate-100 rounded-lg"><span class="text-[10px] text-slate-400">Flagged Works</span><div class="font-bold text-slate-800 text-sm mt-0.5">' + fmtNum(e.flagged_works || 0) + '</div></div>' +
-      '<div class="p-2 border border-slate-100 rounded-lg"><span class="text-[10px] text-slate-400">High-Risk</span><div class="font-bold text-' + lc + '-600 text-sm mt-0.5">' + fmtNum(e.high_risk_works || 0) + '</div></div></div>' +
+      '<div class="p-2 border border-slate-100 rounded-lg"><span class="text-[10px] text-slate-400">High-Risk</span><div class="font-bold text-rose-600 text-sm mt-0.5">' + fmtNum(e.high_risk_works || 0) + '</div></div></div>' +
       '</div>' +
       '<div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">' +
       '<span class="text-[11px] text-slate-400 font-mono">ID: ' + e.id + '</span>' +
-      '<a href="' + href + '" class="text-xs font-semibold text-slate-900 hover:text-' + lc + '-600 flex items-center gap-1 transition-colors group"><span>View Details</span><span class="group-hover:translate-x-0.5 transition-transform">\u2192</span></a></div>' +
+      '<a href="' + href + '" class="text-xs font-semibold text-slate-900 hover:text-rose-600 flex items-center gap-1 transition-colors group"><span>View Details</span><span class="group-hover:translate-x-0.5 transition-transform">\u2192</span></a></div>' +
       '</article>';
   }
 
-  function renderAlerts(items, filter) {
+  function getFilteredAlerts() {
+    if (currentFilter === 'all') return allAlerts;
+    return allAlerts.filter(function (x) { return (x.entity_type || '').toLowerCase() === currentFilter; });
+  }
+
+  function renderAlertsIncremental() {
     var grid = document.getElementById('priorityAlertsGrid');
     if (!grid) return;
-    var list = filter === 'all' ? items : items.filter(function (x) { return (x.entity_type || '').toLowerCase() === filter; });
-    if (!list.length) { grid.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 text-sm">No alerts in this category.</div>'; return; }
-    grid.innerHTML = list.map(alertCard).join('');
+    var filtered = getFilteredAlerts();
+    var toShow = filtered.slice(0, visibleCount);
+    if (!toShow.length) {
+      grid.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 text-sm">No high-priority alerts in this category.</div>';
+    } else {
+      grid.innerHTML = toShow.map(alertCard).join('');
+    }
+    updateViewAllButton(filtered.length);
+  }
+
+  function updateViewAllButton(totalFiltered) {
+    var btn = document.getElementById('viewAllAlertsBtn');
+    var label = document.getElementById('viewAllAlertsLabel');
+    if (!btn) return;
+    if (totalFiltered <= INITIAL_COUNT) {
+      btn.classList.add('hidden');
+      return;
+    }
+    btn.classList.remove('hidden');
+    if (visibleCount >= totalFiltered) {
+      btn.setAttribute('data-state', 'expanded');
+      if (label) label.textContent = 'Show Fewer Alerts';
+    } else {
+      btn.setAttribute('data-state', 'collapsed');
+      var remaining = totalFiltered - visibleCount;
+      var nextBatch = Math.min(BATCH_SIZE, remaining);
+      if (label) label.textContent = 'View More (' + nextBatch + ' more)';
+    }
   }
 
   var currentAlertItems = [];
@@ -301,10 +340,12 @@
       if (!tab.dataset.wired) {
         tab.dataset.wired = '1';
         tab.addEventListener('click', function () {
-          tabs.forEach(function (t) { t.classList.remove('bg-white', 'text-slate-900', 'text-blue-700', 'shadow-xs', 'font-semibold'); t.classList.add('text-slate-600'); });
-          tab.classList.add('bg-white', 'text-slate-900', 'shadow-xs', 'font-semibold');
-          tab.classList.remove('text-slate-600');
-          renderAlerts(currentAlertItems, target);
+          tabs.forEach(function (t) { t.classList.remove('bg-white', 'text-slate-900', 'shadow-xs', 'font-bold'); t.classList.add('text-slate-600', 'font-semibold'); });
+          tab.classList.add('bg-white', 'text-slate-900', 'shadow-xs', 'font-bold');
+          tab.classList.remove('text-slate-600', 'font-semibold');
+          currentFilter = target;
+          visibleCount = INITIAL_COUNT;
+          renderAlertsIncremental();
         });
       }
     });
@@ -491,38 +532,15 @@
   function setupViewAll() {
     var btn = document.getElementById('viewAllAlertsBtn');
     if (!btn) return;
-    var label = document.getElementById('viewAllAlertsLabel');
     btn.addEventListener('click', function () {
-      if (alertsExpanded) {
-        // collapse back to the default set
-        renderAlerts(baseAlerts, 'all');
-        wireAlertTabs(baseAlerts);
-        alertsExpanded = false;
-        if (label) label.textContent = 'View All High-Priority Alerts';
-        var badge = document.querySelector('.alert-tab-btn[data-target="all"] span');
-        if (badge) badge.textContent = baseAlerts.length;
-        var allTab = document.querySelector('.alert-tab-btn[data-target="all"]');
-        if (allTab) {
-          document.querySelectorAll('.alert-tab-btn').forEach(function (t) { t.classList.remove('bg-white', 'text-slate-900', 'text-blue-700', 'shadow-xs', 'font-semibold'); t.classList.add('text-slate-600'); });
-          allTab.classList.add('bg-white', 'text-slate-900', 'shadow-xs', 'font-semibold');
-          allTab.classList.remove('text-slate-600');
-        }
-        return;
+      var filtered = getFilteredAlerts();
+      var state = btn.getAttribute('data-state');
+      if (state === 'expanded') {
+        visibleCount = INITIAL_COUNT;
+      } else {
+        visibleCount = Math.min(visibleCount + BATCH_SIZE, filtered.length);
       }
-      btn.disabled = true;
-      fetch(API_BASE + '/api/risk/alerts?limit=50')
-        .then(function (r) { return r.ok ? r.json() : { items: [] }; })
-        .then(function (d) {
-          var items = d.items || [];
-          renderAlerts(items, 'all');
-          wireAlertTabs(items);
-          alertsExpanded = true;
-          if (label) label.textContent = 'Show Fewer Alerts';
-          var badge = document.querySelector('.alert-tab-btn[data-target="all"] span');
-          if (badge) badge.textContent = items.length;
-        })
-        .catch(function () {})
-        .then(function () { btn.disabled = false; });
+      renderAlertsIncremental();
     });
   }
 

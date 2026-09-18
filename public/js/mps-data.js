@@ -224,7 +224,7 @@
       renderHistogram(cached.data);
       renderScatter(cached.data);
       _scatterData = cached.data;
-      renderRanking('ai_score');
+      renderRanking(_currentRankMetric);
     }
     return fetch(API_BASE + '/api/members/scatter?member_type=' + _currentHouse)
       .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
@@ -233,34 +233,43 @@
         renderHistogram(data);
         renderScatter(data);
         _scatterData = data;
-        renderRanking('ai_score');
+        renderRanking(_currentRankMetric);
       })
       .catch(function () {});
   }
 
   var _scatterData = [];
+  var _currentRankMetric = 'national';
+  var _rankHouse = 'BOTH';
+  var _rankScatterData = [];
 
   function renderRanking(metric) {
     var container = document.getElementById('mpRankingBarsList');
-    if (!container || !_scatterData.length) return;
-    var sorted = _scatterData.slice();
-    if (metric === 'ai_score') sorted.sort(function (a, b) { return (b.performance_score || 0) - (a.performance_score || 0); });
+    if (!container) return;
+    var rankData = _rankScatterData.length ? _rankScatterData : _scatterData;
+    if (!rankData.length) return;
+    var sorted = rankData.slice();
+    if (metric === 'national') {
+      sorted.sort(function (a, b) { return (b.performance_score_weighted || 0) - (a.performance_score_weighted || 0); });
+      sorted.forEach(function (m, i) { m._computedRank = i + 1; });
+    } else if (metric === 'ai_score') sorted.sort(function (a, b) { return (b.performance_score_weighted || 0) - (a.performance_score_weighted || 0); });
     else if (metric === 'utilization') sorted.sort(function (a, b) { return (b.fund_utilization_pct || 0) - (a.fund_utilization_pct || 0); });
     else if (metric === 'completion') sorted.sort(function (a, b) { return (b.completion_rate_pct || 0) - (a.completion_rate_pct || 0); });
     else if (metric === 'works') sorted.sort(function (a, b) { return (b.total_works || 0) - (a.total_works || 0); });
     var top10 = sorted.slice(0, 10);
     var maxVal = 0;
     top10.forEach(function (m) {
-      var val = metric === 'ai_score' ? (m.performance_score || 0) : metric === 'utilization' ? (m.fund_utilization_pct || 0) : metric === 'completion' ? (m.completion_rate_pct || 0) : (m.total_works || 0);
+      var val = metric === 'national' ? (m.performance_score_weighted || 0) : metric === 'ai_score' ? (m.performance_score_weighted || 0) : metric === 'utilization' ? (m.fund_utilization_pct || 0) : metric === 'completion' ? (m.completion_rate_pct || 0) : metric === 'works' ? (m.total_works || 0) : 0;
       if (val > maxVal) maxVal = val;
     });
     maxVal = maxVal || 1;
     var html = '';
     top10.forEach(function (m, i) {
-      var val = metric === 'ai_score' ? (m.performance_score || 0) : metric === 'utilization' ? (m.fund_utilization_pct || 0) : metric === 'completion' ? (m.completion_rate_pct || 0) : (m.total_works || 0);
+      var score = m.performance_score_weighted || 0;
+      var val = metric === 'national' ? score : metric === 'ai_score' ? score : metric === 'utilization' ? (m.fund_utilization_pct || 0) : metric === 'completion' ? (m.completion_rate_pct || 0) : metric === 'works' ? (m.total_works || 0) : 0;
       var widthPct = (val / maxVal) * 100;
-      var color = metric === 'ai_score' ? getRankColor(val, 100) : metric === 'utilization' || metric === 'completion' ? getRankColor(val, 100) : 'blue';
-      var displayVal = metric === 'ai_score' ? val.toFixed(1) + '/100' : metric === 'utilization' ? fmtPct(val) : metric === 'completion' ? fmtPct(val) : fmtNum(val);
+      var color = getRankColor(widthPct, 100);
+      var displayVal = metric === 'national' ? 'Rank ' + m._computedRank : metric === 'ai_score' ? score.toFixed(1) + '/100' : metric === 'utilization' ? fmtPct(val) : metric === 'completion' ? fmtPct(val) : metric === 'works' ? fmtNum(val) : '';
       var sub = m.member_type || '';
       var memberType = m.member_type || 'MP';
       var detailUrl = 'mpdetail.html?member_id=' + m.member_id + '&member_type=' + encodeURIComponent(memberType);
@@ -274,7 +283,7 @@
     });
     container.innerHTML = html;
     var footer = document.getElementById('mpRankFooter');
-    if (footer) footer.textContent = 'Showing top 10 ranked members · ' + _scatterData.length + ' total evaluated';
+    if (footer) footer.textContent = 'Showing top 10 ranked members · ' + rankData.length + ' total evaluated';
   }
 
   function getRankColor(val, max) {
@@ -297,7 +306,33 @@
       });
       btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-2xs', 'font-semibold');
       btn.classList.remove('text-slate-600');
-      renderRanking(btn.getAttribute('data-metric'));
+      _currentRankMetric = btn.getAttribute('data-metric');
+      renderRanking(_currentRankMetric);
+    });
+  }
+
+  function fetchRankData(house) {
+    var url = API_BASE + '/api/members/scatter?member_type=' + house;
+    fetch(url)
+      .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+      .then(function (data) {
+        _rankScatterData = data || [];
+        renderRanking(_currentRankMetric);
+      })
+      .catch(function () { _rankScatterData = []; renderRanking(_currentRankMetric); });
+  }
+
+  function setupRankingHouseFilter() {
+    var sel = document.getElementById('rankHouseFilter');
+    if (!sel) return;
+    sel.addEventListener('change', function () {
+      _rankHouse = sel.value;
+      if (_rankHouse === _currentHouse) {
+        _rankScatterData = [];
+        renderRanking(_currentRankMetric);
+      } else {
+        fetchRankData(_rankHouse);
+      }
     });
   }
 
@@ -307,6 +342,7 @@
   var _currentHouse = 'BOTH';
   var _searchQuery = '';
   var _searchTimeout = null;
+  var _searchActive = false;
 
   function getInitials(name) {
     if (!name) return '??';
@@ -499,7 +535,11 @@
     sel.addEventListener('change', function () {
       _currentHouse = sel.value;
       currentPage = 1;
-      loadCards(1, false);
+      if (_searchActive && _searchQuery) {
+        performSearch(_searchQuery);
+      } else {
+        loadCards(1, false);
+      }
       fetchScatterAndHistogram();
     });
   }
@@ -511,14 +551,24 @@
     if (!input || !dropdown) return;
 
     input.addEventListener('focus', function () {
-      if (input.value.trim().length >= 3) performSearch(input.value.trim());
+      if (input.value.trim().length >= 1) performSearch(input.value.trim());
     });
 
     input.addEventListener('input', function () {
       var val = input.value.trim();
       if (clearBtn) clearBtn.classList.toggle('hidden', val.length === 0);
       if (_searchTimeout) clearTimeout(_searchTimeout);
-      if (val.length < 3) { dropdown.classList.add('hidden'); return; }
+      if (val.length < 1) {
+        dropdown.classList.add('hidden');
+        if (_searchActive) {
+          _searchActive = false;
+          _searchQuery = '';
+          currentPage = 1;
+          loadCards(1, false);
+        }
+        return;
+      }
+      _searchQuery = val.toLowerCase();
       _searchTimeout = setTimeout(function () { performSearch(val); }, 150);
     });
 
@@ -528,6 +578,7 @@
         clearBtn.classList.add('hidden');
         dropdown.classList.add('hidden');
         _searchQuery = '';
+        _searchActive = false;
         currentPage = 1;
         loadCards(1, false);
         input.focus();
@@ -543,53 +594,86 @@
   function performSearch(query) {
     var dropdown = document.getElementById('autocompleteDropdown');
     if (!dropdown) return;
+    var qLower = query.toLowerCase();
     var stateFilter = document.getElementById('stateFilter');
     var clsFilter = document.getElementById('classificationFilter');
-    dropdown.innerHTML = '<div class="px-3 py-3 text-center text-slate-400 text-xs">Searching...</div>';
-    dropdown.classList.remove('hidden');
-    var url = API_BASE + '/api/members/search?q=' + encodeURIComponent(query) + '&member_type=' + _currentHouse + '&limit=15';
-    if (stateFilter && stateFilter.value) url += '&state=' + encodeURIComponent(stateFilter.value);
-    if (clsFilter && clsFilter.value) url += '&classification=' + encodeURIComponent(clsFilter.value);
+    var filterState = stateFilter ? stateFilter.value : '';
+    var filterCls = clsFilter ? clsFilter.value : '';
 
-    fetch(url)
-      .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
-      .then(function (data) {
-        if (!data.items || data.items.length === 0) {
-          dropdown.innerHTML = '<div class="px-3 py-4 text-center text-slate-400 text-xs">No results for "' + query + '"</div>';
-        } else {
-          var qLower = query.toLowerCase();
-          var html = '<div class="p-1">';
-          data.items.forEach(function (m) {
-            var cls = m.performance_classification || '';
-            var name = m.member_name || 'Unknown';
-            var nameHtml = name;
-            var li = name.toLowerCase().indexOf(qLower);
-            if (li >= 0) {
-              nameHtml = name.substring(0, li) + '<strong class="text-blue-600">' + name.substring(li, li + query.length) + '</strong>' + name.substring(li + query.length);
-            }
-    var detailUrl = 'mpdetail.html?member_id=' + (m.member_id || '') + '&member_type=' + encodeURIComponent(m.member_type_field || m.member_type || 'MP');
-            html += '<a href="' + detailUrl + '" class="flex items-center justify-between px-2.5 py-2 hover:bg-slate-50 rounded cursor-pointer transition no-underline">';
-            html += '<div><span class="font-medium text-slate-800 text-xs">' + nameHtml + '</span>';
-            html += '<span class="text-[10px] text-slate-400 ml-2">' + (m.state_name || '') + '</span></div>';
-            html += '<span class="text-[10px] font-semibold text-slate-500">' + cls.replace(/_/g, ' ') + '</span>';
-            html += '</a>';
-          });
-          html += '</div>';
-          dropdown.innerHTML = html;
-        }
-        dropdown.classList.remove('hidden');
-      })
-      .catch(function () { dropdown.classList.add('hidden'); });
+    var matches = _scatterData.filter(function (m) {
+      var name = (m.member_name || '').toLowerCase();
+      if (name.indexOf(qLower) === -1) return false;
+      if (_currentHouse !== 'BOTH' && (m.member_type || '') !== _currentHouse) return false;
+      if (filterState && (m.state_name || '') !== filterState) return false;
+      if (filterCls && (m.performance_classification || '') !== filterCls) return false;
+      return true;
+    }).slice(0, 15);
+
+    if (matches.length === 0) {
+      dropdown.innerHTML = '<div class="px-3 py-4 text-center text-slate-400 text-xs">No results for "' + query + '"</div>';
+    } else {
+      var html = '<div class="p-1">';
+      matches.forEach(function (m) {
+        var cls = m.performance_classification || '';
+        var name = m.member_name || 'Unknown';
+        var li = name.toLowerCase().indexOf(qLower);
+        var nameHtml = li >= 0
+          ? name.substring(0, li) + '<strong class="text-blue-600">' + name.substring(li, li + query.length) + '</strong>' + name.substring(li + query.length)
+          : name;
+        var detailUrl = 'mpdetail.html?member_id=' + (m.member_id || '') + '&member_type=' + encodeURIComponent(m.member_type || 'MP');
+        html += '<a href="' + detailUrl + '" class="flex items-center justify-between px-2.5 py-2 hover:bg-slate-50 rounded cursor-pointer transition no-underline">';
+        html += '<div><span class="font-medium text-slate-800 text-xs">' + nameHtml + '</span>';
+        html += '<span class="text-[10px] text-slate-400 ml-2">' + (m.state_name || '') + '</span></div>';
+        html += '<span class="text-[10px] font-semibold text-slate-500">' + cls.replace(/_/g, ' ') + '</span>';
+        html += '</a>';
+      });
+      html += '</div>';
+      dropdown.innerHTML = html;
+    }
+    dropdown.classList.remove('hidden');
+
+    _searchActive = true;
+    renderSearchCards({ items: matches, total: matches.length });
+  }
+
+  function renderSearchCards(data) {
+    var container = document.getElementById('mp-cards-container');
+    if (!container) return;
+    var spinner = document.getElementById('mp-loading-spinner');
+    if (spinner) spinner.classList.add('hidden');
+
+    if (!data.items || data.items.length === 0) {
+      container.innerHTML = '<div class="col-span-3 text-center py-8 text-slate-400 text-sm">No members found for your search</div>';
+      var showing = document.getElementById('mp-showing-text');
+      if (showing) showing.textContent = 'No results found';
+      var btns = document.getElementById('mp-page-buttons');
+      if (btns) btns.innerHTML = '';
+      return;
+    }
+
+    renderCards(data);
+    var showing = document.getElementById('mp-showing-text');
+    if (showing) showing.innerHTML = 'Showing <strong class="text-slate-900 font-semibold">' + data.items.length + '</strong> search results';
+    var btns = document.getElementById('mp-page-buttons');
+    if (btns) btns.innerHTML = '';
   }
 
   function setupFilters() {
     var stateSel = document.getElementById('stateFilter');
     var clsSel = document.getElementById('classificationFilter');
+    function onFilterChange() {
+      currentPage = 1;
+      if (_searchActive && _searchQuery) {
+        performSearch(_searchQuery);
+      } else {
+        loadCards(1, false);
+      }
+    }
     if (stateSel) {
-      stateSel.addEventListener('change', function () { currentPage = 1; loadCards(1, false); });
+      stateSel.addEventListener('change', onFilterChange);
     }
     if (clsSel) {
-      clsSel.addEventListener('change', function () { currentPage = 1; loadCards(1, false); });
+      clsSel.addEventListener('change', onFilterChange);
     }
   }
 
@@ -600,6 +684,7 @@
     setupSearch();
     setupFilters();
     setupRankingTabs();
+    setupRankingHouseFilter();
 
     var cached = getCached(KPI_CACHE_KEY);
     if (cached) { updateKPIs(cached.data); } else { fetchKPIs(); }

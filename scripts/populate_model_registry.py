@@ -93,23 +93,6 @@ async def main():
     )
     print(f"  registered isolation_forest (anomalies={anomaly_count})")
 
-    await register_model(
-        model_name="project_delay_xgb",
-        model_version="1.0.0",
-        model_type="XGBClassifier",
-        status="READY" if delay_count else "NOT_READY",
-        training_observations=delay_count or 0,
-        features=["sanction_amount", "recommended_amount", "cost_percentile",
-                  "sanction_delay_days", "project_age_days", "expenditure_percentage",
-                  "cost_deviation_from_median_percentage"],
-        target="slow_completion",
-        validation_method="time_aware_split_by_recommendation_date",
-        metrics={"delay_predictions": delay_count},
-        threshold={"high": 0.7, "medium": 0.4},
-        calibration="none" if not delay_count else "platt_scaling_optional",
-    )
-    print(f"  registered project_delay_xgb (predictions={delay_count})")
-
     print("Done.")
 
 

@@ -154,10 +154,8 @@ def _compute_member_metrics(member: asyncpg.Record, works: List[asyncpg.Record],
 
     performance_classification = "INSUFFICIENT_DATA" if zero_work else ("LOW_SAMPLE" if low_sample else "STANDARD")
 
-    # Initial scale score based on portfolio financial volume relative to allocation
-    scale_score = 0.0
-    if allocated > 0:
-        scale_score = min(100.0, (sanc_total / allocated) * 100.0)
+    # scale_score is computed by performance.py as percentile rank of total_works
+    scale_score = None
 
     return {
         "member_id": _safe_int(member["member_id"]),
@@ -222,56 +220,19 @@ def _compute_member_metrics(member: asyncpg.Record, works: List[asyncpg.Record],
 
 
 async def build_member_metrics() -> int:
-    p1 = await db1_pool()
+    """Read-only: verify member_metrics exists and return count.
+
+    The authoritative member_metrics table is written by the
+    mplads-automation pipeline (Path A) which resolves all member
+    IDs against DB1 authoritative master tables.
+
+    This function no longer truncates or rebuilds member_metrics.
+    """
     p2 = await db2_pool()
     try:
-        members = await _fetch_members(p1)
-        allocs = await _fetch_allocations(p1)
-
-        mp_analysis = await _fetch_work_analysis(p2, "MP")
-        mla_analysis = await _fetch_work_analysis(p2, "MLA")
-
-        # State names
-        async with p1.acquire() as conn:
-            states = {r["state_id"]: r["state_name"] for r in await conn.fetch("SELECT state_id, state_name FROM states")}
-
-        rows = []
-        for m in members:
-            mid = _safe_int(m["member_id"])
-            mtype = m["member_type"]
-            works = (mp_analysis if mtype == "MP" else mla_analysis).get(mid, [])
-            alloc = allocs.get(mid, {"allocated_amount": 0.0, "allocated_source": "DERIVED", "allocated_confidence": "MEDIUM"})
-            rec = _compute_member_metrics(m, works, alloc)
-            rec["state_name"] = states.get(rec["state_id"])
-            rows.append(rec)
-
-        columns = [
-            "member_id", "member_type", "member_name", "state_id", "state_name", "constituency_id",
-            "house_name", "tenure", "tenure_start_date", "tenure_end_date", "total_works",
-            "recommended_works", "sanctioned_works", "completed_works", "ongoing_works", "pending_works",
-            "completion_rate_pct", "sanction_rate_pct", "sanction_conversion_pct", "allocated_amount",
-            "recommended_amount", "sanctioned_amount", "expenditure_amount", "completion_amount",
-            "unspent_amount", "fund_utilization_pct", "expenditure_rate_pct", "avg_work_cost",
-            "median_work_cost", "avg_sanction_delay_days", "median_sanction_delay_days", "avg_execution_days",
-            "median_execution_days", "avg_project_age_days", "max_project_age_days", "overdue_over_1_year",
-            "overdue_over_2_years", "flagged_works", "high_risk_works", "medium_risk_works", "flagged_rate_pct",
-            "high_risk_rate_pct", "cost_anomaly_works", "duration_anomaly_works", "anomaly_score", "anomaly_level",
-            "confidence_level", "zero_work_member", "low_sample_member", "ranking_qualified",
-            "performance_classification", "rank", "calculated_at", "performance_score", "scale_score",
-            "performance_score_weighted", "allocated_source", "allocated_confidence"
-        ]
-
         async with p2.acquire() as conn:
-            await conn.execute("TRUNCATE TABLE member_metrics RESTART IDENTITY CASCADE")
-            if rows:
-                values = [tuple(r.get(c) for c in columns) for r in rows]
-                batch_size = 500
-                inserted = 0
-                for i in range(0, len(values), batch_size):
-                    batch = values[i:i + batch_size]
-                    await conn.copy_records_to_table("member_metrics", records=batch, columns=columns)
-                    inserted += len(batch)
-        return len(rows)
+            count = await conn.fetchval("SELECT COUNT(*) FROM member_metrics")
+        print(f"  [member_metrics] existing rows: {count}")
+        return count
     finally:
-        await p1.close()
         await p2.close()

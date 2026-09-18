@@ -247,6 +247,8 @@ Back to MPs
 </span>
 <span class="text-slate-300">•</span>
 <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium border border-slate-200" id="mpHouse">—</span>
+<span class="text-slate-300" id="mpConstituencyDot" style="display:none">•</span>
+<span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-medium border border-blue-200" id="mpConstituency" style="display:none"></span>
 <span class="text-slate-300">•</span>
 <span class="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded font-bold border border-slate-200" id="mpTenure">—</span>
 <span class="text-slate-300">•</span>
@@ -642,7 +644,59 @@ Performance Overview
 
 <!-- BEGIN: TAB AI ANALYSIS -->
 <div class="tab-panel hidden" id="tab-ai" role="tabpanel">
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+<div id="aiSkeleton" class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+<!-- Skeleton: AI Score Ring -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col items-center justify-center">
+  <div class="w-36 h-36 rounded-full skeleton"></div>
+  <div class="skeleton h-4 w-20 mt-3 rounded-full"></div>
+  <div class="w-full grid grid-cols-2 gap-2 mt-4">
+    <div class="p-2 bg-white border border-slate-100 rounded-lg"><div class="skeleton h-2 w-16 mx-auto mb-1"></div><div class="skeleton h-4 w-12 mx-auto"></div></div>
+    <div class="p-2 bg-white border border-slate-100 rounded-lg"><div class="skeleton h-2 w-16 mx-auto mb-1"></div><div class="skeleton h-4 w-12 mx-auto"></div></div>
+    <div class="p-2 bg-white border border-slate-100 rounded-lg"><div class="skeleton h-2 w-16 mx-auto mb-1"></div><div class="skeleton h-4 w-12 mx-auto"></div></div>
+    <div class="p-2 bg-white border border-slate-100 rounded-lg"><div class="skeleton h-2 w-16 mx-auto mb-1"></div><div class="skeleton h-4 w-12 mx-auto"></div></div>
+    <div class="p-2 bg-white border border-slate-100 rounded-lg"><div class="skeleton h-2 w-12 mx-auto mb-1"></div><div class="skeleton h-3 w-14 mx-auto"></div></div>
+    <div class="p-2 bg-white border border-slate-100 rounded-lg"><div class="skeleton h-2 w-12 mx-auto mb-1"></div><div class="skeleton h-3 w-14 mx-auto"></div></div>
+  </div>
+</div>
+<!-- Skeleton: Summary + Highlights -->
+<div class="flex flex-col gap-4">
+  <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex-1">
+    <div class="skeleton h-3 w-24 mb-3"></div>
+    <div class="skeleton h-3 w-full mb-2"></div>
+    <div class="skeleton h-3 w-4/5 mb-2"></div>
+    <div class="skeleton h-3 w-3/4"></div>
+  </div>
+  <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex-1">
+    <div class="skeleton h-3 w-28 mb-3"></div>
+    <div class="skeleton h-3 w-full mb-2"></div>
+    <div class="skeleton h-3 w-5/6 mb-2"></div>
+    <div class="skeleton h-3 w-2/3"></div>
+  </div>
+</div>
+<!-- Skeleton: Peer Benchmark -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+  <div class="skeleton h-3 w-32 mb-4"></div>
+  <div class="space-y-3">
+    <div class="skeleton h-3 w-full"></div>
+    <div class="skeleton h-3 w-5/6"></div>
+    <div class="skeleton h-3 w-4/5"></div>
+    <div class="skeleton h-3 w-full"></div>
+    <div class="skeleton h-3 w-3/4"></div>
+  </div>
+</div>
+<!-- Skeleton: Performance Metrics -->
+<div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+  <div class="skeleton h-3 w-36 mb-4"></div>
+  <div class="space-y-3">
+    <div class="skeleton h-3 w-full"></div>
+    <div class="skeleton h-3 w-5/6"></div>
+    <div class="skeleton h-3 w-4/5"></div>
+    <div class="skeleton h-3 w-full"></div>
+    <div class="skeleton h-3 w-3/4"></div>
+  </div>
+</div>
+</div>
+<div id="aiContent" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-5">
 <!-- Row 1, Col 1: AI Score Ring + Risk & Confidence -->
 <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col items-center justify-center">
 <div class="relative w-36 h-36">
@@ -721,8 +775,8 @@ Performance Metrics
 </div>
 </div>
 </div>
-</div>
-<!-- END: TAB AI ANALYSIS -->
+</div><!-- end aiContent -->
+</div><!-- END: TAB AI ANALYSIS -->
 
 <!-- Footer -->
 <footer class="pt-4 border-t border-slate-200 text-[11px] text-slate-400 pb-4" style="padding-bottom:max(1rem, env(safe-area-inset-bottom, 0px));">

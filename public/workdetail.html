@@ -32,6 +32,11 @@
     display:none!important;
   }
 }
+/* Keep the top-bar → back-link → card gaps small AND equal (12px)
+   on mobile AND desktop. */
+main{padding-top:12px!important;}
+#workMainContent > div:first-child{margin-top:0;}
+#workMainContent > div:first-child + *{margin-top:12px!important;}
 </style>
 
 
@@ -85,6 +90,33 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+  @keyframes barFill {
+    from { width: 0%; }
+  }
+  .animate-bar-fill {
+    animation: barFill 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes timelineFadeIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .timeline-item {
+    animation: timelineFadeIn 0.4s ease-out both;
+  }
+  @keyframes dotPop {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+  .timeline-dot {
+    animation: dotPop 0.3s ease-out both;
+  }
+  @keyframes gaugeFill {
+    from { width: 0%; }
+  }
+  .animate-gauge-fill {
+    animation: gaugeFill 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 </style>
 </head>
@@ -188,54 +220,72 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <span class="text-xs font-mono text-slate-400 hidden sm:inline">WORK ID: ML-SHL-2024-0089</span>
+        <span class="text-xs font-mono text-slate-400 hidden sm:inline" id="workIdHeader">WORK ID: —</span>
       </div>
       <div class="mobile-header-meta" id="headerMeta">Work Details</div>
     </header>
 
     <!-- ScrollableContent -->
-    <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
+    <main class="flex-1 overflow-y-auto p-4 md:p-6">
+
+      <!-- Loading State -->
+      <div id="workLoadingState" class="text-center py-20">
+        <div class="inline-block w-8 h-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-slate-500">Loading work record…</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="workErrorState" class="hidden text-center py-20">
+        <div class="text-4xl mb-4">⚠️</div>
+        <h2 id="workErrorTitle" class="text-lg font-bold text-slate-900 mb-2">Failed to load work</h2>
+        <p id="workErrorMsg" class="text-sm text-slate-500 mb-4">Please try again later.</p>
+        <a href="project.html" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700">Back to Projects</a>
+      </div>
+
+      <!-- Main Content -->
+      <div id="workMainContent" class="hidden space-y-6">
       
-      <!-- Back Navigation & Page Header Summary Card -->
+      <!-- Back Navigation -->
+      <div>
+        <a class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 transition-colors" href="project.html">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Back to Projects
+        </a>
+      </div>
+
+      <!-- Page Header Summary Card -->
       <section class="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div class="space-y-2">
-            <a href="project.html" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline mb-1 transition-colors">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-              </svg>
-              Back to Work Analysis
-            </a>
-            
             <div class="flex flex-wrap items-center gap-2.5">
-              <h2 class="text-lg md:text-xl font-bold text-slate-900 tracking-tight">
-                Construction of Multipurpose Community Hall at Mawlai Phudmuri
+              <h2 class="text-lg md:text-xl font-bold text-slate-900 tracking-tight" id="workTitle">
+                Loading work record…
               </h2>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200" id="workStatus">
                 <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
-                ONGOING
+                LOADING
               </span>
             </div>
 
             <!-- Breadcrumb location & Representative -->
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 pt-0.5">
-              <span class="font-medium text-slate-700">Meghalaya</span>
+              <span class="font-medium text-slate-700" id="workStateName">—</span>
               <span>›</span>
-              <span class="font-medium text-slate-700">Shillong Parliamentary Constituency</span>
+              <span class="font-medium text-slate-700" id="workConstituency">—</span>
               <span>›</span>
-              <span class="text-slate-600">MP: <strong class="text-slate-800 font-semibold">Dr. Andrew J. Syngkon</strong> (Lok Sabha)</span>
+              <span class="text-slate-600">MP: <strong class="text-slate-800 font-semibold" id="workMP">—</strong></span>
               <span class="hidden sm:inline text-slate-300">•</span>
-              <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 font-medium text-[11px]">
-                Community Halls & Public Spaces
+              <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 font-medium text-[11px]" id="workCategory">
+                —
               </span>
             </div>
           </div>
 
           <!-- Quick Actions / Meta Badge -->
           <div class="flex flex-col sm:items-end justify-center shrink-0 border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
-            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Sanction Order</div>
-            <div class="font-mono text-xs font-bold text-slate-800 mt-0.5">PLN/MPLADS/2024/782</div>
-            <div class="text-[11px] text-slate-500 mt-0.5">Sanctioned: 14 Oct 2024</div>
+            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Work ID</div>
+            <div class="font-mono text-xs font-bold text-slate-800 mt-0.5" id="workIdBadge">—</div>
+            <div class="text-[11px] text-slate-500 mt-0.5" id="workSanctionBadge">—</div>
           </div>
         </div>
       </section>
@@ -261,39 +311,34 @@
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-y-3.5 gap-x-6 text-xs">
               <div class="sm:col-span-2 bg-slate-50/70 p-3 rounded-lg border border-slate-100">
                 <dt class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Work Description</dt>
-                <dd class="text-slate-800 font-medium mt-1 leading-relaxed text-xs">
-                  Construction of a two-storey reinforced concrete community welfare center and meeting hall equipped with sanitary fittings, rain-water harvesting tank, and accessibility ramp at Mawlai Phudmuri Dorbar Shnong premises.
+                <dd class="text-slate-800 font-medium mt-1 leading-relaxed text-xs" id="workDescription">
+                  Loading…
                 </dd>
               </div>
 
               <div>
                 <dt class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Activity Specification</dt>
-                <dd class="text-slate-800 font-semibold mt-0.5">Civil Infrastructure / Building Construction</dd>
+                <dd class="text-slate-800 font-semibold mt-0.5" id="workActivity">—</dd>
               </div>
 
               <div>
                 <dt class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Category</dt>
-                <dd class="text-slate-800 font-semibold mt-0.5">Community Halls</dd>
+                <dd class="text-slate-800 font-semibold mt-0.5" id="workCategoryDetail">—</dd>
               </div>
 
               <div>
                 <dt class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">State / Union Territory</dt>
-                <dd class="text-slate-800 font-semibold mt-0.5">Meghalaya</dd>
+                <dd class="text-slate-800 font-semibold mt-0.5" id="workStateDetail">—</dd>
               </div>
 
               <div>
                 <dt class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Parliamentary Constituency</dt>
-                <dd class="text-slate-800 font-semibold mt-0.5">Shillong (Lok Sabha)</dd>
+                <dd class="text-slate-800 font-semibold mt-0.5" id="workConstituencyDetail">—</dd>
               </div>
 
               <div>
                 <dt class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Elected Representative</dt>
-                <dd class="text-slate-800 font-semibold mt-0.5">Dr. Andrew J. Syngkon (VPP)</dd>
-              </div>
-
-              <div>
-                <dt class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Implementing Agency</dt>
-                <dd class="text-slate-800 font-semibold mt-0.5">Executive Engineer, PWD (Buildings) Division, Shillong</dd>
+                <dd class="text-slate-800 font-semibold mt-0.5" id="workRepresentative">—</dd>
               </div>
             </dl>
           </section>
@@ -314,75 +359,59 @@
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
               <div class="p-3 bg-slate-50 rounded-lg border border-slate-100">
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recommended Amount</div>
-                <div class="text-base font-bold text-slate-900 mt-1">₹35.00 <span class="text-xs font-medium text-slate-500">Lakh</span></div>
+                <div class="text-base font-bold text-slate-900 mt-1" id="workRecAmount">—</div>
                 <div class="text-[10px] text-slate-400 mt-0.5">By MP recommendation</div>
               </div>
 
               <div class="p-3 bg-slate-50 rounded-lg border border-slate-100">
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sanctioned Amount</div>
-                <div class="text-base font-bold text-slate-900 mt-1">₹35.00 <span class="text-xs font-medium text-slate-500">Lakh</span></div>
-                <div class="text-[10px] text-emerald-600 font-medium mt-0.5">100% of recommendation</div>
+                <div class="text-base font-bold text-slate-900 mt-1" id="workSancAmount">—</div>
+                <div class="text-[10px] text-slate-400 mt-0.5" id="workRecToSanc"></div>
               </div>
 
               <div class="p-3 bg-slate-50 rounded-lg border border-slate-100">
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Expenditure Incurred</div>
-                <div class="text-base font-bold text-blue-600 mt-1">₹24.50 <span class="text-xs font-medium text-slate-500">Lakh</span></div>
+                <div class="text-base font-bold text-blue-600 mt-1" id="workExpAmount">—</div>
                 <div class="text-[10px] text-slate-500 mt-0.5">Recorded disbursement</div>
               </div>
 
               <div class="p-3 bg-slate-50 rounded-lg border border-slate-100">
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Completion Valuation</div>
-                <div class="text-base font-bold text-emerald-600 mt-1">₹22.75 <span class="text-xs font-medium text-slate-500">Lakh</span></div>
-                <div class="text-[10px] text-slate-500 mt-0.5">Physical value verified</div>
+                <div class="text-base font-bold text-emerald-600 mt-1" id="workCompAmount">—</div>
+                <div class="text-[10px] text-slate-500 mt-0.5" id="workCompPct"></div>
               </div>
             </div>
 
             <!-- Ratios and Percentiles in Clean Structured Data List -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
-                <span class="text-slate-500">Expenditure Share (%)</span>
-                <span class="font-bold text-slate-900">70.0% <span class="text-[10px] font-normal text-slate-400">(₹24.5L / ₹35.0L)</span></span>
-              </div>
-
-              <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
-                <span class="text-slate-500">Physical Completion (%)</span>
-                <span class="font-bold text-emerald-600">65.0% <span class="text-[10px] font-normal text-slate-400">(Roof casting complete)</span></span>
-              </div>
-
-              <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
                 <span class="text-slate-500">Sanction Delay</span>
-                <span class="font-semibold text-slate-800">42 Days <span class="text-[10px] font-normal text-slate-400">(Recommendation to Sanction)</span></span>
+                <span class="font-semibold text-slate-800" id="workSanctionDelay">—</span>
               </div>
 
               <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
                 <span class="text-slate-500">Execution Days</span>
-                <span class="font-semibold text-slate-800">198 Days <span class="text-[10px] font-normal text-slate-400">(Since 1st Expenditure)</span></span>
+                <span class="font-semibold text-slate-800" id="workExecDays">—</span>
               </div>
 
               <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
                 <span class="text-slate-500">Project Age</span>
-                <span class="font-semibold text-slate-800">331 Days <span class="text-[10px] font-normal text-slate-400">(Since Sanction Order)</span></span>
+                <span class="font-semibold text-slate-800" id="workProjectAge">—</span>
               </div>
 
               <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
-                <span class="text-slate-500">Pending Days (Awaiting Milestone)</span>
-                <span class="font-semibold text-slate-800">45 Days <span class="text-[10px] font-normal text-slate-400">(Final finishing phase)</span></span>
+                <span class="text-slate-500">Recommendation Date</span>
+                <span class="font-semibold text-slate-800" id="workRecommendationDate">—</span>
               </div>
 
               <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
-                <span class="text-slate-500">Cost Status / Percentile</span>
-                <div class="text-right">
-                  <span class="font-semibold text-slate-800">Normal Sized Work</span>
-                  <span class="block text-[10px] text-slate-400">58th Percentile in Community Halls</span>
-                </div>
+                <span class="text-slate-500">Sanction Date</span>
+                <span class="font-semibold text-slate-800" id="workSanctionDate">—</span>
               </div>
 
               <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-white">
-                <span class="text-slate-500">Duration Status / Percentile</span>
-                <div class="text-right">
-                  <span class="font-semibold text-emerald-700">On Schedule</span>
-                  <span class="block text-[10px] text-slate-400">42nd Percentile (Below State avg 280d)</span>
-                </div>
+                <span class="text-slate-500">Completion Date</span>
+                <span class="font-semibold text-slate-800" id="workCompletionDate">—</span>
               </div>
             </div>
 
@@ -390,98 +419,48 @@
             <div class="mt-4 p-3 rounded-lg border border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
               <div class="flex items-center gap-2.5">
                 <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Risk Classification:</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
-                  LOW RISK
+                <span id="workRiskLevel" class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-50 text-slate-600 border border-slate-200">
+                  —
                 </span>
               </div>
               <div class="flex items-center gap-2 text-[11px]">
-                <span class="text-slate-400 font-medium">Flag Status:</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-medium">
-                  No Over-Expenditure Flag
-                </span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-medium">
-                  Active Disbursal Rhythm
+                <span class="text-slate-400 font-medium">Feature Fingerprint:</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600 font-medium font-mono text-[10px]" id="workFP">
+                  —
                 </span>
               </div>
             </div>
           </section>
 
-          <!-- Section 3: Financial / Payment Details Table -->
+          <!-- Section 3: Work Metadata -->
           <section class="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <div>
                 <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
-                  Financial &amp; Payment History
+                  Work Metadata
                 </h3>
-                <p class="text-[11px] text-slate-500 mt-0.5">Itemized public disbursement vouchers and contractor payments</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">Technical identifiers and analysis fields</p>
               </div>
-              <span class="text-[11px] font-mono text-slate-400">3 Payment Records</span>
+              <span class="text-[11px] font-mono text-slate-400" id="workIdDisplay">WORK ID: —</span>
             </div>
 
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs text-slate-700">
-                <thead class="bg-slate-50 text-[10px] text-slate-500 uppercase tracking-wider border-y border-slate-200">
-                  <tr>
-                    <th class="py-2.5 px-3 font-semibold">Payment Date</th>
-                    <th class="py-2.5 px-3 font-semibold">Vendor / Beneficiary Entity</th>
-                    <th class="py-2.5 px-3 font-semibold text-right">Amount Disbursed</th>
-                    <th class="py-2.5 px-3 font-semibold text-center">Payment Status</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                  <tr class="hover:bg-slate-50/70 transition-colors">
-                    <td class="py-2.5 px-3 font-mono text-slate-600 text-[11px]">18 Dec 2024</td>
-                    <td class="py-2.5 px-3 font-medium text-slate-800">
-                      <div>K. Kharkongor Constructions Ltd.</div>
-                      <span class="text-[10px] text-slate-400">Initial mobilization &amp; foundation excavation tranche</span>
-                    </td>
-                    <td class="py-2.5 px-3 font-bold text-slate-900 text-right">₹10,50,000</td>
-                    <td class="py-2.5 px-3 text-center">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        SETTLED
-                      </span>
-                    </td>
-                  </tr>
-                  <tr class="hover:bg-slate-50/70 transition-colors">
-                    <td class="py-2.5 px-3 font-mono text-slate-600 text-[11px]">15 Mar 2025</td>
-                    <td class="py-2.5 px-3 font-medium text-slate-800">
-                      <div>K. Kharkongor Constructions Ltd.</div>
-                      <span class="text-[10px] text-slate-400">RCC column casting &amp; brick masonry completion</span>
-                    </td>
-                    <td class="py-2.5 px-3 font-bold text-slate-900 text-right">₹8,00,000</td>
-                    <td class="py-2.5 px-3 text-center">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        SETTLED
-                      </span>
-                    </td>
-                  </tr>
-                  <tr class="hover:bg-slate-50/70 transition-colors">
-                    <td class="py-2.5 px-3 font-mono text-slate-600 text-[11px]">22 Jun 2025</td>
-                    <td class="py-2.5 px-3 font-medium text-slate-800">
-                      <div>Meghalaya Electrical &amp; Sanitations</div>
-                      <span class="text-[10px] text-slate-400">Roof slab casting, conduit piping, and water tank installation</span>
-                    </td>
-                    <td class="py-2.5 px-3 font-bold text-slate-900 text-right">₹6,00,000</td>
-                    <td class="py-2.5 px-3 text-center">
-                      <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        SETTLED
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-                <tfoot class="bg-slate-50/80 font-bold border-t border-slate-200 text-xs">
-                  <tr>
-                    <td colspan="2" class="py-2.5 px-3 text-slate-700">Cumulative Recorded Expenditure</td>
-                    <td class="py-2.5 px-3 text-right text-blue-700 font-bold text-sm">₹24,50,000</td>
-                    <td class="py-2.5 px-3 text-center text-[10px] text-slate-400 font-normal">3 payments verified</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+            <dl class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+              <div class="p-2.5 rounded-lg border border-slate-100 bg-slate-50/70">
+                <dt class="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Work ID</dt>
+                <dd class="text-slate-800 font-bold mt-0.5 font-mono" id="workIdMeta">—</dd>
+              </div>
+              <div class="p-2.5 rounded-lg border border-slate-100 bg-slate-50/70">
+                <dt class="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Status</dt>
+                <dd class="text-slate-800 font-semibold mt-0.5" id="workStatusMeta">—</dd>
+              </div>
+              <div class="p-2.5 rounded-lg border border-slate-100 bg-slate-50/70">
+                <dt class="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Risk Level</dt>
+                <dd class="text-slate-800 font-semibold mt-0.5" id="workRiskMeta">—</dd>
+              </div>
+            </dl>
           </section>
 
         </div>
@@ -501,10 +480,10 @@
               <div>
                 <div class="flex justify-between items-center mb-1">
                   <span class="text-slate-600 font-medium">Sanctioned Amount</span>
-                  <span class="font-bold text-slate-900">₹35.00 L <span class="text-[10px] text-slate-400">(100%)</span></span>
+                  <span class="font-bold text-slate-900" id="workSancBar">—</span>
                 </div>
                 <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-slate-800 rounded-full" style="width: 100%;"></div>
+                  <div class="h-full bg-indigo-500 rounded-full" id="workSancBarFill" style="width: 0%;"></div>
                 </div>
               </div>
 
@@ -512,10 +491,10 @@
               <div>
                 <div class="flex justify-between items-center mb-1">
                   <span class="text-slate-600 font-medium">Disbursed Expenditure</span>
-                  <span class="font-bold text-blue-600">₹24.50 L <span class="text-[10px] font-normal text-slate-500">(70.0%)</span></span>
+                  <span class="font-bold text-blue-600" id="workExpBar">—</span>
                 </div>
                 <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-blue-500 rounded-full" style="width: 70%;"></div>
+                  <div class="h-full bg-blue-500 rounded-full" id="workExpBarFill" style="width: 0%;"></div>
                 </div>
               </div>
 
@@ -523,17 +502,17 @@
               <div>
                 <div class="flex justify-between items-center mb-1">
                   <span class="text-slate-600 font-medium">Physical Completion</span>
-                  <span class="font-bold text-emerald-600">₹22.75 L <span class="text-[10px] font-normal text-slate-500">(65.0%)</span></span>
+                  <span class="font-bold text-emerald-600" id="workCompBar">—</span>
                 </div>
                 <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-emerald-500 rounded-full" style="width: 65%;"></div>
+                  <div class="h-full bg-emerald-500 rounded-full" id="workCompBarFill" style="width: 0%;"></div>
                 </div>
               </div>
 
               <!-- Unexpended Balance Note -->
               <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
                 <span class="text-slate-500">Unexpended Balance</span>
-                <span class="font-bold text-slate-800">₹10.50 L <span class="text-[10px] font-normal text-slate-400">(30.0%)</span></span>
+                <span class="font-bold text-slate-800" id="workUnexpended">—</span>
               </div>
             </div>
           </section>
@@ -546,115 +525,60 @@
             </div>
 
             <!-- Vertical Timeline Sequence -->
-            <div class="mt-4 relative pl-6 space-y-5 text-xs before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-              
-              <!-- Milestone 1: Recommendation -->
-              <div class="relative group">
-                <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white shadow-xs flex items-center justify-center">
-                  <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                </div>
-                <div>
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-slate-800">Recommendation</span>
-                    <span class="text-[10px] font-mono text-slate-400">02 Sep 2024</span>
-                  </div>
-                  <p class="text-[11px] text-slate-500 mt-0.5">Proposed by MP Dr. Andrew J. Syngkon</p>
-                </div>
-              </div>
-
-              <!-- Milestone 2: Sanction -->
-              <div class="relative group">
-                <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white shadow-xs flex items-center justify-center">
-                  <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                </div>
-                <div>
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-slate-800">Administrative Sanction</span>
-                    <span class="text-[10px] font-mono text-slate-400">14 Oct 2024</span>
-                  </div>
-                  <p class="text-[11px] text-slate-500 mt-0.5">₹35.0L approved (42d sanction delay)</p>
-                </div>
-              </div>
-
-              <!-- Milestone 3: First Expenditure -->
-              <div class="relative group">
-                <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white shadow-xs flex items-center justify-center">
-                  <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                </div>
-                <div>
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-slate-800">First Expenditure</span>
-                    <span class="text-[10px] font-mono text-slate-400">18 Dec 2024</span>
-                  </div>
-                  <p class="text-[11px] text-slate-500 mt-0.5">₹10.5L disbursed to contractor</p>
-                </div>
-              </div>
-
-              <!-- Milestone 4: Last Expenditure -->
-              <div class="relative group">
-                <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white shadow-xs flex items-center justify-center">
-                  <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                </div>
-                <div>
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-slate-800">Last Expenditure</span>
-                    <span class="text-[10px] font-mono text-slate-400">22 Jun 2025</span>
-                  </div>
-                  <p class="text-[11px] text-slate-500 mt-0.5">₹6.0L 3rd tranche disbursed</p>
-                </div>
-              </div>
-
-              <!-- Milestone 5: Completion (Future/Projected pending date) -->
-              <div class="relative group">
-                <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-amber-400 border-2 border-white shadow-xs flex items-center justify-center">
-                  <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                </div>
-                <div>
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-amber-900">Completion</span>
-                    <span class="text-[10px] font-mono text-amber-600 font-semibold">In Progress (65%)</span>
-                  </div>
-                  <p class="text-[11px] text-slate-500 mt-0.5">Roof &amp; wall structure verified</p>
-                </div>
-              </div>
-
+            <div class="mt-4 relative pl-6 space-y-5 text-xs before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200" id="workTimeline">
+              <div class="text-xs text-slate-400 text-center py-4">Loading timeline…</div>
             </div>
           </section>
 
-          <!-- Visual 3: Small Risk / Anomaly Gauge Indicator -->
+          <!-- Visual 3: Benchmark Comparison Chart -->
           <section class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-            <div class="pb-2.5 border-b border-slate-100 flex items-center justify-between">
-              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Health &amp; Risk Indicator</h3>
-              <span class="text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Nominal</span>
+            <div class="pb-3 border-b border-slate-100">
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Peer Benchmark</h3>
+              <p class="text-[11px] text-slate-500 mt-0.5" id="workPeerGroup">—</p>
             </div>
-
-            <div class="mt-3 text-xs space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-slate-500">Expenditure-to-Progress Delta</span>
-                <span class="font-semibold text-slate-800">+5.0% <span class="text-[10px] font-normal text-slate-400">(In tolerance)</span></span>
-              </div>
-
-              <!-- Micro Bar Indicator -->
-              <div>
-                <div class="flex justify-between text-[10px] text-slate-400 mb-1">
-                  <span>Low Risk (0–20%)</span>
-                  <span class="font-bold text-emerald-600">5.0%</span>
-                  <span>High Risk (&gt;25%)</span>
-                </div>
-                <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-emerald-500 rounded-full" style="width: 20%;"></div>
-                </div>
-              </div>
-
-              <p class="text-[11px] text-slate-400 leading-snug pt-1">
-                Disbursements strictly match physical milestone progress reports submitted by PWD Engineers.
-              </p>
+            <div class="mt-3 space-y-3" id="workBenchmarkChart">
+              <div class="text-xs text-slate-400 text-center py-4">Loading benchmark data…</div>
             </div>
           </section>
 
         </div>
 
       </div>
+
+      <!-- Full-Width Health & Risk Indicator -->
+      <section class="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
+        <div class="pb-2.5 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Health &amp; Risk Indicator</h3>
+          <span class="text-[10px] font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded" id="workHealthStatus">—</span>
+        </div>
+
+        <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+          <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50/60">
+            <span class="text-slate-500">Recommendation → Sanction</span>
+            <span class="font-semibold text-slate-800" id="workSanctionDelayHealth">—</span>
+          </div>
+          <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50/60">
+            <span class="text-slate-500">Execution Duration</span>
+            <span class="font-semibold text-slate-800" id="workExecDaysHealth">—</span>
+          </div>
+          <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50/60">
+            <span class="text-slate-500">Project Age</span>
+            <span class="font-semibold text-slate-800" id="workProjectAgeHealth">—</span>
+          </div>
+          <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50/60">
+            <span class="text-slate-500">Cost Percentile</span>
+            <span class="font-semibold text-slate-800" id="workCostPercentile">—</span>
+          </div>
+          <div class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50/60">
+            <span class="text-slate-500">Duration Percentile</span>
+            <span class="font-semibold text-slate-800" id="workDurationPercentile">—</span>
+          </div>
+          <div id="workRiskFlags" class="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 bg-slate-50/60 hidden">
+            <span class="text-slate-500">Risk Flags</span>
+            <div class="flex flex-wrap gap-1 justify-end" id="workRiskFlagsList"></div>
+          </div>
+        </div>
+      </section>
 
       <!-- Footer Metadata -->
 <footer class="pt-4 border-t border-slate-200 text-[11px] text-slate-400 pb-4" style="padding-bottom:max(1rem, env(safe-area-inset-bottom, 0px));">
@@ -673,6 +597,7 @@
 </div>
 </footer>
 
+    </div><!-- end workMainContent -->
     </main>
   </div>
 </div>
@@ -723,5 +648,6 @@
 <script src="js/config.js?v=4"></script>
 <script src="js/mobile-shell.js?v=5"></script>
 <script src="js/data-updated.js?v=4"></script>
+<script src="js/workdetail-data.js?v=2"></script>
 </body>
 </html>

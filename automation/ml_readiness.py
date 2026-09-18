@@ -78,14 +78,6 @@ async def main():
     P("\nIsolation Forest:")
     P(f"  -> {'READY' if if_ready else 'NOT_READY'}")
 
-    # XGBoost delay readiness
-    xgb_ready = any(m["model_name"] == "project_delay_xgb" and m["status"] == "READY" for m in models)
-    P("\nProject Delay XGBoost:")
-    P(f"  -> {'READY' if xgb_ready else 'NOT_READY'}")
-    xgb_model = next((m for m in models if m["model_name"] == "project_delay_xgb"), None)
-    if xgb_model:
-        P(f"  reason: {xgb_model['metrics']}")
-
     await db2.close()
 
     P(f"\nOverall ML readiness: {'READY' if all_ready else 'NOT_READY'}")

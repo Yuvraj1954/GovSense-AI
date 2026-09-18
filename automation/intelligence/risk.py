@@ -30,6 +30,16 @@ def _risk_level(score: float) -> str:
     return "LOW"
 
 
+def _state_risk_level(score: float) -> str:
+    if score >= 45:
+        return "CRITICAL"
+    if score >= 35:
+        return "HIGH"
+    if score >= 20:
+        return "MODERATE"
+    return "LOW"
+
+
 def _risk_confidence(total: int, signals: int) -> str:
     if total == 0:
         return "LOW"
@@ -194,7 +204,7 @@ async def compute_state_risk() -> int:
                     score += anomaly_score * 0.05
                     score = min(100.0, max(0.0, score))
 
-                    level = _risk_level(score)
+                    level = _state_risk_level(score)
                     signals = sum(1 for x in [high, overdue_1y, overdue_2y] if x > 0)
                     if anomaly_level != "NORMAL":
                         signals += 1

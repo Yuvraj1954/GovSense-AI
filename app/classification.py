@@ -1,15 +1,15 @@
 """
 Deterministic entity performance classification for MPLADS.
 
-200-point performance matrix:
-  performance_score = completion_rate_pct + fund_utilization_pct
-  Max score = 200.
+Uses the authoritative 0-100 weighted score:
+  performance_score_weighted = 0.40*completion_rate_pct + 0.40*fund_utilization_pct + 0.20*scale_score
 
-Classification bands:
-  160–200    → PERFORMER
-  120–159.99 → AVERAGE
-  80–119.99  → NEEDS_ATTENTION
-  0–79.99    → UNDERPERFORMER
+Classification bands (0-100):
+  85-100   → EXCEPTIONAL
+  70-84.99 → PERFORMER
+  50-69.99 → STABLE
+  35-49.99 → NEEDS_ATTENTION
+  0-34.99  → UNDERPERFORMER
 
 Data quality labels:
   NO_DATA            → zero works or zero_work_member flag
@@ -22,91 +22,64 @@ Writes to DB2 (same tables).
 import asyncpg
 
 
-# ── Thresholds ──────────────────────────────────────────────────────────────
-PERFORMER_MIN = 160.0
-AVERAGE_MIN = 120.0
-NEEDS_ATTENTION_MIN = 80.0
 MIN_WORKS_FOR_CLASSIFICATION = 5
 
-# Allowed classification labels (no UNCLASSIFIED)
-VALID_LABELS = {
-    "PERFORMER",
-    "AVERAGE",
-    "NEEDS_ATTENTION",
-    "UNDERPERFORMER",
-    "NO_DATA",
-    "INSUFFICIENT_DATA",
-}
 
-
-# ── Classification logic ────────────────────────────────────────────────────
-
-def compute_score(completion_rate_pct, fund_utilization_pct):
-    """Compute 200-point performance score."""
-    comp = float(completion_rate_pct) if completion_rate_pct is not None else 0.0
-    util = float(fund_utilization_pct) if fund_utilization_pct is not None else 0.0
-    return round(comp + util, 2)
-
-
-def classify_from_score(score):
-    """Classify based on 200-point score. Returns one of the 4 performance labels."""
-    if score >= PERFORMER_MIN:
+def classify_from_weighted_score(score):
+    """Classify based on 0-100 weighted score. Returns one of the 5 performance labels."""
+    if score is None:
+        return "NO_DATA"
+    if score >= 85:
+        return "EXCEPTIONAL"
+    if score >= 70:
         return "PERFORMER"
-    if score >= AVERAGE_MIN:
-        return "AVERAGE"
-    if score >= NEEDS_ATTENTION_MIN:
+    if score >= 50:
+        return "STABLE"
+    if score >= 35:
         return "NEEDS_ATTENTION"
     return "UNDERPERFORMER"
 
 
-def classify_member(row: asyncpg.Record) -> tuple[str, float]:
+def classify_member(row: asyncpg.Record) -> tuple:
     """
     Classify a single member from DB2 member_metrics row.
+    Uses performance_score_weighted (0-100) as the authoritative score.
     Returns (classification, performance_score).
     """
     total = row["total_works"] or 0
     zero_work = row.get("zero_work_member", False) or False
     low_sample = row.get("low_sample_member", False) or False
-    completion = row["completion_rate_pct"]
-    utilization = row["fund_utilization_pct"]
 
-    # Data quality checks
     if zero_work or total == 0:
         return ("NO_DATA", 0.0)
     if low_sample or total < MIN_WORKS_FOR_CLASSIFICATION:
         return ("INSUFFICIENT_DATA", 0.0)
 
-    score = compute_score(completion, utilization)
-    label = classify_from_score(score)
+    score = float(row["performance_score_weighted"] or 0)
+    label = classify_from_weighted_score(score)
     return (label, score)
 
 
-def classify_state(row: asyncpg.Record) -> tuple[str, float]:
+def classify_state(row: asyncpg.Record) -> tuple:
     """
     Classify a single state from DB2 state_metrics row.
     Returns (classification, performance_score).
     """
     total = row["total_works"] or 0
-    completion = row["completion_rate_pct"]
-    utilization = row["fund_utilization_pct"]
-
     if total == 0:
         return ("NO_DATA", 0.0)
 
-    score = compute_score(completion, utilization)
-    label = classify_from_score(score)
+    score = float(row["performance_score_weighted"] or 0)
+    label = classify_from_weighted_score(score)
     return (label, score)
 
-
-# ── DB operations (DB2-only) ────────────────────────────────────────────────
 
 async def run_classification(db2_pool: asyncpg.Pool) -> dict:
     """
     Full classification pipeline — reads from DB2, writes back to DB2.
-    Uses the canonical completion_rate_pct and fund_utilization_pct.
+    Uses performance_score_weighted (0-100) as the authoritative score.
     Returns distribution summary dict.
     """
-    # Read from DB2
     mp_rows = await db2_pool.fetch(
         "SELECT * FROM public.member_metrics WHERE member_type = 'MP'"
     )
@@ -115,25 +88,21 @@ async def run_classification(db2_pool: asyncpg.Pool) -> dict:
     )
     state_rows = await db2_pool.fetch("SELECT * FROM public.state_metrics")
 
-    # Classify MPs
     mp_results = {}
     for row in mp_rows:
         label, score = classify_member(row)
         mp_results[row["member_id"]] = (label, score)
 
-    # Classify MLAs
     mla_results = {}
     for row in mla_rows:
         label, score = classify_member(row)
         mla_results[row["member_id"]] = (label, score)
 
-    # Classify states
     state_results = {}
     for row in state_rows:
         label, score = classify_state(row)
         state_results[row["state_id"]] = (label, score)
 
-    # Write to DB2 — members
     mp_updated = 0
     for member_id, (label, score) in mp_results.items():
         result = await db2_pool.execute(
@@ -152,7 +121,6 @@ async def run_classification(db2_pool: asyncpg.Pool) -> dict:
         if result.endswith("1"):
             mla_updated += 1
 
-    # Write to DB2 — states
     state_updated = 0
     for state_id, (label, score) in state_results.items():
         result = await db2_pool.execute(
@@ -162,7 +130,6 @@ async def run_classification(db2_pool: asyncpg.Pool) -> dict:
         if result.endswith("1"):
             state_updated += 1
 
-    # Compute distributions
     all_labels = [v[0] for v in mp_results.values()] + [v[0] for v in mla_results.values()]
     member_dist = {}
     for label in all_labels:

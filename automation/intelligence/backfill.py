@@ -9,7 +9,6 @@ from automation.intelligence.state_metrics import build_state_metrics
 from automation.intelligence.performance import compute_all_performance
 from automation.intelligence.clustering import run_all_clustering
 from automation.intelligence.anomaly import run_all_anomaly
-from automation.intelligence.delay_xgb import train_and_predict_delay
 from automation.intelligence.risk import run_all_risk
 from automation.intelligence.intelligence_tables import build_all_intelligence
 from automation.intelligence.statistics import build_all_statistics
@@ -73,9 +72,7 @@ async def backfill_all(intelligence: bool = True, resume_from: int = 1) -> Dict[
             P("Step 5/10: SKIPPED (resume)")
 
         if resume_from <= 6:
-            P("Step 6/10: training XGBoost delay prediction model...")
-            results["delay_xgb"] = await train_and_predict_delay()
-            P(f"  project_delay_xgb status={results['delay_xgb'].get('status')}")
+            P("Step 6/10: XGBoost REMOVED — skipping delay prediction...")
         else:
             P("Step 6/10: SKIPPED (resume)")
 
@@ -152,26 +149,6 @@ async def backfill_all(intelligence: bool = True, resume_from: int = 1) -> Dict[
                 metrics={"score_min": anomaly_meta.get("score_min"), "score_max": anomaly_meta.get("score_max"), "mean_score": anomaly_meta.get("mean_score")},
                 threshold={"highly_unusual": 80, "unusual": 60},
                 calibration="decision_function_rescaled",
-            )
-
-        delay_meta = results.get("delay_xgb")
-        if delay_meta:
-            await register_model(
-                model_name="project_delay_xgb",
-                model_version=delay_meta.get("model_version", "1.0.0"),
-                model_type=delay_meta.get("model_type", "XGBClassifier"),
-                status=delay_meta.get("status", "NOT_READY"),
-                training_observations=delay_meta.get("training_observations", 0),
-                features=delay_meta.get("features", []),
-                target="slow_completion",
-                validation_method="time_aware_split_by_recommendation_date",
-                metrics={
-                    "auc_roc": delay_meta.get("auc_roc"),
-                    "average_precision": delay_meta.get("average_precision"),
-                    "brier_score": delay_meta.get("brier_score"),
-                },
-                threshold={"high": 0.7, "medium": 0.4},
-                calibration="none" if delay_meta.get("status") != "READY" else "platt_scaling_optional",
             )
 
     finished = datetime.datetime.now(datetime.timezone.utc)

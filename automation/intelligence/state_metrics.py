@@ -93,7 +93,8 @@ async def build_state_metrics() -> int:
             cost_anomaly = sum(1 for w in ws if w["cost_status"] in ("HIGH", "VERY_HIGH"))
             duration_anomaly = sum(1 for w in ws if w["duration_status"] in ("HIGH", "VERY_HIGH"))
 
-            scale_score = min(100.0, (sanc_amt / allocated) * 100.0) if allocated > 0 else 0.0
+            # scale_score is computed by performance.py as percentile rank of total_works
+            scale_score = None
 
             rows.append({
                 "state_id": sid,

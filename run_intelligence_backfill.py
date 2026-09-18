@@ -56,7 +56,6 @@ if __name__ == "__main__":
     P(f"  state_intelligence: {result.get('intelligence_tables', {}).get('state_intelligence', 0)}")
     P("\nML model statuses:")
     P(f"  isolation_forest: {result.get('anomaly', {}).get('isolation_forest', {}).get('status')}")
-    P(f"  project_delay_xgb: {result.get('delay_xgb', {}).get('status')}")
     P("\nStatistics:")
     P(json.dumps(result.get("statistics", {}), indent=2, default=str))
     P("\nFull result JSON:")
